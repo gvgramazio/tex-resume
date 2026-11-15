@@ -27,4 +27,4 @@
 - Naming: internal names are `\l__vitae_...`, `\g__vitae_...`, `\__vitae_...:n`. Public commands are plain document-level names, created with `\NewDocumentCommand`.
 - Report problems with `\msg_new:nnn {vitae} {...}` and `\msg_error:nn`/`\msg_warning:nn`, never with raw `\errmessage`.
 - Keep it terse: no dead code, no options nobody asked for.
-- Templates never print raw dates. They always go through `\formatdate`/`\daterange`, which parse ISO input and localise the output (see DESIGN.md §4).
+- Templates never print raw dates. They always go through `\formatdate`/`\daterange`, which parse ISO input and localise the output (see DESIGN.md §5).

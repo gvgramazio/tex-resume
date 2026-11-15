@@ -37,7 +37,7 @@ See [examples/](examples/) for complete documents.
 | Items | `\cvitem{label}{text}` |
 | Lists | `\addentry{list}{<keys>}{body}`, `\additem{list}{label}{text}`, `\printentries[heading]{list}` |
 | Dates | `\daterange{start}{end}`, `\formatdate{date}`, `\vitaedatelocale{name}{<keys>}` |
-| Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, photowidth=…}` |
+| Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, parskip=…, photowidth=…}` |
 | Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|item}{code}`, using `\field{f}` and `\iffield{f}{yes}{no}` inside |
 
 Notes:
@@ -47,6 +47,7 @@ Notes:
   - Add a locale with `\vitaedatelocale{<name>}{months={…}, short={…}, present=…, ym={#2 #1}, ymd={#3 #2 #1}, numeric-ym=…, numeric-ymd=…, aliases={…}}`. Patterns receive `#1` = year, `#2` = month, `#3` = day; keys you omit are taken from English.
   - Scope: in the preamble, settings apply to the whole document. Inside a group (`{…}`, an environment) they apply only there. As entry keys they apply to that entry alone.
   - `\daterange` prints `start – end`. With no end it prints `start – present`, where the word comes from the locale unless you set `present`. Equal dates print once.
+- **Paragraphs** are separated by `parskip` (default half a line; `parskip=0pt` turns it off). It applies to free text and to blank lines inside entry and item bodies, while the lines a template draws (title, organisation, header, section rule) keep their exact spacing. The setting is the TeX `\parskip` length; vitae does not load the `parskip` package.
 - **Contact values** (email, URLs, handles) can contain `_ & ~ #` as typed. `\_ \& \# \%` are also accepted, but a raw `%` starts a comment.
 - **Empty lists:** `\printentries` prints its heading only if the list has entries. An empty list prints nothing and logs a warning.
 - **Field order:** contacts appear in a fixed order (email, phone, address, homepage, LinkedIn, GitHub, ORCID), followed by any `\addcontact` entries.

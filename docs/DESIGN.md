@@ -65,7 +65,13 @@ CLAUDE.md             contributor conventions: code style, naming, testing
 
 `l3build` is the standard LaTeX test harness and comes with TeX Live. It compares each test's log against a reference on every engine, which catches regressions and confirms that the expected errors are raised.
 
-## 4. Dates
+## 4. Paragraph spacing
+- **Setting.** `parskip` takes a length and sets TeX's `\parskip`. The name follows the TeX length (and KOMA-Script's `parskip` option); vitae does not load the `parskip` package, which would also loosen template lines.
+- **Structure stays fixed.** The header, section, entry and item groups run with `\parskip` = 0, so a template's lines keep their exact spacing under any setting. That includes user templates written with `\par`.
+- **Bodies.** Blank lines in entry and item bodies are stored as `\__vitae_par:`, which ends the paragraph and adds the configured space with `\addvspace`. This works inside parboxes, lists and boxes, which reset `\parskip`, so every theme behaves the same.
+- **Free text** (for example a Profile section) uses the global `\parskip`. The first paragraph after a heading therefore gets the heading's space plus `\parskip`, as in any `parskip`-based layout.
+
+## 5. Dates
 - **Input.** `start` and `end` are stored exactly as typed. Templates never print them directly: they always go through `\formatdate`, and ranges through `\daterange`.
 - **Parsing.** `\formatdate` is expandable. It turns its trimmed input into a string, splits it at `-`, and accepts it only if it rebuilds exactly as `YYYY`, `YYYY-MM` (01–12) or `YYYY-MM-DD` (01–31; days aren't checked against the month). Anything else is returned unchanged.
 - **Output.** `dateformat` (`long` | `short` | `numeric` | `iso` | `year`) picks a renderer. A year on its own is always printed as the year. Named styles take the month name from the locale's lists, and the day without its leading zero.

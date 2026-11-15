@@ -3,6 +3,13 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Added
+- `parskip` setting: space between paragraphs of free text and of entry and
+  item bodies (default `0.5\baselineskip plus 2pt`; `0pt` disables it).
+
+### Changed
+- Paragraphs are now separated by default. Template lines are unaffected;
+  `\vitaesetup{parskip=0pt}` restores the previous output.
 
 ## [0.2.0] - 2026-11-15
 ### Added

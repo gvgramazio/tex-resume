@@ -22,6 +22,7 @@ Then:
    - Load engine-specific fonts behind `\sys_if_engine_pdftex:TF`.
    - Emit a line only when its fields are set. Use `\iffield` so you never leave blank lines.
    - In expl3 code, `~` right after a control word is swallowed. Use `\c_space_tl` there.
+   - Don't handle paragraph spacing in templates. The class runs templates with `\parskip` = 0 and spaces body paragraphs itself (the `parskip` setting).
 2. Build with `scripts/build.sh -s examples/theme-<name>.tex examples/stress-<name>.tex` and check both PDFs visually (see the `build` skill).
 3. Add the theme to the README and CHANGELOG.
 
