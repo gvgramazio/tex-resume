@@ -58,7 +58,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/test/junit.xml
-          report-type: test_results
+          report_type: test_results
 
   # Compile every example in strict mode, one job per engine.
   examples:
