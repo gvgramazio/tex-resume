@@ -24,15 +24,41 @@ jobs:
     container: texlive/texlive:latest
     steps:
       - uses: actions/checkout@v7
+      # No --halt-on-failure: every test runs, so the report is complete.
       - name: l3build check
-        run: l3build check --halt-on-failure --show-log-on-error
-      - name: Upload diffs on failure
-        if: failure()
+        run: l3build check --show-log-on-error
+      - name: JUnit report
+        if: ${{ !cancelled() }}
+        run: scripts/junit.sh > build/test/junit.xml
+      - name: Upload test results and diffs
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: test-diffs
-          path: build/test/*.diff
+          name: test-results
+          path: |
+            build/test/junit.xml
+            build/test/*.diff
           if-no-files-found: ignore
+
+  # Test Analytics: send the JUnit report to Codecov. A separate job keeps
+  # the uploader out of the TeX Live container.
+  test-results:
+    name: test results
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: test-results
+          path: build/test
+      - name: Upload test results to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/test/junit.xml
+          report_type: test_results
 
   # Compile every example in strict mode, one job per engine.
   examples:

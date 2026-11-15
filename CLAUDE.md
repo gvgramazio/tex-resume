@@ -7,6 +7,8 @@
 - `testfiles/`: l3build regression tests (`.lvt` input, `.tlg` expected log).
 - `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `stress-*` (layout edge cases), plus shared data in `examples/data/`.
 - `scripts/build.sh`: compiles the examples (used by both CI and the `build` skill).
+- `scripts/junit.sh`: turns the last `l3build check` run into JUnit XML, which CI uploads to Codecov Test Analytics.
+- `.github/workflows/codeql.yml`: CodeQL analysis of the workflows themselves (`actions` language).
 - `.claude/skills/`: `build`, `test`, `new-theme`, `release`.
 
 ## Rules
@@ -15,6 +17,7 @@
 - Code must work on pdfLaTeX, XeLaTeX and LuaLaTeX. Keep the engine-specific code (fonts) in themes, behind `\iftutex`.
 - Before you commit, run `l3build check` and `scripts/build.sh -s`. Both must pass.
 - Work on a branch and merge through a PR. CI must be green to merge. Add an entry under *Unreleased* in `CHANGELOG.md`.
+- In workflows, pin third-party actions (anything outside `actions/*` and `github/*`) to a full commit SHA with a `# vX.Y.Z` comment. Dependabot keeps the pins current, and CodeQL flags unpinned tags.
 - Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `docs:`, `test:`, `ci:`, `chore:`, `refactor:`. Mark breaking changes with `feat!:` or a `BREAKING CHANGE:` footer. The commit types determine the next version. Don't use emoji.
 
 ## Code style (all .cls/.sty)

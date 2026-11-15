@@ -1,0 +1,47 @@
+# CodeQL: security and quality analysis of the GitHub Actions workflows.
+# TeX, Lua and shell are not CodeQL languages; the workflows are the code
+# here that handles untrusted input (PR data, tags) and holds credentials.
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (actions)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: actions
+          queries: security-and-quality
+
+      # Results reach the Security tab only where code scanning is available
+      # (public repositories, or GitHub Code Security). Elsewhere the
+      # analysis still runs and its SARIF is kept as an artifact.
+      - name: Perform CodeQL Analysis
+        id: analyze
+        uses: github/codeql-action/analyze@v4
+        with:
+          upload: ${{ github.event.repository.private == false && 'always' || 'never' }}
+          output: sarif
+
+      - name: Upload SARIF artifact
+        if: ${{ github.event.repository.private != false }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: codeql-sarif
+          path: sarif

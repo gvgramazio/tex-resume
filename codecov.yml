@@ -1,0 +1,12 @@
+# Codecov: Test Analytics only. l3build has no line coverage for TeX code,
+# so no coverage is uploaded; statuses are off to avoid "missing coverage"
+# checks, and PR comments list failed and flaky tests.
+coverage:
+  status:
+    project: off
+    patch: off
+
+comment:
+  layout: "condensed_header, condensed_files, condensed_footer"
+  behavior: default
+  require_changes: false
