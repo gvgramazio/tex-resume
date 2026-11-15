@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     container: texlive/texlive:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # The tag must match the version declared in vitae.cls (set by `l3build tag`).
       - name: Check version
         run: |

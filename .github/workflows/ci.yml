@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     container: texlive/texlive:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: l3build check
         run: l3build check --halt-on-failure --show-log-on-error
       - name: Upload diffs on failure
@@ -44,7 +44,7 @@ jobs:
       matrix:
         engine: [pdf, xe, lua]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build examples
         run: scripts/build.sh -s -e ${{ matrix.engine }}
       - name: Upload PDFs
