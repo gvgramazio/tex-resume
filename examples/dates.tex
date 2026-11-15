@@ -1,0 +1,30 @@
+% Date formatting: ISO input, styles, locales (babel) and local scoping.
+\documentclass{vitae}
+\usepackage[english,italian]{babel}  % last option = main language
+\usetheme{modern}
+\name{Jane}{Doe}
+\addentry{work}{title=Lorem Ipsum, org=Dolor Ltd., start=2021-04}{}
+\addentry{work}{title=Sit Amet, org=Elit GmbH, start=2018-09, end=2021-03}{}
+\addentry{work}{title=Tempor Award, date=2017-11-15}{}
+\addentry{work}{title=Free Text, start=Spring 2016, end=2017}{}
+
+\begin{document}
+\makeheader
+
+% Default: long style, locale from the main language (Italian).
+\printentries[Italiano (predefinito)]{work}
+
+% Each group keeps its settings to itself.
+\begingroup
+  \selectlanguage{english}
+  \printentries[English, long]{work}
+  \vitaesetup{dateformat=short}
+  \printentries[English, short]{work}
+\endgroup
+
+{\vitaesetup{dateformat=numeric, datelocale=german}
+ \printentries[Deutsch, numerisch]{work}}
+
+{\vitaesetup{dateformat=year}
+ \printentries[Year only]{work}}
+\end{document}
