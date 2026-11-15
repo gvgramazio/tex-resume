@@ -135,6 +135,37 @@
     \medskip
   }
 
+% Compact entry: dates in the margin column; title, organisation and
+% location on one line beside them; any body follows below.
+\settemplate { entry/compact }
+  {
+    \__vitae_modern_hang:nn
+      { \small \color { vitaeaccent } \field { dates } }
+      {
+        \joinfields { , ~ } { title = \textbf , org = \textit , location } \par
+        \iffield { body } { \field { body } } { }
+      }
+    \smallskip
+  }
+
+% Inline entry: dates in the margin column; beside them a run-in
+% paragraph, "Title, Org, Location. Body", with no stray punctuation.
+\settemplate { entry/inline }
+  {
+    \__vitae_modern_hang:nn
+      { \small \color { vitaeaccent } \field { dates } }
+      {
+        \ifanyfield { title , org , location }
+          {
+            \joinfields { , ~ } { title = \textbf , org = \textit , location }
+            \addpunct { . } \iffield { body } { ~ } { }
+          }
+          { }
+        \field { body }
+      }
+    \smallskip
+  }
+
 % Item: bold label in the margin column, text beside it. Two top-aligned
 % boxes (items are short): a wrapped label cannot push the text down.
 \settemplate { item }
