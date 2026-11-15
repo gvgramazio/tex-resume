@@ -65,13 +65,19 @@ CLAUDE.md             contributor conventions: code style, naming, testing
 
 `l3build` is the standard LaTeX test harness and comes with TeX Live. It compares each test's log against a reference on every engine, which catches regressions and confirms that the expected errors are raised.
 
-## 4. Paragraph spacing
+## 4. Entry styles
+- **Styles are templates.** Style `<s>` uses template `entry/<s>`; blank or `full` uses `entry`, so existing templates and documents are unchanged. Themes provide `entry/compact` and `entry/inline`. `\settemplate` accepts any `entry/<name>`, which lets users add styles. Other unknown template names are still errors.
+- **Choosing.** The style is a local variable: `\printentries[style=…]` sets it for one call (the call is a group), and the entry key `style` sets it inside a single entry, so the entry's own style wins. A style without a template warns once per style and falls back to `entry`.
+- **`\printentries` options.** The optional argument is parsed as key=value (`heading`, `style`) when it contains `=`, and is otherwise a plain heading, which keeps `\printentries[Experience]{work}` working. Filters (`only`, `except`) and sorting will add keys here.
+- **Template helpers.** `\joinfields{<sep>}{title=\textbf, org, location}` prints only the fields that are set, each in its optional format, so templates leave no stray separators. `\ifanyfield` is its expandable test. `\addpunct{.}` adds punctuation unless the text already ends with sentence punctuation (space factor above 1000, as amsthm's `\@addpunct`; a word ending in a capital, such as "USA.", still gets a second period).
+
+## 5. Paragraph spacing
 - **Setting.** `parskip` takes a length and sets TeX's `\parskip`. The name follows the TeX length (and KOMA-Script's `parskip` option); vitae does not load the `parskip` package, which would also loosen template lines.
 - **Structure stays fixed.** The header, section, entry and item groups run with `\parskip` = 0, so a template's lines keep their exact spacing under any setting. That includes user templates written with `\par`.
 - **Bodies.** Blank lines in entry and item bodies are stored as `\__vitae_par:`, which ends the paragraph and adds the configured space with `\addvspace`. This works inside parboxes, lists and boxes, which reset `\parskip`, so every theme behaves the same.
 - **Free text** (for example a Profile section) uses the global `\parskip`. The first paragraph after a heading therefore gets the heading's space plus `\parskip`, as in any `parskip`-based layout.
 
-## 5. Dates
+## 6. Dates
 - **Input.** `start` and `end` are stored exactly as typed. Templates never print them directly: they always go through `\formatdate`, and ranges through `\daterange`.
 - **Parsing.** `\formatdate` is expandable. It turns its trimmed input into a string, splits it at `-`, and accepts it only if it rebuilds exactly as `YYYY`, `YYYY-MM` (01–12) or `YYYY-MM-DD` (01–31; days aren't checked against the month). Anything else is returned unchanged.
 - **Output.** `dateformat` (`long` | `short` | `numeric` | `iso` | `year`) picks a renderer. A year on its own is always printed as the year. Named styles take the month name from the locale's lists, and the day without its leading zero.

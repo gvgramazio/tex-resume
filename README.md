@@ -33,12 +33,12 @@ See [examples/](examples/) for complete documents.
 | Contacts | `\email`, `\phone`, `\address`, `\homepage{example.com}`, `\linkedin{id}`, `\github{user}`, `\orcid{id}`, `\addcontact[url]{icon}{text}` |
 | Read data | `\the<field>` (e.g. `\theemail`), `\ifvitaeset{<field>}{yes}{no}` |
 | Header | `\makeheader`, `\printcontacts`, `\printphoto` |
-| Entries | `\cventry{<keys>}{body}`. Keys: `title`, `org`, `location`, `start`, `end`, `date` (= start and end), `dateformat`, `datelocale` |
+| Entries | `\cventry{<keys>}{body}`. Keys: `title`, `org`, `location`, `start`, `end`, `date` (= start and end), `style`, `dateformat`, `datelocale` |
 | Items | `\cvitem{label}{text}` |
-| Lists | `\addentry{list}{<keys>}{body}`, `\additem{list}{label}{text}`, `\printentries[heading]{list}` |
+| Lists | `\addentry{list}{<keys>}{body}`, `\additem{list}{label}{text}`, `\printentries[heading]{list}` or `\printentries[heading=…, style=…]{list}` |
 | Dates | `\daterange{start}{end}`, `\formatdate{date}`, `\vitaedatelocale{name}{<keys>}` |
 | Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, parskip=…, photowidth=…}` |
-| Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|item}{code}`, using `\field{f}` and `\iffield{f}{yes}{no}` inside |
+| Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|entry/<style>\|item}{code}`, using `\field{f}`, `\iffield{f}{yes}{no}`, `\ifanyfield{f,…}{yes}{no}`, `\joinfields{sep}{f, f=\format, …}` and `\addpunct{.}` inside |
 
 Notes:
 - **Dates**: write them as ISO (`2020`, `2020-03` or `2020-03-01`), or as any other text, such as `Spring 2020`. ISO dates are printed in the chosen style; anything else is printed exactly as typed.
@@ -47,6 +47,7 @@ Notes:
   - Add a locale with `\vitaedatelocale{<name>}{months={…}, short={…}, present=…, ym={#2 #1}, ymd={#3 #2 #1}, numeric-ym=…, numeric-ymd=…, aliases={…}}`. Patterns receive `#1` = year, `#2` = month, `#3` = day; keys you omit are taken from English.
   - Scope: in the preamble, settings apply to the whole document. Inside a group (`{…}`, an environment) they apply only there. As entry keys they apply to that entry alone.
   - `\daterange` prints `start – end`. With no end it prints `start – present`, where the word comes from the locale unless you set `present`. Equal dates print once.
+- **Entry styles**: `full` (the default `entry` template), `compact` (one line: title, organisation, location, dates) and `inline` (a run-in paragraph, for talks or publications). Choose one per list with `\printentries[heading=Certifications, style=compact]{certs}`, or per entry with the `style` key, which wins over the list's. `\settemplate{entry/<name>}{…}` overrides a style or defines a new one. `\printentries[<text>]` without `=` is still a plain heading.
 - **Paragraphs** are separated by `parskip` (default half a line; `parskip=0pt` turns it off). It applies to free text and to blank lines inside entry and item bodies, while the lines a template draws (title, organisation, header, section rule) keep their exact spacing. The setting is the TeX `\parskip` length; vitae does not load the `parskip` package.
 - **Contact values** (email, URLs, handles) can contain `_ & ~ #` as typed. `\_ \& \# \%` are also accepted, but a raw `%` starts a comment.
 - **Empty lists:** `\printentries` prints its heading only if the list has entries. An empty list prints nothing and logs a warning.
