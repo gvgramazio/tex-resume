@@ -1,0 +1,71 @@
+% Paragraph spacing: the parskip setting spaces free text and body
+% paragraphs, while template lines (structure) keep zero \parskip.
+% Heights are compared pairwise, so results do not depend on fonts.
+\documentclass{vitae}
+\input{regression-test}
+% The stored body, as a string.
+\ExplSyntaxOn
+\cs_new:Npn \showbody { \exp_args:NV \tl_to_str:n \l__vitae_f_body_tl }
+\ExplSyntaxOff
+% Difference between the two-paragraph and the one-paragraph version.
+\newcommand\gap[3]{% #1 label, #2 two paragraphs, #3 same text on two lines
+  \setbox0\vbox{\hsize=10cm #2}\setbox2\vbox{\hsize=10cm #3}%
+  \TYPE{#1: \the\dimexpr\ht0-\ht2\relax}}
+\begin{document}
+% Plain templates (set after the default theme has loaded): structure
+% lines with \par, then the body.
+\settemplate{entry}{\field{title}\par\field{org}\par\field{body}\par}
+\settemplate{item}{\field{label}\par\field{body}\par}
+\START
+
+\TEST{default value}{
+  \TYPE{\the\parskip}
+}
+
+\TEST{free text paragraphs are spaced by \parskip}{
+  \gap{free text}{A\par B}{A\newline B}
+}
+
+\TEST{entry and item bodies: blank lines add the same space}{
+  \gap{entry body}{\cventry{}{A
+
+    B}}{\cventry{}{A\newline B}}
+  \gap{item body}{\cvitem{L}{A
+
+    B}}{\cvitem{L}{A\newline B}}
+}
+
+\TEST{template lines get no \parskip}{
+  \settemplate{entry}{\TYPE{inside entry: \the\parskip}}
+  \cventry{}{}
+  \settemplate{section}{\TYPE{inside section: \the\parskip}}
+  \section{Lorem}
+  \settemplate{header}{\TYPE{inside header: \the\parskip}}
+  \name{Jane}{Doe}\makeheader
+  \TYPE{after them: \the\parskip}
+}
+
+\TEST{structure is unaffected by the setting}{
+  \vitaesetup{parskip=0pt}
+  \setbox4\vbox{\hsize=10cm \cventry{title=T, org=O}{}}
+  \vitaesetup{parskip=20pt}
+  \setbox6\vbox{\hsize=10cm \cventry{title=T, org=O}{}}
+  \TYPE{same height: \ifdim\ht4=\ht6 yes\else no\fi}
+}
+
+\TEST{custom value and zero}{
+  \vitaesetup{parskip=12pt}
+  \gap{12pt}{\cventry{}{A\par B}}{\cventry{}{A\newline B}}
+  \vitaesetup{parskip=0pt}
+  \gap{0pt}{\cventry{}{A\par B}}{\cventry{}{A\newline B}}
+  \gap{0pt free}{A\par B}{A\newline B}
+}
+
+\TEST{body field keeps blank lines as explicit breaks}{
+  \settemplate{entry}{\TYPE{\showbody}}
+  \cventry{}{A
+
+    B}
+}
+
+\END
