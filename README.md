@@ -33,15 +33,20 @@ See [examples/](examples/) for complete documents.
 | Contacts | `\email`, `\phone`, `\address`, `\homepage{example.com}`, `\linkedin{id}`, `\github{user}`, `\orcid{id}`, `\addcontact[url]{icon}{text}` |
 | Read data | `\the<field>` (e.g. `\theemail`), `\ifvitaeset{<field>}{yes}{no}` |
 | Header | `\makeheader`, `\printcontacts`, `\printphoto` |
-| Entries | `\cventry{<keys>}{body}`. Keys: `title`, `org`, `location`, `start`, `end`, `date` (= start and end) |
+| Entries | `\cventry{<keys>}{body}`. Keys: `title`, `org`, `location`, `start`, `end`, `date` (= start and end), `dateformat`, `datelocale` |
 | Items | `\cvitem{label}{text}` |
 | Lists | `\addentry{list}{<keys>}{body}`, `\additem{list}{label}{text}`, `\printentries[heading]{list}` |
-| Dates | `\daterange{start}{end}`, `\formatdate{date}` |
-| Look | `\usetheme{name}`, `\vitaesetup{accent=…, present=…, datesep=…, photowidth=…}` |
+| Dates | `\daterange{start}{end}`, `\formatdate{date}`, `\vitaedatelocale{name}{<keys>}` |
+| Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, photowidth=…}` |
 | Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|item}{code}`, using `\field{f}` and `\iffield{f}{yes}{no}` inside |
 
 Notes:
-- **Dates** are printed exactly as typed. `\daterange` prints `start – end`. With no end it prints `start – Present`, and when both dates are equal it prints a single date.
+- **Dates**: write them as ISO (`2020`, `2020-03` or `2020-03-01`), or as any other text, such as `Spring 2020`. ISO dates are printed in the chosen style; anything else is printed exactly as typed.
+  - `dateformat` styles: `long` (default; March 2020, March 1, 2020), `short` (Mar 2020), `numeric` (03/2020, 03/01/2020), `iso` (2020-03), `year` (2020). A year alone always prints as the year.
+  - The language follows babel or polyglossia, including `\selectlanguage`. Built-in locales are `english` (US order), `british`, `italian`, `german`, `french` and `spanish`, with the usual babel aliases. Any other language falls back to English with a warning. `datelocale=<name>` forces a locale.
+  - Add a locale with `\vitaedatelocale{<name>}{months={…}, short={…}, present=…, ym={#2 #1}, ymd={#3 #2 #1}, numeric-ym=…, numeric-ymd=…, aliases={…}}`. Patterns receive `#1` = year, `#2` = month, `#3` = day; keys you omit are taken from English.
+  - Scope: in the preamble, settings apply to the whole document. Inside a group (`{…}`, an environment) they apply only there. As entry keys they apply to that entry alone.
+  - `\daterange` prints `start – end`. With no end it prints `start – present`, where the word comes from the locale unless you set `present`. Equal dates print once.
 - **Contact values** (email, URLs, handles) can contain `_ & ~ #` as typed. `\_ \& \# \%` are also accepted, but a raw `%` starts a comment.
 - **Empty lists:** `\printentries` prints its heading only if the list has entries. An empty list prints nothing and logs a warning.
 - **Field order:** contacts appear in a fixed order (email, phone, address, homepage, LinkedIn, GitHub, ORCID), followed by any `\addcontact` entries.

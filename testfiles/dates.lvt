@@ -1,31 +1,44 @@
-% Dates: plain strings through \formatdate; every \daterange case.
+% Dates: ISO parsing, pass-through, \daterange cases, separator/present.
 \documentclass{vitae}
 \input{regression-test}
 \START
 
-\TEST{default separator and present text}{
+\TEST{default separator; present comes from the locale}{
   \TYPE{\expandafter\expandafter\expandafter\detokenize
     \expandafter\expandafter\expandafter{\csname l__vitae_datesep_tl\endcsname}}
-  \TYPE{\csname l__vitae_present_tl\endcsname}
+  \TYPE{[\csname l__vitae_present_tl\endcsname]}
 }
 
 % A plain separator keeps the rest of the log readable (\, expands noisily).
 \vitaesetup{datesep=--}
 
-\TEST{\formatdate is the identity on plain strings}{
-  \TYPE{[\formatdate{2020}][\formatdate{2020-03}][\formatdate{March 2020}]}
+% l3build masks YYYY-MM-DD in logs as ....-..-.. (the shape is still checked).
+\TEST{ISO dates are recognised at three precisions}{
+  \TYPE{[\formatdate{2020}][\formatdate{2020-03}][\formatdate{2020-03-01}]}
+  \TYPE{trimmed: [\formatdate{ 2020-03 }]}
+  \TYPE{bounds: [\formatdate{2020-01-01}][\formatdate{2020-12-31}]}
+}
+
+\TEST{anything else passes through unchanged}{
+  \TYPE{[\formatdate{March 2020}][\formatdate{Spring 2020}][\formatdate{}]}
+  \TYPE{[\formatdate{2020-13}][\formatdate{2020-00}][\formatdate{2020-03-32}]}
+  \TYPE{[\formatdate{2020-3}][\formatdate{20-03}][\formatdate{20200}]}
+  \TYPE{[\formatdate{2020-03-01x}][\formatdate{2020-03-}][\formatdate{-2020}]}
+  \TYPE{[\formatdate{2020--01}][\formatdate{2020-03-01-02}][\formatdate{{2020}}]}
+  \typeout{[\formatdate{\textit{2020-03}}]}% \typeout: \textit is robust
 }
 
 \TEST{\daterange cases}{
   \TYPE{both:     [\daterange{2018}{2021}]}
-  \TYPE{start:    [\daterange{2018}{}]}
-  \TYPE{end:      [\daterange{}{2021}]}
-  \TYPE{equal:    [\daterange{2019}{2019}]}
+  \TYPE{start:    [\daterange{2018-09}{}]}
+  \TYPE{end:      [\daterange{}{2021-02}]}
+  \TYPE{equal:    [\daterange{2019-05}{2019-05}]}
+  \TYPE{mixed:    [\daterange{2018-09}{Summer 2021}]}
   \TYPE{none:     [\daterange{}{}]}
   \TYPE{blank:    [\daterange{ }{ }]}
 }
 
-\TEST{\vitaesetup changes present and separator}{
+\TEST{explicit present text overrides the locale}{
   \vitaesetup{present=today, datesep={ to }}
   \TYPE{[\daterange{2018}{}][\daterange{2018}{2021}]}
 }
