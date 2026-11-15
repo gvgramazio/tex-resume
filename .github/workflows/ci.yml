@@ -1,0 +1,58 @@
+# CI: regression tests and example builds on every PR and on merge to master.
+# The jobs "test" and "examples (*)" are meant to be required status checks.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same branch/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # l3build regression tests across pdfTeX, XeTeX and LuaTeX.
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: l3build check
+        run: l3build check --halt-on-failure --show-log-on-error
+      - name: Upload diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-diffs
+          path: build/test/*.diff
+          if-no-files-found: ignore
+
+  # Compile every example in strict mode, one job per engine.
+  examples:
+    name: examples (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [pdf, xe, lua]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build examples
+        run: scripts/build.sh -s -e ${{ matrix.engine }}
+      - name: Upload PDFs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples-${{ matrix.engine }}
+          path: |
+            build/examples/${{ matrix.engine }}/*.pdf
+            build/examples/${{ matrix.engine }}/*.log
+          if-no-files-found: error
