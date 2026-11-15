@@ -65,6 +65,33 @@
     \medskip
   }
 
+% Compact entry: one line, bold title then organisation and location,
+% dates on the right; any body follows below.
+\settemplate { entry/compact }
+  {
+    \par
+    \joinfields { , ~ } { title = \textbf , org = \textit , location }
+    \hfill \field { dates } \par
+    \iffield { body } { \field { body } \par } { }
+    \smallskip
+  }
+
+% Inline entry: a run-in paragraph, "Title, Org, Location (dates). Body"
+% (only dates: "dates. Body"); no doubled or stray punctuation.
+\settemplate { entry/inline }
+  {
+    \par
+    \ifanyfield { title , org , location }
+      {
+        \joinfields { , ~ } { title = \textbf , org = \textit , location }
+        \iffield { dates } { ~ ( \field { dates } ) } { }
+      }
+      { \field { dates } }
+    \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }
+    \field { body } \par
+    \smallskip
+  }
+
 % Item: bold label in a fixed left column, wrapped text on the right.
 \settemplate { item }
   {
