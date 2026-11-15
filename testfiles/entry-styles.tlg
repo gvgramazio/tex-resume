@@ -1,0 +1,88 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: style key picks the template
+============================================================
+full: A
+full: B
+compact: C
+inline: D
+============================================================
+============================================================
+TEST 2: \printentries : plain heading, key=value, style only
+============================================================
+section=[Plain Heading]
+full: One
+inline: Two
+section=[Keyed]
+compact: One
+inline: Two
+compact: One
+inline: Two
+section=[Lorem, Ipsum]
+full: One
+inline: Two
+============================================================
+============================================================
+TEST 3: the list style does not leak
+============================================================
+compact: One
+inline: Two
+full: After
+============================================================
+============================================================
+TEST 4: empty list with options warns, no heading
+============================================================
+Package vitae Warning: List 'nosuchlist' is empty or undefined.
+============================================================
+============================================================
+TEST 5: unknown style warns once and falls back
+============================================================
+Package vitae Warning: Entry style 'fancy' has no template 'entry/fancy'; the default is used.
+full: X
+full: Y
+============================================================
+============================================================
+TEST 6: users can define new styles; other unknown templates still error
+============================================================
+publication: Paper
+! Package vitae Error: Unknown template 'nosuch/thing'.
+Type <return> to continue.
+ ...                                              
+l. ...}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+============================================================
+============================================================
+TEST 7: \ifanyfield 
+============================================================
+some none
+============================================================
+============================================================
+TEST 8: \joinfields : set fields only, formats, separators
+============================================================
+all: same
+gap: same
+none: same
+============================================================
+============================================================
+TEST 9: \joinfields with an unknown field is an error
+============================================================
+! Package vitae Error: Unknown field 'nosuchfield'.
+Type <return> to continue.
+ ...                                              
+l. ...}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+============================================================
+============================================================
+TEST 10: \addpunct 
+============================================================
+after word: same
+after period: same
+after italic period: same
+after parenthesis: same
+vertical mode: 0.0pt
+============================================================
