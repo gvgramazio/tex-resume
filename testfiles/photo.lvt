@@ -1,0 +1,25 @@
+% \printphoto: missing file warns; extension-less names are resolved.
+% Graphics drivers log differently, hence engine-specific .tlg files.
+\documentclass{vitae}
+\input{regression-test}
+\START
+
+\TEST{no photo set prints nothing}{
+  \setbox0\hbox{\printphoto}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{missing photo warns and is skipped}{
+  \photo{nosuchphoto}
+  \setbox0\hbox{\printphoto}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{photo found without extension, scaled to photowidth}{
+  \photo{example-image-a}
+  \vitaesetup{photowidth=2cm}
+  \setbox0\hbox{\printphoto}
+  \TYPE{width: \the\wd0}
+}
+
+\END

@@ -1,0 +1,20 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: no photo set prints nothing
+============================================================
+width: 0.0pt
+============================================================
+============================================================
+TEST 2: missing photo warns and is skipped
+============================================================
+Package vitae Warning: Photo 'nosuchphoto' not found; skipped.
+width: 0.0pt
+============================================================
+============================================================
+TEST 3: photo found without extension, scaled to photowidth
+============================================================
+File: example-image-a.pdf Graphic file (type pdf)
+<use example-image-a.pdf>
+width: 56.9055pt
+============================================================

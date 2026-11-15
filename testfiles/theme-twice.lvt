@@ -1,0 +1,14 @@
+% Theme loading order: user keys beat theme defaults; repeated \usetheme.
+\documentclass{vitae}
+\input{regression-test}
+% Set before the theme; classic's own default (black) must not win.
+\vitaesetup{accent=red}
+\usetheme{classic}
+\START
+\extractcolorspecs{vitaeaccent}{\model}{\spec}
+\TYPE{accent after theme: \model/\spec}
+\TYPE{same theme again (silent):}
+\usetheme{classic}
+\TYPE{different theme (error):}
+\usetheme{modern}
+\END

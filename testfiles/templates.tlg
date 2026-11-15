@@ -1,0 +1,36 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: unknown template is an error
+============================================================
+! Package vitae Error: Unknown template 'nosuchtemplate'.
+Type <return> to continue.
+ ...                                              
+l. ...}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+============================================================
+============================================================
+TEST 2: \section uses the section template (starred too)
+============================================================
+section=[Lorem]
+section=[Ipsum]
+============================================================
+============================================================
+TEST 3: \makeheader without a name warns
+============================================================
+Package vitae Warning: No name set; use \name{First}{Last}.
+header
+============================================================
+============================================================
+TEST 4: \makeheader with only a name is silent
+============================================================
+header: Jane/
+============================================================
+============================================================
+TEST 5: template overrides are scoped like any definition
+============================================================
+inner
+outer
+============================================================

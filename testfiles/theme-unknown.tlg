@@ -1,0 +1,9 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+! Package vitae Error: Theme 'nosuchtheme' not found (no file vitaethemenosuchtheme.sty).
+Type <return> to continue.
+ ...                                              
+l. ...\usetheme{nosuchtheme}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.

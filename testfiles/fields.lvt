@@ -1,0 +1,54 @@
+% Personal fields: setters, getters, \ifvitaeset, verbatim special characters.
+\documentclass{vitae}
+\input{regression-test}
+\START
+
+\TEST{unset fields are empty}{
+  \TYPE{[\thefirstname][\theemail]}
+  \TYPE{\ifvitaeset{email}{set}{unset}}
+}
+
+\TEST{\name sets first and last name}{
+  \name{Jane}{Doe}
+  \TYPE{[\thefirstname][\thelastname]}
+}
+
+\TEST{text fields keep TeX material}{
+  \jobtitle{Lorem \& Ipsum}
+  \TYPE{\thejobtitle}
+}
+
+\TEST{string fields take underscore, ampersand, tilde, hash raw}{
+  \email{jane_doe+cv@example.com}
+  \homepage{example.com/~jane/a_b?q=1&r=2#top}
+  \TYPE{\theemail}
+  \TYPE{\thehomepage}
+}
+
+\TEST{string fields unescape \_ \& \# \%}{
+  \homepage{example.com/a\_b?q=1\&r=\%20\#top}
+  \TYPE{\thehomepage}
+}
+
+\TEST{setters work inside macros and arguments}{
+  \newcommand\mydata{\github{jdoe-example}}
+  \mydata
+  \TYPE{\thegithub}
+}
+
+\TEST{blank value counts as unset}{
+  \phone{ }
+  \TYPE{\ifvitaeset{phone}{set}{unset}}
+}
+
+\TEST{last assignment wins}{
+  \github{first}
+  \github{second}
+  \TYPE{\thegithub}
+}
+
+\TEST{unknown field in \ifvitaeset is an error}{
+  \TYPE{\ifvitaeset{nosuchfield}{set}{unset}}
+}
+
+\END

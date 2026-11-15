@@ -31,4 +31,4 @@ jobs:
           generate_release_notes: true
           files: |
             build/distrib/ctan/vitae-ctan.zip
-            build/examples/pdf/*.pdf
+            build/examples/pdf/theme-*.pdf

@@ -1,0 +1,33 @@
+% Templates: overriding, unknown names, sections, header warning.
+\documentclass{vitae}
+\input{regression-test}
+\START
+
+\TEST{unknown template is an error}{
+  \settemplate{nosuchtemplate}{}
+}
+
+\TEST{\section uses the section template (starred too)}{
+  \settemplate{section}{\TYPE{section=[\field{title}]}}
+  \section{Lorem}
+  \section*{Ipsum}
+}
+
+\TEST{\makeheader without a name warns}{
+  \settemplate{header}{\TYPE{header}}
+  \makeheader
+}
+
+\TEST{\makeheader with only a name is silent}{
+  \settemplate{header}{\TYPE{header: \thefirstname/\thelastname}}
+  \name{Jane}{}
+  \makeheader
+}
+
+\TEST{template overrides are scoped like any definition}{
+  \settemplate{item}{\TYPE{outer}}
+  {\settemplate{item}{\TYPE{inner}}\cvitem{}{}}
+  \cvitem{}{}
+}
+
+\END

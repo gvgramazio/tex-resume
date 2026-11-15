@@ -30,3 +30,10 @@ When a test fails, the diff is in `build/test/<name>.<engine>.diff`.
 3. If an engine's output legitimately differs, run `l3build save -e <engine> <name>`. That creates `<name>.<engine>.tlg`.
 
 If a `.tlg` changes, the change must be intended. Explain it in the commit message.
+
+## Pitfalls
+- **Probe templates:** test class logic by redefining a template to log its fields, e.g. `\settemplate{entry}{\TYPE{[\field{title}][\field{dates}]}}`. That keeps tests independent of themes and engines.
+- **Groups:** `\TEST{...}{...}` wraps its code in a group, so `\usetheme` (which loads a package) must run at the top level, between `\START` and `\END`.
+- **Date separator:** the default `\,` expands into noise in `\TYPE`. Set `\vitaesetup{datesep=--}` in the test preamble.
+- **Engine differences:** graphics and fonts log differently per engine. Keep those tests in a separate file and save `<name>.<engine>.tlg` for each engine.
+- **Layout** (fonts, spacing, page breaks) is covered by `examples/stress-*.tex` built with `scripts/build.sh -s`, not by l3build.

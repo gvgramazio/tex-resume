@@ -1,0 +1,10 @@
+% Stress test for the modern theme (edge cases from data/stress.tex).
+\documentclass{vitae}
+\usetheme{modern}
+\input{data/stress}
+
+\begin{document}
+\makeheader
+\printentries[Edge Cases]{odd}
+\printentries[Page Breaks]{many}
+\end{document}

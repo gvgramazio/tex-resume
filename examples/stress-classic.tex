@@ -1,0 +1,10 @@
+% Stress test for the classic theme (edge cases from data/stress.tex).
+\documentclass{vitae}
+\usetheme{classic}
+\input{data/stress}
+
+\begin{document}
+\makeheader
+\printentries[Edge Cases]{odd}
+\printentries[Page Breaks]{many}
+\end{document}

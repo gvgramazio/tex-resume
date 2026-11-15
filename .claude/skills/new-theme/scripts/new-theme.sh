@@ -10,36 +10,21 @@ case $name in *[!a-z]*) echo "theme name must be [a-z]+" >&2; exit 2 ;; esac
 
 src="src/vitaetheme$base.sty"
 sty="src/vitaetheme$name.sty"
-ex="examples/theme-$name.tex"
-lvt="testfiles/theme-$name.lvt"
 [ -f "$src" ] || { echo "base theme not found: $src" >&2; exit 1; }
-for f in "$sty" "$ex" "$lvt"; do
+for f in "$sty" "examples/theme-$name.tex" "examples/stress-$name.tex"; do
   [ ! -e "$f" ] || { echo "already exists: $f" >&2; exit 1; }
 done
 
-# Theme file: rename the package, keep everything else as a starting point.
-sed "s/vitaetheme$base/vitaetheme$name/g" "$src" >"$sty"
+# Theme file: rename the package and its internal prefix, keep the rest.
+sed -e "s/vitaetheme$base/vitaetheme$name/g" \
+    -e "s/vitae $base theme/vitae $name theme/" \
+    -e "s/__vitae_${base}_/__vitae_${name}_/g" "$src" >"$sty"
 
-# Example: reuse the base theme's example if present, else a minimal one.
-if [ -f "examples/theme-$base.tex" ]; then
-  sed "s/\\\\usetheme{$base}/\\\\usetheme{$name}/" "examples/theme-$base.tex" >"$ex"
-else
-  printf '%% Example for the %s theme (dummy content only).\n\\documentclass{vitae}\n\\usetheme{%s}\n\\name{Jane}{Doe}\n\\begin{document}\n\\makeheader\n\\end{document}\n' "$name" "$name" >"$ex"
-fi
+# Examples: the base theme's showcase and stress test, switched over.
+for kind in theme stress; do
+  sed -e "s/\\\\usetheme{$base}/\\\\usetheme{$name}/" \
+      -e "s/the $base theme/the $name theme/" \
+      "examples/$kind-$base.tex" >"examples/$kind-$name.tex"
+done
 
-# Test: the theme loads and typesets a header and an entry.
-cat >"$lvt" <<EOF
-% Theme $name: loads and typesets a header and an entry without errors.
-\\documentclass{vitae}
-\\usetheme{$name}
-\\input{regression-test}
-\\name{Jane}{Doe}
-\\begin{document}
-\\START
-\\makeheader
-\\cventry{title=Lorem, org=Ipsum, start=2020, end=2021}{Dolor sit amet.}
-\\TYPE{theme $name ok}
-\\END
-EOF
-
-echo "created: $sty $ex $lvt"
+echo "created: $sty examples/theme-$name.tex examples/stress-$name.tex"

@@ -31,12 +31,13 @@ for e in $engines; do
     lua) flag=-lualatex ;;
     *)   echo "unknown engine: $e" >&2; exit 2 ;;
   esac
-  out="build/examples/$e"
+  out="$PWD/build/examples/$e"
   mkdir -p "$out"
   for f in "$@"; do
     name=$(basename "$f" .tex)
     log="$out/$name.log"
-    if latexmk "$flag" -silent -interaction=nonstopmode -halt-on-error \
+    # -cd: run from the file's directory so relative \input paths resolve.
+    if latexmk "$flag" -cd -silent -interaction=nonstopmode -halt-on-error \
         -file-line-error -outdir="$out" "$f" >/dev/null 2>&1; then
       # Warnings are listed always; in strict mode they also fail the build.
       if grep -nE "Warning|Overfull" "$log" >"$out/$name.warnings"; then

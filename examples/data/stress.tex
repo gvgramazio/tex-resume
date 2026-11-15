@@ -1,0 +1,38 @@
+% Edge-case data shared by the stress examples (fictional, lorem ipsum).
+% Built in strict mode: any warning or overfull box fails the build.
+% auto-lang=false: no switch to Latin hyphenation (not installed everywhere).
+\usepackage[auto-lang=false]{lipsum}
+
+% --- Identity: non-ASCII name, long title, every contact kind -------------
+\name{Zoë}{Łukasiewicz-Østergaard}
+\jobtitle{Principal Lorem Ipsum Engineer and Dolor Sit Amet Consultant}
+\email{zoe_l-o+cv@example.com}
+\phone{+00 (0)00 000 00 00}
+\address{Ünterstraße 1, 00000 Springfield, Exampleland}
+\homepage{example.com/~zoe/cv\#top}
+\linkedin{zoe-example}
+\github{zoe-example}
+\orcid{0000-0000-0000-0000}
+\addcontact[https://example.org/blog]{\faRss}{example.org/blog}
+\addcontact{\faCar}{Driving licence B}
+
+% --- Entries with missing or unusual fields -------------------------------
+\addentry{odd}{title=A Very Long Position Title That Keeps Going and Going
+  Until It Needs to Wrap Onto a Second Line, org=Lorem Ipsum, start=2020}{}
+\addentry{odd}{org=Only an Organisation, location=Somewhere}{}
+\addentry{odd}{location=Only a Location}{}
+\addentry{odd}{date=2019}{Only a date and a body.}
+\addentry{odd}{}{Only a body, no fields at all.}
+\addentry{odd}{title=Same Start and End, start=2018, end=2018}{}
+\addentry{odd}{title=Ampersand \& Percent 100\,\%, org={Comma, Inc.}}{}
+\additem{odd}{An Unusually Long Item Label}{\lipsum[1][1-2]}
+\additem{odd}{}{Item without a label.}
+
+% --- Enough entries to force page breaks ----------------------------------
+\ExplSyntaxOn
+\int_step_inline:nn { 12 }
+  {
+    \addentry { many } { title = Position~#1 , org = Company~#1 ,
+      location = City~#1 , start = 20#1 } { \lipsum [#1] [1-3] }
+  }
+\ExplSyntaxOff
