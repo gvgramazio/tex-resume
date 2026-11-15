@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Entry styles: `compact` and `inline` alongside the default `full`, chosen
+  per list (`\printentries[style=…]`) or per entry (`style` key). Users can
+  override them or define new ones with `\settemplate{entry/<name>}`.
+- `\printentries` options as key=value (`heading`, `style`); a plain
+  heading still works.
+- Template helpers `\joinfields`, `\ifanyfield` and `\addpunct`.
 - `parskip` setting: space between paragraphs of free text and of entry and
   item bodies (default `0.5\baselineskip plus 2pt`; `0pt` disables it).
 
