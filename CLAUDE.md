@@ -5,7 +5,7 @@
 ## Layout
 - `src/`: `vitae.cls` and the themes. Only these files are shipped.
 - `testfiles/`: l3build regression tests (`.lvt` input, `.tlg` expected log).
-- `examples/`: compilable demo documents, all built in CI.
+- `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `stress-*` (layout edge cases), plus shared data in `examples/data/`.
 - `scripts/build.sh`: compiles the examples (used by both CI and the `build` skill).
 - `.claude/skills/`: `build`, `test`, `new-theme`, `release`.
 
