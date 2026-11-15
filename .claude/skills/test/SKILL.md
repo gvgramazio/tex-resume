@@ -35,5 +35,8 @@ If a `.tlg` changes, the change must be intended. Explain it in the commit messa
 - **Probe templates:** test class logic by redefining a template to log its fields, e.g. `\settemplate{entry}{\TYPE{[\field{title}][\field{dates}]}}`. That keeps tests independent of themes and engines.
 - **Groups:** `\TEST{...}{...}` wraps its code in a group, so `\usetheme` (which loads a package) must run at the top level, between `\START` and `\END`.
 - **Date separator:** the default `\,` expands into noise in `\TYPE`. Set `\vitaesetup{datesep=--}` in the test preamble.
+- **Robust commands in output:** `\TYPE` breaks on robust commands such as `\textit` or `\textsuperscript` ("Unbalanced write"). Use `\typeout` for those lines.
+- **Masked dates:** l3build masks anything shaped like `YYYY-MM-DD` in logs as `....-..-..`. The shape is still compared, but prefer `YYYY-MM` inputs when the digits matter.
+- **Non-ASCII output:** pdfTeX logs UTF-8 bytes (`^^c3^^a4`), while XeTeX and LuaTeX log code points (`^^e4`). Save `<name>.xetex.tlg` and `<name>.luatex.tlg`.
 - **Engine differences:** graphics and fonts log differently per engine. Keep those tests in a separate file and save `<name>.<engine>.tlg` for each engine.
 - **Layout** (fonts, spacing, page breaks) is covered by `examples/stress-*.tex` built with `scripts/build.sh -s`, not by l3build.
