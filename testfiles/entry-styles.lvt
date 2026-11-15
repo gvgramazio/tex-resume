@@ -1,0 +1,82 @@
+% Entry styles: template dispatch, \printentries options, custom styles,
+% and the template helpers \joinfields, \ifanyfield and \addpunct.
+\documentclass{vitae}
+\input{regression-test}
+% Compare the widths of two horizontal boxes (font independent).
+\newcommand\samewidth[3]{% #1 label, #2 and #3 material
+  \setbox0\hbox{#2}\setbox2\hbox{#3}%
+  \TYPE{#1: \ifdim\wd0=\wd2 same\else different\fi}}
+\begin{document}
+% Probe templates, set after the default theme has loaded.
+\settemplate{section}{\TYPE{section=[\field{title}]}}
+\settemplate{entry}{\TYPE{full: \field{title}}}
+\settemplate{entry/compact}{\TYPE{compact: \field{title}}}
+\settemplate{entry/inline}{\TYPE{inline: \field{title}}}
+\START
+
+\TEST{style key picks the template}{
+  \cventry{title=A}{}
+  \cventry{title=B, style=full}{}
+  \cventry{title=C, style=compact}{}
+  \cventry{title=D, style=inline}{}
+}
+
+\TEST{\printentries: plain heading, key=value, style only}{
+  \addentry{list}{title=One}{}
+  \addentry{list}{title=Two, style=inline}{}
+  \printentries[Plain Heading]{list}
+  \printentries[heading=Keyed, style=compact]{list}
+  \printentries[style=compact]{list}
+  \printentries[heading={Lorem, Ipsum}]{list}
+}
+
+\TEST{the list style does not leak}{
+  \printentries[style=compact]{list}
+  \cventry{title=After}{}
+}
+
+\TEST{empty list with options warns, no heading}{
+  \printentries[heading=Nothing, style=compact]{nosuchlist}
+}
+
+\TEST{unknown style warns once and falls back}{
+  \cventry{title=X, style=fancy}{}
+  \cventry{title=Y, style=fancy}{}
+}
+
+\TEST{users can define new styles; other unknown templates still error}{
+  \settemplate{entry/publication}{\TYPE{publication: \field{title}}}
+  \cventry{title=Paper, style=publication}{}
+  \settemplate{nosuch/thing}{}
+}
+
+\TEST{\ifanyfield}{
+  \settemplate{entry}{\TYPE{\ifanyfield{title, org}{some}{none}
+    \ifanyfield{org, location}{some}{none}}}
+  \cventry{title=T}{}
+}
+
+\TEST{\joinfields: set fields only, formats, separators}{
+  \settemplate{entry}{%
+    \samewidth{all}{\joinfields{, }{title=\textbf, org, location}}{\textbf{T}, O, L}}
+  \cventry{title=T, org=O, location=L}{}
+  \settemplate{entry}{%
+    \samewidth{gap}{\joinfields{, }{title=\textbf, org, location}}{\textbf{T}, L}%
+    \samewidth{none}{\joinfields{, }{org}}{}}
+  \cventry{title=T, location=L}{}
+}
+
+\TEST{\joinfields with an unknown field is an error}{
+  \settemplate{entry}{\setbox0\hbox{\joinfields{, }{nosuchfield}}}
+  \cventry{}{}
+}
+
+\TEST{\addpunct}{
+  \samewidth{after word}{2019\addpunct{.}}{2019.}
+  \samewidth{after period}{Inc.\addpunct{.}}{Inc.}
+  \samewidth{after italic period}{\textit{Inc.}\addpunct{.}}{\textit{Inc.}}
+  \samewidth{after parenthesis}{(2019)\addpunct{.}}{(2019).}
+  \setbox0\vbox{\addpunct{.}}\TYPE{vertical mode: \the\ht0}
+}
+
+\END

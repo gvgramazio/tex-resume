@@ -30,7 +30,7 @@
 \pagestyle { empty }
 
 % --- Variants -------------------------------------------------------------
-\prg_generate_conditional_variant:Nnn \tl_if_blank:n { v } { T , F , TF }
+\prg_generate_conditional_variant:Nnn \tl_if_blank:n { v , e } { T , F , TF }
 \cs_generate_variant:Nn \msg_warning:nnn { nnV }
 \cs_generate_variant:Nn \msg_error:nnnn { nnVn }
 
@@ -42,6 +42,8 @@
 \msg_new:nnn { vitae } { second-theme }
   { Theme~'#1'~already~loaded;~'#2'~ignored. }
 \msg_new:nnn { vitae } { empty-list } { List~'#1'~is~empty~or~undefined. }
+\msg_new:nnn { vitae } { unknown-style }
+  { Entry~style~'#1'~has~no~template~'entry/#1';~the~default~is~used. }
 \msg_new:nnn { vitae } { photo-missing } { Photo~'#1'~not~found;~skipped. }
 \msg_new:nnn { vitae } { no-name }
   { No~name~set;~use~\iow_char:N\\name{First}{Last}. }
@@ -139,6 +141,42 @@
     \tl_if_exist:cTF { l__vitae_f_#1_tl }
       { \tl_if_blank:vTF { l__vitae_f_#1_tl } {#3} {#2} }
       { \msg_expandable_error:nnn { vitae } { unknown-field } {#1} }
+  }
+% \ifanyfield{<field>, ...}{<true>}{<false>}: is any of the fields set?
+\cs_new:Npn \__vitae_any_field:n #1 { \iffield {#1} { x } { } }
+\NewExpandableDocumentCommand \ifanyfield { m +m +m }
+  {
+    \tl_if_blank:eTF { \clist_map_function:nN {#1} \__vitae_any_field:n }
+      {#3} {#2}
+  }
+% \addpunct{<p>}: <p>, unless no text precedes it or the text already ends
+% in sentence punctuation (space factor above 1000, as amsthm's \@addpunct).
+\NewDocumentCommand \addpunct { m }
+  {
+    \mode_if_horizontal:T
+      { \int_compare:nNnF { \tex_spacefactor:D } > { 1000 } {#1} }
+  }
+% \joinfields{<sep>}{<field>, <field>=<format>, ...}: the fields that are
+% set, in order, each wrapped in its optional one-argument <format> (e.g.
+% \textbf), separated by <sep>. Blank fields leave no stray separator.
+\seq_new:N \l__vitae_join_seq
+\cs_new_protected:Npn \__vitae_join_add:nn #1#2
+  {
+    \tl_if_exist:cTF { l__vitae_f_#1_tl }
+      {
+        \tl_if_blank:vF { l__vitae_f_#1_tl }
+          { \seq_put_right:Nn \l__vitae_join_seq { #2 { \field {#1} } } }
+      }
+      { \msg_error:nnn { vitae } { unknown-field } {#1} }
+  }
+\cs_new_protected:Npn \__vitae_join_plain:n #1 { \__vitae_join_add:nn {#1} { } }
+\NewDocumentCommand \joinfields { m m }
+  {
+    \group_begin:
+      \seq_clear:N \l__vitae_join_seq
+      \keyval_parse:NNn \__vitae_join_plain:n \__vitae_join_add:nn {#2}
+      \seq_use:Nn \l__vitae_join_seq {#1}
+    \group_end:
   }
 
 % --- Dates ----------------------------------------------------------------
@@ -393,9 +431,12 @@
 % A template is a parameterless macro \__vitae_template_<name>:. The class
 % ships plain defaults; themes and users replace them via \settemplate.
 \cs_new_protected:Npn \__vitae_template_use:n #1 { \use:c { __vitae_template_#1: } }
+% Any "entry/<style>" name may be defined, which creates a new entry style.
 \NewDocumentCommand \settemplate { m +m }
   {
-    \cs_if_exist:cTF { __vitae_template_#1: }
+    \bool_lazy_or:nnTF
+      { \cs_if_exist_p:c { __vitae_template_#1: } }
+      { \str_if_eq_p:ee { \str_range:nnn {#1} { 1 } { 6 } } { entry/ } }
       { \cs_set_protected:cpn { __vitae_template_#1: } {#2} }
       { \msg_error:nnn { vitae } { unknown-template } {#1} }
   }
@@ -418,6 +459,26 @@
     \iffield { org } { \field { org } \iffield { location } { , ~ \field { location } } { } \par } { }
     \iffield { body } { \field { body } \par } { }
     \medskip
+  }
+% Entry styles: "entry/<style>" templates, chosen with the style key.
+\cs_new_protected:cpn { __vitae_template_entry/compact: }
+  {
+    \par \joinfields { , ~ } { title = \textbf , org , location } \hfill \field { dates } \par
+    \iffield { body } { \field { body } \par } { }
+    \smallskip
+  }
+\cs_new_protected:cpn { __vitae_template_entry/inline: }
+  {
+    \par
+    \ifanyfield { title , org , location }
+      {
+        \joinfields { , ~ } { title = \textbf , org , location }
+        \iffield { dates } { ~ ( \field { dates } ) } { }
+      }
+      { \field { dates } }
+    \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }
+    \field { body } \par
+    \smallskip
   }
 \cs_new_protected:cpn { __vitae_template_item: }
   { \par \textbf { \field { label } } : ~ \field { body } \par }
@@ -548,6 +609,7 @@
     \tl_replace_all:Nnn \l__vitae_f_body_tl { \par } { \__vitae_par: }
   }
 % Entry fields are set by keys; "date" sets start and end at once.
+\tl_new:N \l__vitae_entry_style_tl
 \keys_define:nn { vitae / entry }
   {
     title    .tl_set:N = \l__vitae_f_title_tl ,
@@ -556,6 +618,8 @@
     start    .tl_set:N = \l__vitae_f_start_tl ,
     end      .tl_set:N = \l__vitae_f_end_tl ,
     date     .meta:n   = { start = {#1} , end = {#1} } ,
+    % Layout for this entry: template "entry/<style>" ("full" = "entry").
+    style    .tl_set:N = \l__vitae_entry_style_tl ,
     % Date settings for this entry only (the entry is a group).
     dateformat .meta:nn = { vitae / setup } { dateformat = {#1} } ,
     datelocale .meta:nn = { vitae / setup } { datelocale = {#1} } ,
@@ -578,8 +642,31 @@
                 { \exp_not:V \l__vitae_f_end_tl }
             }
         }
-      \__vitae_template_use:n { entry }
+      \__vitae_entry_template:
     \group_end:
+  }
+% The template for the current style: "entry" if blank or "full", else
+% "entry/<style>". A style without a template warns once per style and
+% falls back to "entry".
+\clist_new:N \g__vitae_warned_styles_clist
+\cs_new_protected:Npn \__vitae_entry_template:
+  {
+    \bool_lazy_or:nnTF
+      { \tl_if_blank_p:V \l__vitae_entry_style_tl }
+      { \str_if_eq_p:Vn \l__vitae_entry_style_tl { full } }
+      { \__vitae_template_use:n { entry } }
+      {
+        \cs_if_exist:cTF { __vitae_template_entry/ \l__vitae_entry_style_tl : }
+          { \__vitae_template_use:n { entry/ \l__vitae_entry_style_tl } }
+          {
+            \clist_if_in:NVF \g__vitae_warned_styles_clist \l__vitae_entry_style_tl
+              {
+                \clist_gput_right:NV \g__vitae_warned_styles_clist \l__vitae_entry_style_tl
+                \msg_warning:nnV { vitae } { unknown-style } \l__vitae_entry_style_tl
+              }
+            \__vitae_template_use:n { entry }
+          }
+      }
   }
 % \cvitem{<label>}{<text>}: a one-line item (skills, languages, ...).
 \NewDocumentCommand \cvitem { m +m }
@@ -601,18 +688,35 @@
   }
 \NewDocumentCommand \addentry { m m +m } { \__vitae_list_put:nn {#1} { \cventry {#2} {#3} } }
 \NewDocumentCommand \additem { m m +m } { \__vitae_list_put:nn {#1} { \cvitem {#2} {#3} } }
-% \printentries[<heading>]{<list>}: the heading appears only if the list
-% has content; an empty or undefined list warns and prints nothing.
+% \printentries[<options>]{<list>}: options are key=value (heading,
+% style); without any "=" the whole argument is the heading. The heading
+% appears only if the list has content; an empty or undefined list warns
+% and prints nothing. Options are local to this call.
+\tl_new:N \l__vitae_print_heading_tl
+\keys_define:nn { vitae / print }
+  {
+    heading .tl_set:N = \l__vitae_print_heading_tl ,
+    style   .tl_set:N = \l__vitae_entry_style_tl ,
+  }
 \NewDocumentCommand \printentries { o m }
   {
-    \bool_lazy_and:nnTF
-      { \seq_if_exist_p:c { g__vitae_list_#2_seq } }
-      { ! \seq_if_empty_p:c { g__vitae_list_#2_seq } }
-      {
-        \IfValueT {#1} { \section {#1} }
-        \seq_use:cn { g__vitae_list_#2_seq } { }
-      }
-      { \msg_warning:nnn { vitae } { empty-list } {#2} }
+    \group_begin:
+      \IfValueT {#1}
+        {
+          \tl_if_in:nnTF {#1} { = }
+            { \keys_set:nn { vitae / print } {#1} }
+            { \tl_set:Nn \l__vitae_print_heading_tl {#1} }
+        }
+      \bool_lazy_and:nnTF
+        { \seq_if_exist_p:c { g__vitae_list_#2_seq } }
+        { ! \seq_if_empty_p:c { g__vitae_list_#2_seq } }
+        {
+          \tl_if_blank:VF \l__vitae_print_heading_tl
+            { \exp_args:NV \section \l__vitae_print_heading_tl }
+          \seq_use:cn { g__vitae_list_#2_seq } { }
+        }
+        { \msg_warning:nnn { vitae } { empty-list } {#2} }
+    \group_end:
   }
 
 % --- Themes ---------------------------------------------------------------
