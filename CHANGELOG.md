@@ -3,6 +3,24 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Added
+- ISO dates (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`) are formatted by `\formatdate` and
+  `\daterange`. Any other text is printed unchanged.
+- `dateformat` setting: `long` (default), `short`, `numeric`, `iso` or `year`. It applies
+  to the whole document, to a group, or to a single entry (as an entry key).
+- Localised date formats that follow babel or polyglossia, with the built-in locales
+  `english`, `british`, `italian`, `german`, `french` and `spanish`.
+  `datelocale` forces a locale, and `\vitaedatelocale` defines new ones.
+- `examples/dates.tex`, plus date edge cases in the stress examples.
+
+### Changed
+- `2020-03`-style dates now print as "March 2020" (or in the chosen style)
+  instead of verbatim.
+- "Present" follows the locale unless `present` is set.
+- The default date separator allows a line break after the dash.
+- `modern`: a date label that wraps no longer leaves a gap in the entry,
+  and a label taller than its body no longer overlaps the next entry.
+
 
 ## [0.1.0] - 2026-11-15
 ### Added

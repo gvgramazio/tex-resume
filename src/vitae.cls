@@ -58,9 +58,8 @@
   {
     accent     .code:n    = \colorlet { vitaeaccent } {#1} ,
     present    .tl_set:N  = \l__vitae_present_tl ,
-    present    .initial:n = Present ,
     datesep    .tl_set:N  = \l__vitae_datesep_tl ,
-    datesep    .initial:n = \,--\, ,
+    datesep    .initial:n = \,--\allowbreak\, ,  % may break after the dash
     photowidth .dim_set:N = \vitaephotowidth ,
     photowidth .initial:n = 2.5cm ,
   }
@@ -134,10 +133,124 @@
   }
 
 % --- Dates ----------------------------------------------------------------
-% Dates are plain strings for now; \formatdate is the single hook where ISO
-% parsing and output styles will plug in. Both commands are expandable.
-\NewExpandableDocumentCommand \formatdate { m } {#1}
-% \daterange{<start>}{<end>}: "s -- e", "s -- Present" if no end, a single
+% \formatdate{<d>} renders ISO dates (YYYY, YYYY-MM, YYYY-MM-DD) in the
+% current style and locale; anything else is returned unchanged. Style and
+% locale are local settings: a group limits them to part of the document.
+% Everything in this section is expandable unless noted.
+\tl_new:N \l__vitae_date_style_tl
+\tl_new:N \l__vitae_date_locale_tl
+\msg_new:nnn { vitae } { unknown-date-locale }
+  {
+    No~date~locale~'#1';~English~is~used.~
+    Define~one~with~\iow_char:N\\vitaedatelocale.
+  }
+\keys_define:nn { vitae / setup }
+  {
+    dateformat .choices:nn =
+      { long , short , numeric , iso , year }
+      { \tl_set:Nn \l__vitae_date_style_tl {#1} } ,
+    dateformat .initial:n = long ,
+    % Empty (default): follow \languagename (babel/polyglossia).
+    datelocale .code:n =
+      {
+        \tl_set:Nn \l__vitae_date_locale_tl {#1}
+        \tl_if_blank:nF {#1}
+          {
+            \tl_if_exist:cF { g__vitae_date_alias_#1_tl }
+              { \msg_warning:nnn { vitae } { unknown-date-locale } {#1} }
+          }
+      } ,
+  }
+
+% \__vitae_if_digits:nn {<n>} {<text>}: exactly <n> ASCII digits?
+\prg_new_conditional:Npnn \__vitae_if_digits:nn #1#2 { p }
+  {
+    \bool_lazy_and:nnTF
+      { \int_compare_p:nNn { \str_count:n {#2} } = {#1} }
+      { \str_if_eq_p:ee { \str_map_function:nN {#2} \__vitae_nondigit:n } { } }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+\cs_new:Npn \__vitae_nondigit:n #1
+  { \str_case:nnF {#1} { {0}{} {1}{} {2}{} {3}{} {4}{} {5}{} {6}{} {7}{} {8}{} {9}{} } { x } }
+% \__vitae_if_part:nn {<max>} {<text>}: two digits between 01 and <max>?
+\prg_new_conditional:Npnn \__vitae_if_part:nn #1#2 { p }
+  {
+    \bool_lazy_and:nnTF
+      { \__vitae_if_digits_p:nn { 2 } {#2} }
+      { \int_compare_p:n { 1 <= #2 <= #1 } }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+
+% Parsing: the input as a string (so active characters cannot interfere) is
+% split at "-" and accepted only if it rebuilds exactly as YYYY[-MM[-DD]].
+\NewExpandableDocumentCommand \formatdate { m }
+  { \tl_trim_spaces_apply:nN {#1} \__vitae_date_format:n }
+\cs_new:Npn \__vitae_date_format:n #1
+  { \exp_args:Ne \__vitae_date_parse:nn { \tl_to_str:n {#1} } {#1} }
+\cs_new:Npn \__vitae_date_parse:nn #1#2 { \__vitae_date_split:w #1 - - - \q_stop {#2} }
+\cs_new:Npn \__vitae_date_split:w #1 - #2 - #3 - #4 \q_stop #5
+  {
+    \bool_lazy_all:nTF
+      {
+        { \__vitae_if_digits_p:nn { 4 } {#1} }
+        { \bool_lazy_or_p:nn { \tl_if_blank_p:n {#2} } { \__vitae_if_part_p:nn { 12 } {#2} } }
+        { \bool_lazy_or_p:nn { \tl_if_blank_p:n {#3} } { \__vitae_if_part_p:nn { 31 } {#3} } }
+        {
+          \str_if_eq_p:ee { \tl_to_str:n {#5} }
+            { #1 \tl_if_blank:nF {#2} { - #2 \tl_if_blank:nF {#3} { - #3 } } }
+        }
+      }
+      { \__vitae_date_render:nnn {#1} {#2} {#3} }
+      {#5}
+  }
+
+% Rendering: a year alone is always the year; otherwise the style decides.
+\cs_new:Npn \__vitae_date_render:nnn #1#2#3
+  {
+    \tl_if_blank:nTF {#2} {#1}
+      { \use:c { __vitae_date_style_ \l__vitae_date_style_tl :nnn } {#1} {#2} {#3} }
+  }
+\cs_new:Npn \__vitae_date_style_iso:nnn #1#2#3
+  { #1 - #2 \tl_if_blank:nF {#3} { - #3 } }
+\cs_new:Npn \__vitae_date_style_year:nnn #1#2#3 {#1}
+\cs_new:Npn \__vitae_date_style_long:nnn { \__vitae_date_named:nnnn { months } }
+\cs_new:Npn \__vitae_date_style_short:nnn { \__vitae_date_named:nnnn { short } }
+\cs_new:Npn \__vitae_date_style_numeric:nnn #1#2#3
+  { \__vitae_date_pattern:nnnn { \tl_if_blank:nTF {#3} { nym } { nymd } } {#1} {#2} {#3} }
+% Named styles: month name from list #1, day without leading zero.
+\cs_new:Npn \__vitae_date_named:nnnn #1#2#3#4
+  {
+    \__vitae_date_pattern:nnnn { \tl_if_blank:nTF {#4} { ym } { ymd } } {#2}
+      { \clist_item:cn { g__vitae_date_ \__vitae_date_locale: _#1_clist } {#3} }
+      { \tl_if_blank:nF {#4} { \int_eval:n {#4} } }
+  }
+\cs_new:Npn \__vitae_date_pattern:nnnn #1
+  { \use:c { __vitae_date_ \__vitae_date_locale: _#1:nnn } }
+
+% Current locale: datelocale if set, else \languagename; unknown -> english.
+\cs_new:Npn \__vitae_date_locale:
+  {
+    \exp_args:Ne \__vitae_date_resolve:n
+      {
+        \tl_if_blank:VTF \l__vitae_date_locale_tl
+          { \cs_if_exist:NTF \languagename { \languagename } { english } }
+          { \tl_use:N \l__vitae_date_locale_tl }
+      }
+  }
+\cs_new:Npn \__vitae_date_resolve:n #1
+  {
+    \tl_if_exist:cTF { g__vitae_date_alias_#1_tl }
+      { \tl_use:c { g__vitae_date_alias_#1_tl } } { english }
+  }
+% "Present": the present key if set, else the locale's word.
+\cs_new:Npn \__vitae_date_present:
+  {
+    \tl_if_blank:VTF \l__vitae_present_tl
+      { \tl_use:c { g__vitae_date_ \__vitae_date_locale: _present_tl } }
+      { \tl_use:N \l__vitae_present_tl }
+  }
+
+% \daterange{<start>}{<end>}: "s -- e", "s -- present" if no end, a single
 % date if only one is given or both are equal, nothing if both are blank.
 \NewExpandableDocumentCommand \daterange { m m }
   {
@@ -146,12 +259,125 @@
       {
         \formatdate {#1}
         \tl_if_blank:nTF {#2}
-          { \tl_use:N \l__vitae_datesep_tl \tl_use:N \l__vitae_present_tl }
+          { \tl_use:N \l__vitae_datesep_tl \__vitae_date_present: }
           {
             \str_if_eq:nnF {#1} {#2}
               { \tl_use:N \l__vitae_datesep_tl \formatdate {#2} }
           }
       }
+  }
+
+% --- Date locales ---------------------------------------------------------
+% \vitaedatelocale{<name>}{<keys>} (not expandable) defines a locale,
+% starting from English for any key not given. Patterns get #1 = year,
+% #2 = month (name, or two digits in numeric-*), #3 = day (number, or two
+% digits in numeric-*). "aliases" lists other \languagename values.
+\keys_define:nn { vitae / datelocale }
+  {
+    months      .clist_set:N = \l__vitae_dl_months_clist ,
+    short       .clist_set:N = \l__vitae_dl_short_clist ,
+    present     .tl_set:N    = \l__vitae_dl_present_tl ,
+    aliases     .clist_set:N = \l__vitae_dl_aliases_clist ,
+    ym          .code:n = \cs_set:Npn \__vitae_dl_ym:nnn ##1##2##3 {#1} ,
+    ymd         .code:n = \cs_set:Npn \__vitae_dl_ymd:nnn ##1##2##3 {#1} ,
+    numeric-ym  .code:n = \cs_set:Npn \__vitae_dl_nym:nnn ##1##2##3 {#1} ,
+    numeric-ymd .code:n = \cs_set:Npn \__vitae_dl_nymd:nnn ##1##2##3 {#1} ,
+  }
+\NewDocumentCommand \vitaedatelocale { m m }
+  {
+    \group_begin:
+      \tl_if_exist:cT { g__vitae_date_alias_english_tl }
+        { \__vitae_date_load:n { english } }
+      \clist_clear:N \l__vitae_dl_aliases_clist
+      \keys_set:nn { vitae / datelocale } {#2}
+      \__vitae_date_save:n {#1}
+      \clist_map_inline:Nn \l__vitae_dl_aliases_clist
+        { \tl_gset:cn { g__vitae_date_alias_##1_tl } {#1} }
+      \tl_gset:cn { g__vitae_date_alias_#1_tl } {#1}
+    \group_end:
+  }
+% Stored locale <-> scratch record (\l__vitae_dl_... and \__vitae_dl_...).
+\cs_new_protected:Npn \__vitae_date_load:n #1
+  {
+    \clist_map_inline:nn { months , short }
+      { \clist_set_eq:cc { l__vitae_dl_##1_clist } { g__vitae_date_#1_##1_clist } }
+    \tl_set_eq:Nc \l__vitae_dl_present_tl { g__vitae_date_#1_present_tl }
+    \clist_map_inline:nn { ym , ymd , nym , nymd }
+      { \cs_set_eq:cc { __vitae_dl_##1:nnn } { __vitae_date_#1_##1:nnn } }
+  }
+\cs_new_protected:Npn \__vitae_date_save:n #1
+  {
+    \clist_map_inline:nn { months , short }
+      { \clist_gset_eq:cc { g__vitae_date_#1_##1_clist } { l__vitae_dl_##1_clist } }
+    \tl_gset_eq:cN { g__vitae_date_#1_present_tl } \l__vitae_dl_present_tl
+    \clist_map_inline:nn { ym , ymd , nym , nymd }
+      { \cs_gset_eq:cc { __vitae_date_#1_##1:nnn } { __vitae_dl_##1:nnn } }
+  }
+
+% Built-in locales. English (US order) first: the base for all others.
+\vitaedatelocale { english }
+  {
+    aliases     = { american , USenglish , canadian } ,
+    months      = { January , February , March , April , May , June , July ,
+                    August , September , October , November , December } ,
+    short       = { Jan , Feb , Mar , Apr , May , Jun , Jul , Aug , Sep ,
+                    Oct , Nov , Dec } ,
+    present     = Present ,
+    ym          = { #2 ~ #1 } ,
+    ymd         = { #2 ~ #3 , ~ #1 } ,
+    numeric-ym  = { #2 / #1 } ,
+    numeric-ymd = { #2 / #3 / #1 } ,
+  }
+\vitaedatelocale { british }
+  {
+    aliases     = { UKenglish , australian , newzealand } ,
+    ymd         = { #3 ~ #2 ~ #1 } ,
+    numeric-ymd = { #3 / #2 / #1 } ,
+  }
+\vitaedatelocale { italian }
+  {
+    months      = { gennaio , febbraio , marzo , aprile , maggio , giugno ,
+                    luglio , agosto , settembre , ottobre , novembre , dicembre } ,
+    short       = { gen , feb , mar , apr , mag , giu , lug , ago , set , ott ,
+                    nov , dic } ,
+    present     = presente ,
+    ymd         = { #3 ~ #2 ~ #1 } ,
+    numeric-ymd = { #3 / #2 / #1 } ,
+  }
+\vitaedatelocale { german }
+  {
+    aliases     = { ngerman , austrian , naustrian , swissgerman , nswissgerman } ,
+    months      = { Januar , Februar , März , April , Mai , Juni , Juli ,
+                    August , September , Oktober , November , Dezember } ,
+    short       = { Jan. , Feb. , März , Apr. , Mai , Juni , Juli , Aug. ,
+                    Sept. , Okt. , Nov. , Dez. } ,
+    present     = heute ,
+    ymd         = { #3. ~ #2 ~ #1 } ,
+    numeric-ymd = { #3 . #2 . #1 } ,
+  }
+\vitaedatelocale { french }
+  {
+    aliases     = { francais , frenchb , acadian } ,
+    months      = { janvier , février , mars , avril , mai , juin , juillet ,
+                    août , septembre , octobre , novembre , décembre } ,
+    short       = { janv. , févr. , mars , avr. , mai , juin , juil. , août ,
+                    sept. , oct. , nov. , déc. } ,
+    present     = aujourd'hui ,
+    % The first of the month is "1er". (A ~ starting a line would be lost.)
+    ymd         = { \int_compare:nNnTF {#3} = { 1 } { 1\textsuperscript{er} } {#3} ~
+                    #2 ~ #1 } ,
+    numeric-ymd = { #3 / #2 / #1 } ,
+  }
+\vitaedatelocale { spanish }
+  {
+    months      = { enero , febrero , marzo , abril , mayo , junio , julio ,
+                    agosto , septiembre , octubre , noviembre , diciembre } ,
+    short       = { ene. , feb. , mar. , abr. , may. , jun. , jul. , ago. ,
+                    sept. , oct. , nov. , dic. } ,
+    present     = actualidad ,
+    ym          = { #2 ~ de ~ #1 } ,
+    ymd         = { #3 ~ de ~ #2 ~ de ~ #1 } ,
+    numeric-ymd = { #3 / #2 / #1 } ,
   }
 
 % --- Templates ------------------------------------------------------------
@@ -310,6 +536,9 @@
     start    .tl_set:N = \l__vitae_f_start_tl ,
     end      .tl_set:N = \l__vitae_f_end_tl ,
     date     .meta:n   = { start = {#1} , end = {#1} } ,
+    % Date settings for this entry only (the entry is a group).
+    dateformat .meta:nn = { vitae / setup } { dateformat = {#1} } ,
+    datelocale .meta:nn = { vitae / setup } { datelocale = {#1} } ,
   }
 % \cventry{<keys>}{<body>}: set fields, derive "dates", run the template.
 \NewDocumentCommand \cventry { m +m }
@@ -390,5 +619,13 @@
 \hook_gput_code:nnn { begindocument / before } { vitae }
   {
     \tl_if_empty:NT \g__vitae_theme_tl { \usetheme { classic } }
+    % The main language (babel/polyglossia) should have a date locale.
+    \bool_lazy_and:nnT
+      { \tl_if_blank_p:V \l__vitae_date_locale_tl }
+      { \cs_if_exist_p:N \languagename }
+      {
+        \tl_if_exist:cF { g__vitae_date_alias_ \languagename _tl }
+          { \msg_warning:nnV { vitae } { unknown-date-locale } \languagename }
+      }
     \hypersetup { pdfauthor = { \thefirstname \c_space_tl \thelastname } }
   }

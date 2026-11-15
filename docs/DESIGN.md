@@ -16,7 +16,7 @@ in the same way beamer splits content from themes.
 | F6 | One-line items handle skills, languages and the like: `\cvitem{label}{text}`, `\additem{list}{label}{text}`. |
 | F7 | `\usetheme{name}` loads `vitaetheme<name>.sty`. A default theme is used if none is chosen. |
 | F8 | Themes override named **templates** (`header`, `contact`, `contactsep`, `section`, `entry`, `item`). Users can override a single template with `\settemplate{entry}{…}` without writing a theme. |
-| F9 | Global options go through `\vitaesetup{accent=…, present=…, datesep=…, photowidth=…}` (key–value). User settings take precedence over theme defaults, whatever their order. |
+| F9 | Global options go through `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, photowidth=…}` (key–value). User settings take precedence over theme defaults, whatever their order. |
 
 ### Non-functional
 | ID | Requirement |
@@ -66,7 +66,9 @@ CLAUDE.md             contributor conventions: code style, naming, testing
 `l3build` is the standard LaTeX test harness and comes with TeX Live. It compares each test's log against a reference on every engine, which catches regressions and confirms that the expected errors are raised.
 
 ## 4. Dates
-- `start` and `end` are stored exactly as typed. Templates never print them directly. They always go through `\formatdate{<raw>}`, which currently returns its input unchanged.
-- Ranges are built in a single place, `\daterange`: it prints `start – end`, falls back to `present` when `end` is missing, and prints a single date when start equals end.
-- Future direction: `\vitaesetup{dateformat=iso|long|short|…}` will make `\formatdate` recognize `YYYY[-MM[-DD]]` and render it in the chosen style. Any string that isn't ISO will still pass through unchanged, so existing documents keep compiling.
-- Tests pin today's plain-string output, so a later change to date formatting can't silently alter existing documents.
+- **Input.** `start` and `end` are stored exactly as typed. Templates never print them directly: they always go through `\formatdate`, and ranges through `\daterange`.
+- **Parsing.** `\formatdate` is expandable. It turns its trimmed input into a string, splits it at `-`, and accepts it only if it rebuilds exactly as `YYYY`, `YYYY-MM` (01–12) or `YYYY-MM-DD` (01–31; days aren't checked against the month). Anything else is returned unchanged.
+- **Output.** `dateformat` (`long` | `short` | `numeric` | `iso` | `year`) picks a renderer. A year on its own is always printed as the year. Named styles take the month name from the locale's lists, and the day without its leading zero.
+- **Locales.** Each locale stores month names, short names, a "present" word and four patterns (`ym`, `ymd`, `numeric-ym`, `numeric-ymd`) with `#1` year, `#2` month and `#3` day. The current locale is resolved when a date is formatted, from `datelocale` or else `\languagename`, through an alias table. Unknown locales fall back to English: there is a warning at `\begin{document}` for the main language, and when `datelocale` names one. The built-in locales are defined with the public `\vitaedatelocale`, starting from English, so users extend the class the same way the class does.
+- **Scope.** Style, locale, separator and "present" are local variables. Preamble settings apply to the whole document, settings inside a group apply only to that group, and `dateformat`/`datelocale` entry keys apply to a single entry, because each entry is a group.
+- **Layout.** Localised dates are long, so date columns must cope with labels that wrap. The default separator can break after the dash. The `modern` theme sets its hanging labels at zero depth, so a wrapped label doesn't push the body's lines down. If a label is taller than its body, the theme adds the missing space after the entry.

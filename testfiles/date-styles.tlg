@@ -1,0 +1,63 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: styles (default locale: English)
+============================================================
+default: [2020][March 2020][March 1, 2020][March 2020--Present]
+short: [2020][Mar 2020][Mar 1, 2020][Mar 2020--Present]
+numeric: [2020][03/2020][03/01/2020][03/2020--Present]
+iso: [2020][2020-03][....-..-..][2020-03--Present]
+year: [2020][2020][2020][2020--Present]
+============================================================
+============================================================
+TEST 2: built-in locales, long and numeric
+============================================================
+british: [2020][March 2020][1 March 2020][March 2020--Present]
+italian: [2020][marzo 2020][1 marzo 2020][marzo 2020--presente]
+german: [2020][M^^c3^^a4rz 2020][1. M^^c3^^a4rz 2020][M^^c3^^a4rz 2020--heute]
+french: [2020][mars 2020][1\textsuperscript {er} mars 2020][mars 2020--aujourd'hui][2 ao^^c3^^bbt 2020]
+spanish: [2020][marzo de 2020][1 de marzo de 2020][marzo de 2020--actualidad]
+british: [2020][03/2020][01/03/2020][03/2020--Present]
+german: [2020][03/2020][01.03.2020][03/2020--heute]
+german: [2020][M^^c3^^a4rz 2020][1. M^^c3^^a4rz 2020][M^^c3^^a4rz 2020--heute]
+============================================================
+============================================================
+TEST 3: aliases resolve to their locale
+============================================================
+ngerman: [2020][M^^c3^^a4rz 2020][1. M^^c3^^a4rz 2020][M^^c3^^a4rz 2020--heute]
+UKenglish: [2020][March 2020][1 March 2020][March 2020--Present]
+============================================================
+============================================================
+TEST 4: settings are local to groups
+============================================================
+inside: [2020][2020][2020][2020--presente]
+outside: [2020][March 2020][March 1, 2020][March 2020--Present]
+============================================================
+============================================================
+TEST 5: per-entry dateformat and datelocale
+============================================================
+[A] 03/2020--06/2021
+[B] marzo 2020--presente
+[C] March 2020--Present
+============================================================
+============================================================
+TEST 6: user-defined locale, starting from English
+============================================================
+[2020][March o' 2020][March 1, 2020][March o' 2020--now][March 1, 2020]
+============================================================
+============================================================
+TEST 7: unknown locale warns and falls back to English
+============================================================
+Package vitae Warning: No date locale 'klingon'; English is used. Define one with \vitaedatelocale.
+[2020][March 2020][March 1, 2020][March 2020--Present]
+============================================================
+============================================================
+TEST 8: unknown style is an error
+============================================================
+! LaTeX Error: Key 'vitae/setup/dateformat' accepts only a fixed set of choices.
+For immediate help type H <return>.
+ ...                                              
+l. ...}
+The key 'vitae/setup/dateformat' only accepts predefined values, and 'fancy' is not one of these.
+[2020][March 2020][March 1, 2020][March 2020--Present]
+============================================================
