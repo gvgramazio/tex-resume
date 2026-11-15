@@ -53,6 +53,7 @@
 \tl_new:N \l__vitae_present_tl
 \tl_new:N \l__vitae_datesep_tl
 \dim_new:N \vitaephotowidth
+\skip_new:N \l__vitae_parskip_skip
 \colorlet { vitaeaccent } { black }
 \keys_define:nn { vitae / setup }
   {
@@ -62,6 +63,14 @@
     datesep    .initial:n = \,--\allowbreak\, ,  % may break after the dash
     photowidth .dim_set:N = \vitaephotowidth ,
     photowidth .initial:n = 2.5cm ,
+    % Space between paragraphs: sets \parskip for free text and the space
+    % between paragraphs of entry and item bodies (see \__vitae_par:).
+    parskip    .code:n    =
+      {
+        \skip_set:Nn \l__vitae_parskip_skip {#1}
+        \skip_set_eq:NN \parskip \l__vitae_parskip_skip
+      } ,
+    parskip    .initial:n = 0.5\baselineskip plus 2pt ,
   }
 \NewDocumentCommand \vitaesetup { m }
   {
@@ -513,7 +522,7 @@
       { \tl_if_blank_p:V \g__vitae_field_firstname_tl }
       { \tl_if_blank_p:V \g__vitae_field_lastname_tl }
       { \msg_warning:nn { vitae } { no-name } }
-    \group_begin: \__vitae_template_use:n { header } \group_end:
+    \group_begin: \skip_zero:N \parskip \__vitae_template_use:n { header } \group_end:
   }
 
 % --- Sections -------------------------------------------------------------
@@ -521,12 +530,23 @@
 \RenewDocumentCommand \section { s o m }
   {
     \group_begin:
+      \skip_zero:N \parskip
       \tl_set:Nn \l__vitae_f_title_tl {#3}
       \__vitae_template_use:n { section }
     \group_end:
   }
 
 % --- Entries and items ----------------------------------------------------
+% Structural groups (header, section, entry, item) run with \parskip = 0,
+% so template lines keep their exact spacing whatever the setting. Blank
+% lines in bodies become \__vitae_par:, which adds the configured space
+% explicitly: it also works inside parboxes and lists, which reset \parskip.
+\cs_new_protected:Npn \__vitae_par: { \par \addvspace { \l__vitae_parskip_skip } }
+\cs_new_protected:Npn \__vitae_body_set:n #1
+  {
+    \tl_set:Nn \l__vitae_f_body_tl {#1}
+    \tl_replace_all:Nnn \l__vitae_f_body_tl { \par } { \__vitae_par: }
+  }
 % Entry fields are set by keys; "date" sets start and end at once.
 \keys_define:nn { vitae / entry }
   {
@@ -544,8 +564,9 @@
 \NewDocumentCommand \cventry { m +m }
   {
     \group_begin:
+      \skip_zero:N \parskip
       \keys_set:nn { vitae / entry } {#1}
-      \tl_set:Nn \l__vitae_f_body_tl {#2}
+      \__vitae_body_set:n {#2}
       \bool_lazy_and:nnF
         { \tl_if_blank_p:V \l__vitae_f_start_tl }
         { \tl_if_blank_p:V \l__vitae_f_end_tl }
@@ -564,8 +585,9 @@
 \NewDocumentCommand \cvitem { m +m }
   {
     \group_begin:
+      \skip_zero:N \parskip
       \tl_set:Nn \l__vitae_f_label_tl {#1}
-      \tl_set:Nn \l__vitae_f_body_tl {#2}
+      \__vitae_body_set:n {#2}
       \__vitae_template_use:n { item }
     \group_end:
   }
