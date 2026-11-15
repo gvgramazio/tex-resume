@@ -17,6 +17,7 @@
 - Code must work on pdfLaTeX, XeLaTeX and LuaLaTeX. Keep the engine-specific code (fonts) in themes, behind `\iftutex`.
 - Before you commit, run `l3build check` and `scripts/build.sh -s`. Both must pass.
 - Work on a branch and merge through a PR. CI must be green to merge. Add an entry under *Unreleased* in `CHANGELOG.md`.
+- In workflows, pin third-party actions (anything outside `actions/*` and `github/*`) to a full commit SHA with a `# vX.Y.Z` comment. Dependabot keeps the pins current, and CodeQL flags unpinned tags.
 - Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `docs:`, `test:`, `ci:`, `chore:`, `refactor:`. Mark breaking changes with `feat!:` or a `BREAKING CHANGE:` footer. The commit types determine the next version. Don't use emoji.
 
 ## Code style (all .cls/.sty)
