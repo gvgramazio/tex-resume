@@ -1,0 +1,75 @@
+%% vitaethemeclassic.sty -- vitae theme: serif, centred header, dates right.
+%% Distributed under the MIT license (see LICENSE).
+
+% --- Identification -------------------------------------------------------
+\ProvidesExplPackage{vitaethemeclassic}{2026-11-15}{0.0.0}{vitae classic theme}
+
+% --- Fonts ----------------------------------------------------------------
+% TeX Gyre Pagella: Type 1 on pdfTeX, OpenType (by file name) elsewhere.
+\sys_if_engine_pdftex:TF
+  { \RequirePackage { tgpagella } }
+  {
+    \RequirePackage { fontspec }
+    \setmainfont { texgyrepagella }
+      [
+        Extension      = .otf ,
+        UprightFont    = *-regular ,
+        BoldFont       = *-bold ,
+        ItalicFont     = *-italic ,
+        BoldItalicFont = *-bolditalic ,
+      ]
+  }
+
+% --- Page and lists -------------------------------------------------------
+\RequirePackage { enumitem }
+\setlist { nosep , leftmargin = * , topsep = 2pt }
+% Defaults via \keys_set:nn, not \vitaesetup, so user settings still win.
+\keys_set:nn { vitae / setup } { accent = black }
+
+% --- Templates ------------------------------------------------------------
+% Header: centred small-caps name, job title, contacts on one wrapped line.
+\settemplate { header }
+  {
+    { \centering
+      { \LARGE \scshape \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+      \ifvitaeset { jobtitle } { \smallskip { \large \itshape \thejobtitle \par } } { }
+      \medskip \small \printcontacts \par }
+    \bigskip
+  }
+\settemplate { contact } { \mbox { \field { icon } ~ \field { text } } }
+% Separator vanishes at a line break, so no line starts or ends with a bullet.
+\settemplate { contactsep }
+  { \discretionary { } { } { \kern .6em \textbullet \kern .6em } }
+
+% Section: small-caps title over a full-width rule, kept with what follows.
+\settemplate { section }
+  {
+    \par \addvspace { \bigskipamount }
+    { \large \scshape \color { vitaeaccent } \field { title } \par }
+    \nopagebreak \vspace { 1pt } \hrule \nopagebreak \medskip
+  }
+
+% Entry: bold title and dates on one line, italic org and location below.
+% Each line is emitted only if one of its fields is set (no blank lines).
+\cs_new_protected:Npn \__vitae_classic_first_line:
+  { \textbf { \field { title } } \hfill \field { dates } \par \nopagebreak }
+\settemplate { entry }
+  {
+    \par
+    \iffield { title } { \__vitae_classic_first_line: }
+      { \iffield { dates } { \__vitae_classic_first_line: } { } }
+    \iffield { org }
+      { \textit { \field { org } } \iffield { location } { \hfill \field { location } } { } \par }
+      { \iffield { location } { \hfill \field { location } \par } { } }
+    \iffield { body } { \smallskip \field { body } \par } { }
+    \medskip
+  }
+
+% Item: bold label in a fixed left column, wrapped text on the right.
+\settemplate { item }
+  {
+    \par
+    \parbox [ t ] { 3cm } { \raggedright \textbf { \field { label } } }
+    \parbox [ t ] { \dim_eval:n { \linewidth - 3cm } } { \field { body } }
+    \par \smallskip
+  }

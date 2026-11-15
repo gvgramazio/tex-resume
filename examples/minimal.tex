@@ -1,5 +1,10 @@
-% Minimal example: the smallest document using vitae (dummy content only).
+% Minimal example: default theme, data declared and used in one file.
 \documentclass{vitae}
+\name{Jane}{Doe}
+\email{jane.doe@example.com}
+
 \begin{document}
-Lorem ipsum dolor sit amet.
+\makeheader
+\section{Experience}
+\cventry{title=Lorem Ipsum, org=Dolor Sit Ltd., start=2020}{Consectetur adipiscing elit.}
 \end{document}

@@ -1,0 +1,18 @@
+% Full resume with the classic theme (dummy data from data/janedoe.tex).
+\documentclass{vitae}
+\usetheme{classic}
+\input{data/janedoe}
+
+\begin{document}
+\makeheader
+
+\section{Profile}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+\printentries[Experience]{experience}
+\printentries[Education]{education}
+\printentries[Skills]{skills}
+\printentries[Languages]{languages}
+\printentries[Awards]{awards}
+\end{document}

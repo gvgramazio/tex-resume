@@ -1,0 +1,96 @@
+%% vitaethememodern.sty -- vitae theme: sans serif, accent colour, date margin.
+%% Distributed under the MIT license (see LICENSE).
+
+% --- Identification -------------------------------------------------------
+\ProvidesExplPackage{vitaethememodern}{2026-11-15}{0.0.0}{vitae modern theme}
+
+% --- Fonts ----------------------------------------------------------------
+% Fira Sans as the document font; FiraSans.sty handles every engine.
+\RequirePackage [ sfdefault ] { FiraSans }
+
+% --- Page and lists -------------------------------------------------------
+\RequirePackage { enumitem }
+\setlist { nosep , leftmargin = * , topsep = 2pt }
+\geometry { margin = 1.8cm }
+\definecolor { vitaemodernblue } { HTML } { 1F5F8B }
+% Defaults via \keys_set:nn, not \vitaesetup, so user settings still win.
+\keys_set:nn { vitae / setup } { accent = vitaemodernblue }
+
+% Width of the left column holding dates and item labels.
+\dim_new:N \l__vitae_modern_col_dim
+\dim_set:Nn \l__vitae_modern_col_dim { 2.8cm }
+
+% Hanging layout: <left> in the margin column, <body> beside it. A list
+% (not a box) so long bodies may break across pages.
+\cs_new_protected:Npn \__vitae_modern_hang:nn #1#2
+  {
+    \begin { list } { }
+      {
+        \dim_set_eq:NN \leftmargin \l__vitae_modern_col_dim
+        \dim_set:Nn \labelwidth { \l__vitae_modern_col_dim - 1em }
+        \dim_set:Nn \labelsep { 1em }
+        \skip_zero:N \topsep \skip_zero:N \partopsep
+        \skip_zero:N \itemsep \skip_zero:N \parsep
+      }
+      % \leavevmode: a leading \color must not shift the [t] baseline.
+      \item [ { \parbox [ t ] { \labelwidth } { \raggedright \leavevmode #1 } } ] #2
+    \end { list }
+  }
+
+% --- Templates ------------------------------------------------------------
+% Header: large coloured name and contacts on the left, photo on the right.
+\settemplate { header }
+  {
+    \noindent
+    \begin { minipage } [ b ]
+      {
+        \dim_eval:n
+          { \ifvitaeset { photo } { \linewidth - \vitaephotowidth - 1em } { \linewidth } }
+      }
+      { \Huge \bfseries \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+      \ifvitaeset { jobtitle } { \smallskip { \Large \thejobtitle \par } } { }
+      \medskip \small \raggedright \printcontacts
+    \end { minipage }
+    \hfill \printphoto \par \bigskip
+  }
+\settemplate { contact }
+  { \mbox { \textcolor { vitaeaccent } { \field { icon } } ~ \field { text } } }
+\settemplate { contactsep } { \hspace { 1.2em plus .5em } }
+
+% Section: bold uppercase accent title followed by a rule to the margin.
+\settemplate { section }
+  {
+    \par \addvspace { \bigskipamount }
+    \noindent
+    { \large \bfseries \color { vitaeaccent } \MakeUppercase { \field { title } } }
+    \hspace { .5em } { \color { vitaeaccent } \leaders \hrule height .6pt \hfill }
+    \par \nopagebreak \medskip
+  }
+
+% Entry: dates in the margin column; title, org and location beside them.
+% Each line is emitted only if one of its fields is set (no blank lines).
+\settemplate { entry }
+  {
+    \__vitae_modern_hang:nn
+      { \small \color { vitaeaccent } \field { dates } }
+      {
+        \iffield { title } { \textbf { \field { title } } \par } { }
+        \iffield { org }
+          { \textit { \field { org } } \iffield { location } { ,~ \field { location } } { } \par }
+          { \iffield { location } { \field { location } \par } { } }
+        \iffield { body } { \smallskip \field { body } } { }
+      }
+    \medskip
+  }
+
+% Item: bold label in the margin column, text beside it. Two top-aligned
+% boxes (items are short): a wrapped label cannot push the text down.
+\settemplate { item }
+  {
+    \par \noindent
+    \parbox [ t ] { \dim_eval:n { \l__vitae_modern_col_dim - 1em } }
+      { \raggedright \leavevmode \small \bfseries \color { vitaeaccent } \field { label } }
+    \hspace { 1em }
+    \parbox [ t ] { \dim_eval:n { \linewidth - \l__vitae_modern_col_dim } } { \field { body } }
+    \par \smallskip
+  }

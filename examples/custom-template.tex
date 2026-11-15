@@ -1,0 +1,18 @@
+% Overriding one template and the date settings without writing a theme.
+\documentclass{vitae}
+\usetheme{classic}
+\vitaesetup{present=today, datesep={ to }, accent=teal}
+\name{Jane}{Doe}
+
+% Entry on a single line: "Title, Org .......... dates", then the body.
+\settemplate{entry}{%
+  \par\textbf{\field{title}}\iffield{org}{, \field{org}}{}\hfill\field{dates}\par
+  \iffield{body}{\field{body}\par}{}\smallskip}
+
+\begin{document}
+\makeheader
+\section{Experience}
+\cventry{title=Lorem Ipsum, org=Dolor Sit Ltd., start=2020}{Consectetur adipiscing elit.}
+\cventry{title=Sit Amet, org=Elit GmbH, start=2017, end=2020}{}
+\cventry{title=Tempor Award, date=2016}{}
+\end{document}
