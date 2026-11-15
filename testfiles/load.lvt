@@ -1,0 +1,6 @@
+% Smoke test: the class loads cleanly on every engine.
+\documentclass{vitae}
+\input{regression-test}
+\START
+\TYPE{vitae loaded}
+\END

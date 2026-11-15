@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(l3build check:*)",
+      "Bash(l3build save:*)",
+      "Bash(scripts/build.sh:*)",
+      "Bash(.claude/skills/new-theme/scripts/new-theme.sh:*)",
+      "Bash(latexmk:*)",
+      "Bash(kpsewhich:*)"
+    ]
+  }
+}
