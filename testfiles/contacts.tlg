@@ -1,0 +1,32 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: no contacts prints nothing
+============================================================
+============================================================
+============================================================
+TEST 2: single contact has no separator
+============================================================
+contact url=[mailto:jane@example.com]
+============================================================
+============================================================
+TEST 3: built-ins in fixed order, then \addcontact in call order
+============================================================
+contact url=[mailto:jane_doe+cv@example.com]
+sep
+contact url=[]
+sep
+contact url=[]
+sep
+contact url=[https://example.com/~jane]
+sep
+contact url=[https://www.linkedin.com/in/jane-doe-example]
+sep
+contact url=[https://github.com/jdoe-example]
+sep
+contact url=[https://orcid.org/0000-0000-0000-0000]
+sep
+contact url=[https://example.org/a]
+sep
+contact url=[]
+============================================================

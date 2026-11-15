@@ -6,6 +6,389 @@
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
 \ProvidesExplClass{vitae}{2026-11-15}{0.0.0}{Resume class}
 
-% --- Base class -----------------------------------------------------------
-% Minimal base: article provides page setup and sectioning.
-\LoadClass{article}
+% --- Options and base class -----------------------------------------------
+% Defaults first, user options after: the last paper/size option wins.
+\PassOptionsToClass { a4paper, 11pt } { article }
+\DeclareOption* { \PassOptionsToClass { \CurrentOption } { article } }
+\ProcessOptions \relax
+\LoadClass { article }
+
+% --- Packages -------------------------------------------------------------
+% pdfTeX needs T1 for accented names; Unicode engines use TU by default.
+\sys_if_engine_pdftex:T { \RequirePackage [ T1 ] { fontenc } }
+\RequirePackage { geometry }
+\RequirePackage { xcolor }
+\RequirePackage { graphicx }
+\RequirePackage { fontawesome5 }
+\RequirePackage { hyperref }
+\hypersetup { hidelinks }
+\urlstyle { same }
+
+% Resume defaults; themes may override.
+\geometry { margin = 2cm }
+\setlength \parindent { 0pt }
+\pagestyle { empty }
+
+% --- Variants -------------------------------------------------------------
+\prg_generate_conditional_variant:Nnn \tl_if_blank:n { v } { T , F , TF }
+\cs_generate_variant:Nn \msg_warning:nnn { nnV }
+\cs_generate_variant:Nn \msg_error:nnnn { nnVn }
+
+% --- Messages -------------------------------------------------------------
+\msg_new:nnn { vitae } { unknown-field } { Unknown~field~'#1'. }
+\msg_new:nnn { vitae } { unknown-template } { Unknown~template~'#1'. }
+\msg_new:nnn { vitae } { unknown-theme }
+  { Theme~'#1'~not~found~(no~file~vitaetheme#1.sty). }
+\msg_new:nnn { vitae } { second-theme }
+  { Theme~'#1'~already~loaded;~'#2'~ignored. }
+\msg_new:nnn { vitae } { empty-list } { List~'#1'~is~empty~or~undefined. }
+\msg_new:nnn { vitae } { photo-missing } { Photo~'#1'~not~found;~skipped. }
+\msg_new:nnn { vitae } { no-name }
+  { No~name~set;~use~\iow_char:N\\name{First}{Last}. }
+
+% --- Setup keys -----------------------------------------------------------
+% \vitaesetup keys are remembered so they can be re-applied after a theme
+% has set its own defaults: user choices always win.
+\tl_new:N \g__vitae_setup_tl
+\tl_new:N \l__vitae_present_tl
+\tl_new:N \l__vitae_datesep_tl
+\dim_new:N \vitaephotowidth
+\colorlet { vitaeaccent } { black }
+\keys_define:nn { vitae / setup }
+  {
+    accent     .code:n    = \colorlet { vitaeaccent } {#1} ,
+    present    .tl_set:N  = \l__vitae_present_tl ,
+    present    .initial:n = Present ,
+    datesep    .tl_set:N  = \l__vitae_datesep_tl ,
+    datesep    .initial:n = \,--\, ,
+    photowidth .dim_set:N = \vitaephotowidth ,
+    photowidth .initial:n = 2.5cm ,
+  }
+\NewDocumentCommand \vitaesetup { m }
+  {
+    \tl_gput_right:Nn \g__vitae_setup_tl { #1 , }
+    \keys_set:nn { vitae / setup } {#1}
+  }
+
+% --- Personal data --------------------------------------------------------
+% Each field <f> gets a setter \<f>{...}, an expandable getter \the<f> and
+% storage \g__vitae_field_<f>_tl. Text fields keep TeX material; string
+% fields (URLs, handles, files) are stored as plain characters.
+\cs_new_protected:Npn \__vitae_new_field:nn #1#2
+  {
+    \tl_new:c { g__vitae_field_#1_tl }
+    \exp_args:Nc \NewDocumentCommand {#1} { m } { #2 {#1} {##1} }
+    \cs_new:cpn { the#1 } { \tl_use:c { g__vitae_field_#1_tl } }
+  }
+\cs_new_protected:Npn \__vitae_set_text:nn #1#2
+  { \tl_gset:cn { g__vitae_field_#1_tl } {#2} }
+% Strings: _ & ~ # work as typed; the escapes \_ \& \# \% are also accepted
+% (a raw % starts a comment, as everywhere in LaTeX). A normal argument, not
+% a verbatim one, so setters also work inside other commands' arguments.
+\str_new:N \l__vitae_tmp_str
+\cs_generate_variant:Nn \str_replace_all:Nnn { Nee }
+\cs_new_protected:Npn \__vitae_set_string:nn #1#2
+  {
+    \str_set:Nn \l__vitae_tmp_str {#2}
+    \str_replace_all:Nee \l__vitae_tmp_str
+      { \c_hash_str \c_hash_str } { \c_hash_str }
+    \tl_map_inline:nn { \_ \& \# \% }
+      {
+        \str_replace_all:Nee \l__vitae_tmp_str
+          { \tl_to_str:n {##1} } { \str_tail:n {##1} }
+      }
+    \tl_gset_eq:cN { g__vitae_field_#1_tl } \l__vitae_tmp_str
+  }
+\clist_map_inline:nn { firstname, lastname, jobtitle, address, phone }
+  { \__vitae_new_field:nn {#1} { \__vitae_set_text:nn } }
+\clist_map_inline:nn { email, homepage, linkedin, github, orcid, photo }
+  { \__vitae_new_field:nn {#1} { \__vitae_set_string:nn } }
+\NewDocumentCommand \name { m m } { \firstname {#1} \lastname {#2} }
+
+% \ifvitaeset{<f>}{<true>}{<false>}: is the personal field <f> non-blank?
+\NewExpandableDocumentCommand \ifvitaeset { m +m +m }
+  {
+    \tl_if_exist:cTF { g__vitae_field_#1_tl }
+      { \tl_if_blank:vTF { g__vitae_field_#1_tl } {#3} {#2} }
+      { \msg_expandable_error:nnn { vitae } { unknown-field } {#1} }
+  }
+
+% --- Template fields ------------------------------------------------------
+% Templates read the current item through \field{<f>} and \iffield. Every
+% writer sets them inside a group, so values never leak between items.
+% (\cs_if_exist_use:c is avoided: it breaks \MakeUppercase on LuaTeX.)
+\clist_map_inline:nn
+  { title, org, location, start, end, dates, body, label, icon, text, url }
+  { \tl_new:c { l__vitae_f_#1_tl } }
+\NewExpandableDocumentCommand \field { m }
+  {
+    \tl_if_exist:cTF { l__vitae_f_#1_tl }
+      { \tl_use:c { l__vitae_f_#1_tl } }
+      { \msg_expandable_error:nnn { vitae } { unknown-field } {#1} }
+  }
+\NewExpandableDocumentCommand \iffield { m +m +m }
+  {
+    \tl_if_exist:cTF { l__vitae_f_#1_tl }
+      { \tl_if_blank:vTF { l__vitae_f_#1_tl } {#3} {#2} }
+      { \msg_expandable_error:nnn { vitae } { unknown-field } {#1} }
+  }
+
+% --- Dates ----------------------------------------------------------------
+% Dates are plain strings for now; \formatdate is the single hook where ISO
+% parsing and output styles will plug in. Both commands are expandable.
+\NewExpandableDocumentCommand \formatdate { m } {#1}
+% \daterange{<start>}{<end>}: "s -- e", "s -- Present" if no end, a single
+% date if only one is given or both are equal, nothing if both are blank.
+\NewExpandableDocumentCommand \daterange { m m }
+  {
+    \tl_if_blank:nTF {#1}
+      { \tl_if_blank:nF {#2} { \formatdate {#2} } }
+      {
+        \formatdate {#1}
+        \tl_if_blank:nTF {#2}
+          { \tl_use:N \l__vitae_datesep_tl \tl_use:N \l__vitae_present_tl }
+          {
+            \str_if_eq:nnF {#1} {#2}
+              { \tl_use:N \l__vitae_datesep_tl \formatdate {#2} }
+          }
+      }
+  }
+
+% --- Templates ------------------------------------------------------------
+% A template is a parameterless macro \__vitae_template_<name>:. The class
+% ships plain defaults; themes and users replace them via \settemplate.
+\cs_new_protected:Npn \__vitae_template_use:n #1 { \use:c { __vitae_template_#1: } }
+\NewDocumentCommand \settemplate { m +m }
+  {
+    \cs_if_exist:cTF { __vitae_template_#1: }
+      { \cs_set_protected:cpn { __vitae_template_#1: } {#2} }
+      { \msg_error:nnn { vitae } { unknown-template } {#1} }
+  }
+\cs_new_protected:cpn { __vitae_template_header: }
+  {
+    \begin { center }
+      { \LARGE \thefirstname \c_space_tl \thelastname \par }
+      \ifvitaeset { jobtitle } { \thejobtitle \par } { }
+      \printcontacts
+    \end { center }
+  }
+\cs_new_protected:cpn { __vitae_template_contact: }
+  { \mbox { \field { icon } ~ \field { text } } }
+\cs_new_protected:cpn { __vitae_template_contactsep: } { \quad }
+\cs_new_protected:cpn { __vitae_template_section: }
+  { \par \bigskip { \large \bfseries \field { title } \par } \nopagebreak \medskip }
+\cs_new_protected:cpn { __vitae_template_entry: }
+  {
+    \par \textbf { \field { title } } \hfill \field { dates } \par
+    \iffield { org } { \field { org } \iffield { location } { , ~ \field { location } } { } \par } { }
+    \iffield { body } { \field { body } \par } { }
+    \medskip
+  }
+\cs_new_protected:cpn { __vitae_template_item: }
+  { \par \textbf { \field { label } } : ~ \field { body } \par }
+
+% --- Contacts -------------------------------------------------------------
+% Contacts are built at \makeheader time as a sequence of
+% \__vitae_contact:nnn {<icon>} {<url>} {<text>}: first the built-in fields
+% (in a fixed order), then those added with \addcontact.
+\seq_new:N \l__vitae_contacts_seq
+\seq_new:N \g__vitae_extra_contacts_seq
+\cs_new_protected:Npn \__vitae_contact:nnn #1#2#3
+  {
+    \group_begin:
+      \tl_set:Nn \l__vitae_f_icon_tl {#1}
+      \tl_set:Nn \l__vitae_f_url_tl {#2}
+      \tl_if_blank:nTF {#2}
+        { \tl_set:Nn \l__vitae_f_text_tl {#3} }
+        { \tl_set:Nn \l__vitae_f_text_tl { \href {#2} {#3} } }
+      \__vitae_template_use:n { contact }
+    \group_end:
+  }
+% Text field: shown as typed, not linked.
+\cs_new_protected:Npn \__vitae_contact_text:nn #1#2
+  {
+    \tl_if_blank:vF { g__vitae_field_#1_tl }
+      {
+        \seq_put_right:Nx \l__vitae_contacts_seq
+          {
+            \exp_not:N \__vitae_contact:nnn { \exp_not:n {#2} } { }
+              { \exp_not:v { g__vitae_field_#1_tl } }
+          }
+      }
+  }
+% String field: linked to <prefix><value>, shown via \nolinkurl.
+\cs_new_protected:Npn \__vitae_contact_link:nnn #1#2#3
+  {
+    \tl_if_blank:vF { g__vitae_field_#1_tl }
+      {
+        \seq_put_right:Nx \l__vitae_contacts_seq
+          {
+            \exp_not:N \__vitae_contact:nnn { \exp_not:n {#2} }
+              { \exp_not:n {#3} \exp_not:v { g__vitae_field_#1_tl } }
+              { \exp_not:N \nolinkurl { \exp_not:v { g__vitae_field_#1_tl } } }
+          }
+      }
+  }
+\cs_new_protected:Npn \__vitae_contacts_collect:
+  {
+    \seq_clear:N \l__vitae_contacts_seq
+    \__vitae_contact_link:nnn { email } { \faEnvelope } { mailto: }
+    \__vitae_contact_text:nn { phone } { \faPhone }
+    \__vitae_contact_text:nn { address } { \faMapMarker* }
+    \__vitae_contact_link:nnn { homepage } { \faGlobe } { https:// }
+    \__vitae_contact_link:nnn { linkedin } { \faLinkedin }
+      { https://www.linkedin.com/in/ }
+    \__vitae_contact_link:nnn { github } { \faGithub } { https://github.com/ }
+    \__vitae_contact_link:nnn { orcid } { \faOrcid } { https://orcid.org/ }
+    \seq_concat:NNN \l__vitae_contacts_seq
+      \l__vitae_contacts_seq \g__vitae_extra_contacts_seq
+  }
+% \addcontact[<url>]{<icon>}{<text>}: any extra contact, appended in order.
+\NewDocumentCommand \addcontact { O { } m m }
+  {
+    \seq_gput_right:Nn \g__vitae_extra_contacts_seq
+      { \__vitae_contact:nnn {#2} {#1} {#3} }
+  }
+% \printcontacts: every contact, separated by the contactsep template.
+\NewDocumentCommand \printcontacts { }
+  {
+    \group_begin:
+      \__vitae_contacts_collect:
+      \seq_use:Nn \l__vitae_contacts_seq
+        { \__vitae_template_use:n { contactsep } }
+    \group_end:
+  }
+
+% --- Header and photo -----------------------------------------------------
+% \printphoto: the photo at \vitaephotowidth; a missing file only warns.
+% Without an extension, the usual graphics extensions are tried.
+\bool_new:N \l__vitae_found_bool
+\NewDocumentCommand \printphoto { }
+  {
+    \tl_if_blank:VF \g__vitae_field_photo_tl
+      {
+        \bool_set_false:N \l__vitae_found_bool
+        \clist_map_inline:nn { .pdf, .png, .jpg, .jpeg }
+          {
+            \file_if_exist:nT { \g__vitae_field_photo_tl ##1 }
+              { \bool_set_true:N \l__vitae_found_bool \clist_map_break: }
+          }
+        \file_if_exist:nT { \g__vitae_field_photo_tl }
+          { \bool_set_true:N \l__vitae_found_bool }
+        \bool_if:NTF \l__vitae_found_bool
+          { \includegraphics [ width = \vitaephotowidth ] { \g__vitae_field_photo_tl } }
+          { \msg_warning:nnV { vitae } { photo-missing } \g__vitae_field_photo_tl }
+      }
+  }
+% \makeheader: typeset the header template, like \maketitle.
+\NewDocumentCommand \makeheader { }
+  {
+    \bool_lazy_and:nnT
+      { \tl_if_blank_p:V \g__vitae_field_firstname_tl }
+      { \tl_if_blank_p:V \g__vitae_field_lastname_tl }
+      { \msg_warning:nn { vitae } { no-name } }
+    \group_begin: \__vitae_template_use:n { header } \group_end:
+  }
+
+% --- Sections -------------------------------------------------------------
+% \section[*]{<title>} goes through the section template (no numbering).
+\RenewDocumentCommand \section { s o m }
+  {
+    \group_begin:
+      \tl_set:Nn \l__vitae_f_title_tl {#3}
+      \__vitae_template_use:n { section }
+    \group_end:
+  }
+
+% --- Entries and items ----------------------------------------------------
+% Entry fields are set by keys; "date" sets start and end at once.
+\keys_define:nn { vitae / entry }
+  {
+    title    .tl_set:N = \l__vitae_f_title_tl ,
+    org      .tl_set:N = \l__vitae_f_org_tl ,
+    location .tl_set:N = \l__vitae_f_location_tl ,
+    start    .tl_set:N = \l__vitae_f_start_tl ,
+    end      .tl_set:N = \l__vitae_f_end_tl ,
+    date     .meta:n   = { start = {#1} , end = {#1} } ,
+  }
+% \cventry{<keys>}{<body>}: set fields, derive "dates", run the template.
+\NewDocumentCommand \cventry { m +m }
+  {
+    \group_begin:
+      \keys_set:nn { vitae / entry } {#1}
+      \tl_set:Nn \l__vitae_f_body_tl {#2}
+      \bool_lazy_and:nnF
+        { \tl_if_blank_p:V \l__vitae_f_start_tl }
+        { \tl_if_blank_p:V \l__vitae_f_end_tl }
+        {
+          \tl_set:Nx \l__vitae_f_dates_tl
+            {
+              \exp_not:N \daterange
+                { \exp_not:V \l__vitae_f_start_tl }
+                { \exp_not:V \l__vitae_f_end_tl }
+            }
+        }
+      \__vitae_template_use:n { entry }
+    \group_end:
+  }
+% \cvitem{<label>}{<text>}: a one-line item (skills, languages, ...).
+\NewDocumentCommand \cvitem { m +m }
+  {
+    \group_begin:
+      \tl_set:Nn \l__vitae_f_label_tl {#1}
+      \tl_set:Nn \l__vitae_f_body_tl {#2}
+      \__vitae_template_use:n { item }
+    \group_end:
+  }
+
+% --- Lists ----------------------------------------------------------------
+% Named lists store unexpanded \cventry/\cvitem calls, printed in order.
+\cs_new_protected:Npn \__vitae_list_put:nn #1#2
+  {
+    \seq_if_exist:cF { g__vitae_list_#1_seq } { \seq_new:c { g__vitae_list_#1_seq } }
+    \seq_gput_right:cn { g__vitae_list_#1_seq } {#2}
+  }
+\NewDocumentCommand \addentry { m m +m } { \__vitae_list_put:nn {#1} { \cventry {#2} {#3} } }
+\NewDocumentCommand \additem { m m +m } { \__vitae_list_put:nn {#1} { \cvitem {#2} {#3} } }
+% \printentries[<heading>]{<list>}: the heading appears only if the list
+% has content; an empty or undefined list warns and prints nothing.
+\NewDocumentCommand \printentries { o m }
+  {
+    \bool_lazy_and:nnTF
+      { \seq_if_exist_p:c { g__vitae_list_#2_seq } }
+      { ! \seq_if_empty_p:c { g__vitae_list_#2_seq } }
+      {
+        \IfValueT {#1} { \section {#1} }
+        \seq_use:cn { g__vitae_list_#2_seq } { }
+      }
+      { \msg_warning:nnn { vitae } { empty-list } {#2} }
+  }
+
+% --- Themes ---------------------------------------------------------------
+% \usetheme{<name>} loads vitaetheme<name>.sty once, then re-applies user
+% \vitaesetup keys over the theme defaults. Without \usetheme, "classic"
+% is loaded at the end of the preamble.
+\tl_new:N \g__vitae_theme_tl
+\NewDocumentCommand \usetheme { m }
+  {
+    \tl_if_empty:NTF \g__vitae_theme_tl
+      {
+        \file_if_exist:nTF { vitaetheme#1.sty }
+          {
+            \tl_gset:Nn \g__vitae_theme_tl {#1}
+            \RequirePackage { vitaetheme#1 }
+            \keys_set:nV { vitae / setup } \g__vitae_setup_tl
+          }
+          { \msg_error:nnn { vitae } { unknown-theme } {#1} }
+      }
+      {
+        \tl_if_eq:NnF \g__vitae_theme_tl {#1}
+          { \msg_error:nnVn { vitae } { second-theme } \g__vitae_theme_tl {#1} }
+      }
+  }
+\@onlypreamble \usetheme
+\hook_gput_code:nnn { begindocument / before } { vitae }
+  {
+    \tl_if_empty:NT \g__vitae_theme_tl { \usetheme { classic } }
+    \hypersetup { pdfauthor = { \thefirstname \c_space_tl \thelastname } }
+  }

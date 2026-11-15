@@ -1,0 +1,38 @@
+% Named lists: storage order, optional heading, empty/undefined lists.
+\documentclass{vitae}
+\input{regression-test}
+\vitaesetup{datesep=--}
+\settemplate{section}{\TYPE{section=[\field{title}]}}
+\settemplate{entry}{\TYPE{entry=[\field{title}][\field{dates}]}}
+\settemplate{item}{\TYPE{item=[\field{label}][\field{body}]}}
+\START
+
+\TEST{entries print in insertion order}{
+  \addentry{work}{title=First, start=2018, end=2020}{}
+  \addentry{work}{title=Second, start=2020}{}
+  \printentries{work}
+}
+
+\TEST{heading is printed before a non-empty list}{
+  \additem{skills}{Lorem}{Ipsum}
+  \additem{skills}{Dolor}{Sit}
+  \printentries[Skills]{skills}
+}
+
+\TEST{lists can mix entries and items}{
+  \addentry{mixed}{title=Entry}{}
+  \additem{mixed}{Item}{Text}
+  \printentries{mixed}
+}
+
+\TEST{lists can be printed twice}{
+  \addentry{again}{title=Once}{}
+  \printentries{again}
+  \printentries{again}
+}
+
+\TEST{undefined list warns, heading is skipped}{
+  \printentries[Nothing]{nosuchlist}
+}
+
+\END

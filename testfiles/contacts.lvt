@@ -1,0 +1,30 @@
+% Contacts: fixed order of built-ins, links, \addcontact, separators.
+\documentclass{vitae}
+\input{regression-test}
+\settemplate{contact}{\TYPE{contact url=[\field{url}]}}
+\settemplate{contactsep}{\TYPE{sep}}
+\START
+
+\TEST{no contacts prints nothing}{
+  \printcontacts
+}
+
+\TEST{single contact has no separator}{
+  \email{jane@example.com}
+  \printcontacts
+}
+
+\TEST{built-ins in fixed order, then \addcontact in call order}{
+  \addcontact[https://example.org/a]{A}{first extra}
+  \orcid{0000-0000-0000-0000}
+  \github{jdoe-example}
+  \linkedin{jane-doe-example}
+  \homepage{example.com/~jane}
+  \address{1 Example Street}
+  \phone{+00 000}
+  \email{jane_doe+cv@example.com}
+  \addcontact{B}{second extra, no url}
+  \printcontacts
+}
+
+\END

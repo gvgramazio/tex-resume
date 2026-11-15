@@ -1,0 +1,69 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: all fields
+============================================================
+title=[T] org=[O] location=[L] dates=[2018--2021] body=[B]
+============================================================
+============================================================
+TEST 2: no fields
+============================================================
+title=[] org=[] location=[] dates=[] body=[]
+============================================================
+============================================================
+TEST 3: date key sets a single date
+============================================================
+title=[Award] org=[] location=[] dates=[2019] body=[]
+============================================================
+============================================================
+TEST 4: start only means ongoing
+============================================================
+title=[Job] org=[] location=[] dates=[2021--Present] body=[]
+============================================================
+============================================================
+TEST 5: values with commas and equals need braces
+============================================================
+title=[Lorem, Ipsum] org=[a=b] location=[] dates=[] body=[]
+============================================================
+============================================================
+TEST 6: fields do not leak between entries
+============================================================
+title=[First] org=[Org] location=[] dates=[2020--Present] body=[Body]
+title=[] org=[] location=[] dates=[] body=[]
+============================================================
+============================================================
+TEST 7: unknown key is an error
+============================================================
+! LaTeX Error: The key 'vitae/entry/nosuchkey' is unknown and is being ignored.
+For immediate help type H <return>.
+ ...                                              
+l. ...}
+The module 'vitae/entry' does not have a key called 'vitae/entry/nosuchkey'.
+Check that you have spelled the key name correctly.
+title=[T] org=[] location=[] dates=[] body=[]
+============================================================
+============================================================
+TEST 8: items
+============================================================
+label=[Lorem] body=[Ipsum, Dolor]
+label=[] body=[]
+============================================================
+============================================================
+TEST 9: \iffield 
+============================================================
+has title no dates
+no title has dates
+============================================================
+============================================================
+TEST 10: unknown field in a template is an error
+============================================================
+! Use of \??? doesn't match its definition.
+<argument> \???  
+                 ! Package vitae Error: Unknown field 'nosuchfield'.
+l. ...}
+If you say, e.g., `\def\a1{...}', then you must always
+put `1' after `\a', since control sequence names are
+made up of letters only. The macro here has not been
+followed by the required stuff, so I'm ignoring it.
+[]
+============================================================

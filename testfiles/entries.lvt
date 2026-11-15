@@ -1,0 +1,57 @@
+% Entries and items: key parsing, derived dates, isolation between entries.
+\documentclass{vitae}
+\input{regression-test}
+\vitaesetup{datesep=--}
+% Probe templates: log the fields instead of typesetting them.
+\settemplate{entry}{\TYPE{title=[\field{title}] org=[\field{org}]
+  location=[\field{location}] dates=[\field{dates}] body=[\field{body}]}}
+\settemplate{item}{\TYPE{label=[\field{label}] body=[\field{body}]}}
+\START
+
+\TEST{all fields}{
+  \cventry{title=T, org=O, location=L, start=2018, end=2021}{B}
+}
+
+\TEST{no fields}{
+  \cventry{}{}
+}
+
+\TEST{date key sets a single date}{
+  \cventry{title=Award, date=2019}{}
+}
+
+\TEST{start only means ongoing}{
+  \cventry{title=Job, start=2021}{}
+}
+
+\TEST{values with commas and equals need braces}{
+  \cventry{title={Lorem, Ipsum}, org={a=b}}{}
+}
+
+\TEST{fields do not leak between entries}{
+  \cventry{title=First, org=Org, start=2020}{Body}
+  \cventry{}{}
+}
+
+\TEST{unknown key is an error}{
+  \cventry{title=T, nosuchkey=x}{}
+}
+
+\TEST{items}{
+  \cvitem{Lorem}{Ipsum, Dolor}
+  \cvitem{}{}
+}
+
+\TEST{\iffield}{
+  \settemplate{entry}{\TYPE{\iffield{title}{has title}{no title}
+    \iffield{dates}{has dates}{no dates}}}
+  \cventry{title=T}{}
+  \cventry{start=2020}{}
+}
+
+\TEST{unknown field in a template is an error}{
+  \settemplate{entry}{\TYPE{[\field{nosuchfield}]}}
+  \cventry{}{}
+}
+
+\END

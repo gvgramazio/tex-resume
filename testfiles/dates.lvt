@@ -1,0 +1,33 @@
+% Dates: plain strings through \formatdate; every \daterange case.
+\documentclass{vitae}
+\input{regression-test}
+\START
+
+\TEST{default separator and present text}{
+  \TYPE{\expandafter\expandafter\expandafter\detokenize
+    \expandafter\expandafter\expandafter{\csname l__vitae_datesep_tl\endcsname}}
+  \TYPE{\csname l__vitae_present_tl\endcsname}
+}
+
+% A plain separator keeps the rest of the log readable (\, expands noisily).
+\vitaesetup{datesep=--}
+
+\TEST{\formatdate is the identity on plain strings}{
+  \TYPE{[\formatdate{2020}][\formatdate{2020-03}][\formatdate{March 2020}]}
+}
+
+\TEST{\daterange cases}{
+  \TYPE{both:     [\daterange{2018}{2021}]}
+  \TYPE{start:    [\daterange{2018}{}]}
+  \TYPE{end:      [\daterange{}{2021}]}
+  \TYPE{equal:    [\daterange{2019}{2019}]}
+  \TYPE{none:     [\daterange{}{}]}
+  \TYPE{blank:    [\daterange{ }{ }]}
+}
+
+\TEST{\vitaesetup changes present and separator}{
+  \vitaesetup{present=today, datesep={ to }}
+  \TYPE{[\daterange{2018}{}][\daterange{2018}{2021}]}
+}
+
+\END
