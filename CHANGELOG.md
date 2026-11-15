@@ -3,6 +3,8 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-11-15
 ### Added
 - ISO dates (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`) are formatted by `\formatdate` and
   `\daterange`. Any other text is printed unchanged.
@@ -14,8 +16,8 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 - `examples/dates.tex`, plus date edge cases in the stress examples.
 
 ### Changed
-- `2020-03`-style dates now print as "March 2020" (or in the chosen style)
-  instead of verbatim.
+- **Breaking:** `2020-03`-style dates now print as "March 2020" (or in the chosen
+  style) instead of verbatim. `\vitaesetup{dateformat=iso}` restores the old output.
 - "Present" follows the locale unless `present` is set.
 - The default date separator allows a line break after the dash.
 - `modern`: a date label that wraps no longer leaves a gap in the entry,
