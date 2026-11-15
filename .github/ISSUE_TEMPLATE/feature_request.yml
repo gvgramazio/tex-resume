@@ -1,0 +1,77 @@
+name: Feature request
+description: Suggest a new command, option, theme capability or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature!
+        **This repository is public.** Use dummy data (Jane Doe, `example.com`, lorem ipsum) in examples.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Personal data and contacts
+        - Entries, items and lists
+        - Dates and locales
+        - Layout and themes
+        - PDF output (metadata, accessibility, text extraction)
+        - Documentation, examples or tooling
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you're trying to do, and why vitae makes it hard or impossible today.
+      placeholder: I want to show certifications on one line each, but entries always use two.
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: Desired usage
+      description: How you'd like to write it in your document. The proposed syntax matters more than the implementation.
+      render: latex
+      placeholder: |
+        \printentries[Certifications, style=compact]{certs}
+    validations:
+      required: true
+
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected result
+      description: What the output should look like. A sketch or screenshot of a reference design helps.
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: How you're working around it today, if at all (for example a custom `\settemplate`).
+
+  - type: dropdown
+    id: compatibility
+    attributes:
+      label: Effect on existing documents
+      options:
+        - None, it's purely additive
+        - Changes default output
+        - Not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: The examples contain no personal data.
+          required: true
+        - label: I searched the existing issues for this request.
+          required: true

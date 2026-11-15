@@ -1,0 +1,107 @@
+name: Bug report
+description: Something compiles wrongly, errors out, or looks broken.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug!
+        **This repository is public.** Use dummy data (Jane Doe, `example.com`, lorem ipsum) in every snippet, log and screenshot.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened
+      description: What went wrong, including any error message.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: mwe
+    attributes:
+      label: Minimal example
+      description: The smallest complete document that shows the problem. Remove everything that isn't needed to reproduce it.
+      render: latex
+      placeholder: |
+        \documentclass{vitae}
+        \usetheme{classic}
+        \name{Jane}{Doe}
+        \begin{document}
+        \makeheader
+        \cventry{title=Lorem, start=2020-03}{Ipsum.}
+        \end{document}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: engines
+    attributes:
+      label: Engines affected
+      description: Select every engine you tried that shows the problem.
+      multiple: true
+      options:
+        - pdfLaTeX
+        - XeLaTeX
+        - LuaLaTeX
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      options:
+        - classic (default)
+        - modern
+        - custom theme or templates
+    validations:
+      required: true
+
+  - type: input
+    id: vitae-version
+    attributes:
+      label: vitae version
+      description: "From the `.log` file: `grep 'Document Class: vitae' <file>.log`."
+      placeholder: "Document Class: vitae 2026-11-15 v0.1.0 Resume class"
+    validations:
+      required: true
+
+  - type: input
+    id: distribution
+    attributes:
+      label: TeX distribution
+      description: "From `tex --version` (first line)."
+      placeholder: "TeX Live 2026, MiKTeX 24.x, Overleaf (2025 image), ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Log excerpt
+      description: The relevant part of the `.log` file, such as the first error and the lines around it.
+      render: text
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: For layout bugs, a screenshot of the PDF.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: The example, log and screenshots contain no personal data.
+          required: true
+        - label: I searched the existing issues for this problem.
+          required: true

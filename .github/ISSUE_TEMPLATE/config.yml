@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Usage questions
+    url: https://tex.stackexchange.com/questions/tagged/resume
+    about: For general LaTeX or "how do I" questions, TeX.StackExchange is often faster.
