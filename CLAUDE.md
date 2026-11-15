@@ -7,6 +7,8 @@
 - `testfiles/`: l3build regression tests (`.lvt` input, `.tlg` expected log).
 - `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `stress-*` (layout edge cases), plus shared data in `examples/data/`.
 - `scripts/build.sh`: compiles the examples (used by both CI and the `build` skill).
+- `scripts/junit.sh`: turns the last `l3build check` run into JUnit XML, which CI uploads to Codecov Test Analytics.
+- `.github/workflows/codeql.yml`: CodeQL analysis of the workflows themselves (`actions` language).
 - `.claude/skills/`: `build`, `test`, `new-theme`, `release`.
 
 ## Rules

@@ -58,7 +58,7 @@ Requires TeX Live 2022 or later. `l3build` and `latexmk` are included in TeX Liv
 | Build examples into `build/examples/` | `scripts/build.sh [-e "pdf xe lua"] [-s]` |
 | Bump version in sources | `l3build tag X.Y.Z` |
 
-CI runs the tests and builds every example in strict mode on each pull request. Pushing a tag `vX.Y.Z` publishes a release with the package zip and the example PDFs. Design notes are in [docs/DESIGN.md](docs/DESIGN.md).
+CI runs the tests and builds every example in strict mode on each pull request. Test results go to Codecov Test Analytics as a JUnit report (`scripts/junit.sh`); there is no line coverage, because TeX has no coverage tooling. CodeQL analyses the GitHub Actions workflows. Pushing a tag `vX.Y.Z` publishes a release with the package zip and the example PDFs. Design notes are in [docs/DESIGN.md](docs/DESIGN.md).
 
 ## License
 
