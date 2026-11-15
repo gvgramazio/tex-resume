@@ -20,21 +20,73 @@
 \dim_new:N \l__vitae_modern_col_dim
 \dim_set:Nn \l__vitae_modern_col_dim { 2.8cm }
 
-% Hanging layout: <left> in the margin column, <body> beside it. A list
-% (not a box) so long bodies may break across pages.
+% Hanging layout: <left> in the margin column, <body> beside it.
+% 1. The label is set in a top-aligned box, then given zero depth, so a
+%    label that wraps cannot push the body's second line down.
+% 2. The body (a list holding the label) is set in a box only to measure
+%    it, then unpacked: its lines still break across pages. \prevdepth
+%    is carried in and out so baselines continue as if no box existed.
+% 3. If the label reaches below the body, a kern adds the missing space
+%    and \prevdepth takes the label's last-line depth, so the next line
+%    follows the label's last baseline exactly as it would a body line.
+\box_new:N \l__vitae_modern_label_box
+\box_new:N \l__vitae_modern_body_box
+\dim_new:N \l__vitae_modern_prevdepth_dim
+\dim_new:N \l__vitae_modern_reach_dim
+\dim_new:N \l__vitae_modern_last_dim
 \cs_new_protected:Npn \__vitae_modern_hang:nn #1#2
   {
-    \begin { list } { }
+    \par
+    % Label: bottom-aligned first (to read its last-line depth), then
+    % top-aligned. \leavevmode: a leading \color must not shift baselines.
+    \vbox_set:Nn \l__vitae_modern_label_box
       {
-        \dim_set_eq:NN \leftmargin \l__vitae_modern_col_dim
-        \dim_set:Nn \labelwidth { \l__vitae_modern_col_dim - 1em }
-        \dim_set:Nn \labelsep { 1em }
-        \skip_zero:N \topsep \skip_zero:N \partopsep
-        \skip_zero:N \itemsep \skip_zero:N \parsep
+        \dim_set:Nn \hsize { \l__vitae_modern_col_dim - 1em }
+        \raggedright \leavevmode #1 \par
       }
-      % \leavevmode: a leading \color must not shift the [t] baseline.
-      \item [ { \parbox [ t ] { \labelwidth } { \raggedright \leavevmode #1 } } ] #2
-    \end { list }
+    \dim_set:Nn \l__vitae_modern_last_dim { \box_dp:N \l__vitae_modern_label_box }
+    \vbox_set_top:Nn \l__vitae_modern_label_box
+      { \vbox_unpack_drop:N \l__vitae_modern_label_box }
+    % Reach: the label's bottom, measured from the body box top. The first
+    % baseline lies below the interline glue TeX will add at that top.
+    \dim_set_eq:NN \l__vitae_modern_prevdepth_dim \prevdepth
+    \dim_set:Nn \l__vitae_modern_reach_dim
+      {
+        \dim_compare:nNnTF \prevdepth > { -1000pt }
+          {
+            \dim_max:nn { \baselineskip - \prevdepth }
+              { \box_ht:N \l__vitae_modern_label_box + \lineskip }
+          }
+          { \box_ht:N \l__vitae_modern_label_box }
+        + \box_dp:N \l__vitae_modern_label_box
+      }
+    \box_set_dp:Nn \l__vitae_modern_label_box { 0pt }
+    \vbox_set:Nn \l__vitae_modern_body_box
+      {
+        \dim_set_eq:NN \hsize \linewidth
+        \dim_set_eq:NN \prevdepth \l__vitae_modern_prevdepth_dim
+        \begin { list } { }
+          {
+            \dim_set_eq:NN \leftmargin \l__vitae_modern_col_dim
+            \dim_set:Nn \labelwidth { \l__vitae_modern_col_dim - 1em }
+            \dim_set:Nn \labelsep { 1em }
+            \skip_zero:N \topsep \skip_zero:N \partopsep
+            \skip_zero:N \itemsep \skip_zero:N \parsep
+          }
+          \item [ { \box_use:N \l__vitae_modern_label_box } ] #2
+        \end { list }
+      }
+    \vbox_unpack:N \l__vitae_modern_body_box
+    % Reach below the body's last baseline; compare with the body's depth.
+    \dim_sub:Nn \l__vitae_modern_reach_dim { \box_ht:N \l__vitae_modern_body_box }
+    \dim_compare:nNnTF \l__vitae_modern_reach_dim > { \box_dp:N \l__vitae_modern_body_box }
+      {
+        \tex_kern:D \dim_eval:n
+          { \l__vitae_modern_reach_dim - \box_dp:N \l__vitae_modern_body_box }
+        \dim_set:Nn \prevdepth
+          { \dim_min:nn \l__vitae_modern_reach_dim \l__vitae_modern_last_dim }
+      }
+      { \dim_set:Nn \prevdepth { \box_dp:N \l__vitae_modern_body_box } }
   }
 
 % --- Templates ------------------------------------------------------------
