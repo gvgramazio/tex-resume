@@ -99,7 +99,8 @@
         \dim_eval:n
           { \ifvitaeset { photo } { \linewidth - \vitaephotowidth - 1em } { \linewidth } }
       }
-      { \Huge \bfseries \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+      \taggedheading { 1 }
+        { { \Huge \bfseries \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par } }
       \ifvitaeset { jobtitle } { \smallskip { \Large \thejobtitle \par } } { }
       \medskip \small \raggedright \printcontacts
     \end { minipage }
@@ -113,10 +114,14 @@
 \settemplate { section }
   {
     \par \addvspace { \bigskipamount }
-    \noindent
-    { \large \bfseries \color { vitaeaccent } \MakeUppercase { \field { title } } }
-    \hspace { .5em } { \color { vitaeaccent } \leaders \hrule height .6pt \hfill }
-    \par \nopagebreak \medskip
+    \taggedheading { 2 }
+      {
+        \noindent
+        { \large \bfseries \color { vitaeaccent } \MakeUppercase { \field { title } } }
+        \hspace { .5em } { \color { vitaeaccent } \leaders \hrule height .6pt \hfill }
+        \par
+      }
+    \nopagebreak \medskip
   }
 
 % Entry: dates in the margin column; title, org and location beside them.

@@ -1,0 +1,37 @@
+% Accessibility helpers without tagging (tagged output is validated with
+% veraPDF in CI): contact labels, \addcontact options, and pass-through of
+% \actualtext, \taggedheading and \decorative.
+\documentclass{vitae}
+\input{regression-test}
+\settemplate{contact}{\TYPE{icon=[\field{icon}] url=[\field{url}]}}
+\settemplate{contactsep}{\TYPE{sep}}
+\newcommand\samewidth[3]{%
+  \setbox0\hbox{#2}\setbox2\hbox{#3}%
+  \TYPE{#1: \ifdim\wd0=\wd2 same\else different\fi}}
+\START
+
+\TEST{built-in contacts carry a label for their icon}{
+  \let\faEnvelope\relax \let\faGithub\relax
+  \email{jane@example.com}
+  \github{jdoe-example}
+  \printcontacts
+}
+
+% Values containing = or , must be braced, as in any key=value list.
+\TEST{\addcontact: plain URL, options, label only, nothing}{
+  \email{}\github{}
+  \addcontact[https://example.org]{ICON}{plain}
+  \addcontact[url={https://example.org/a?b=1}, label=Blog]{ICON}{keyed}
+  \addcontact[label=Fax]{ICON}{label only}
+  \addcontact{ICON}{nothing}
+  \printcontacts
+}
+
+\TEST{without tagging, the helpers only typeset their content}{
+  \samewidth{actualtext}{\actualtext{Email:}{X}}{X}
+  \samewidth{empty actualtext}{\actualtext{}{X}}{X}
+  \taggedheading{2}{\TYPE{taggedheading content}}
+  \decorative{\TYPE{decorative content}}
+}
+
+\END
