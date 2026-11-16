@@ -4,6 +4,20 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Accessible output: with `\DocumentMetadata{tagging=on, pdfstandard=ua-2}` (or
+  `ua-1` with `pdfversion=1.7`) on LuaLaTeX, vitae PDFs conform to PDF/UA-2 or
+  PDF/UA-1: the name and section titles are headings, icons have replacement
+  text, decoration is an artifact, the photo has alt text, and the document
+  title is set. A warning is given if tagging is used on other engines.
+- Clean text extraction for applicant-tracking systems on every engine:
+  contact icons extract as their label ("Email:", "GitHub:") and separators
+  as "; ", and pdfTeX icon fonts get complete Unicode maps.
+- `\actualtext`, `\taggedheading` and `\decorative` for templates;
+  `\addcontact[url=…, label=…]`.
+- CI: veraPDF validation (PDF/UA-1 and UA-2), text-extraction checks and
+  WCAG contrast checks of theme colours (`scripts/check-pdf.sh`,
+  `scripts/check-contrast.py`); `examples/accessible*.tex`.
+- `scripts/build.sh` honours a `% engines: …` line in an example.
 - Entry styles: `compact` and `inline` alongside the default `full`, chosen
   per list (`\printentries[style=…]`) or per entry (`style` key). Users can
   override them or define new ones with `\settemplate{entry/<name>}`.

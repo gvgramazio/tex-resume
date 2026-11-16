@@ -25,12 +25,30 @@ A LaTeX class for resumes. You declare your data once in the preamble, and a the
 
 See [examples/](examples/) for complete documents.
 
+## Accessibility and ATS
+
+Every vitae PDF extracts as clean text, which is what applicant-tracking systems (ATS) read: icons come out as their label (`Email: jane.doe@example.com`, `GitHub: jdoe-example`) and contacts never run together. That needs no setup.
+
+For a tagged, accessible PDF that conforms to PDF/UA, make this the first line and compile with **LuaLaTeX**:
+
+```latex
+\DocumentMetadata{tagging=on, pdfstandard=ua-2, lang=en-US}   % PDF/UA-2 (PDF 2.0)
+% or: \DocumentMetadata{tagging=on, pdfstandard=ua-1, pdfversion=1.7, lang=en-US}
+\documentclass{vitae}
+```
+
+The name and section titles become headings, icons get replacement text, decoration is marked as such, the photo gets alt text, and the document title is set from `\name` and `\jobtitle`. CI validates both standards with veraPDF.
+
+- **Engines:** tagging is supported with LuaLaTeX only. pdfLaTeX's tagging cannot see inside the boxes vitae layouts use, so vitae warns if tagging is on there. On XeLaTeX, icons are hidden from extracted text but their labels are omitted, because its PDF driver would place them out of order.
+- **Labels:** built-in contacts are labelled in English. For extra contacts, write `\addcontact[url=…, label=Blog]{\faRss}{example.org/blog}`; without a label, the icon is simply hidden from extracted text. Brace values that contain `=` or `,`, e.g. `url={https://example.org/?a=1}`.
+- **Your own templates:** wrap headings in `\taggedheading{<level>}{…}`, drawn decoration in `\decorative{…}`, and symbols that carry meaning in `\actualtext{<text>}{…}`.
+
 ## Commands
 
 | Purpose | Commands |
 |---------|----------|
 | Identity | `\name{First}{Last}`, `\firstname`, `\lastname`, `\jobtitle`, `\photo{file}` |
-| Contacts | `\email`, `\phone`, `\address`, `\homepage{example.com}`, `\linkedin{id}`, `\github{user}`, `\orcid{id}`, `\addcontact[url]{icon}{text}` |
+| Contacts | `\email`, `\phone`, `\address`, `\homepage{example.com}`, `\linkedin{id}`, `\github{user}`, `\orcid{id}`, `\addcontact[url]{icon}{text}` or `\addcontact[url=…, label=…]{icon}{text}` |
 | Read data | `\the<field>` (e.g. `\theemail`), `\ifvitaeset{<field>}{yes}{no}` |
 | Header | `\makeheader`, `\printcontacts`, `\printphoto` |
 | Entries | `\cventry{<keys>}{body}`. Keys: `title`, `org`, `location`, `start`, `end`, `date` (= start and end), `style`, `dateformat`, `datelocale` |
@@ -38,7 +56,7 @@ See [examples/](examples/) for complete documents.
 | Lists | `\addentry{list}{<keys>}{body}`, `\additem{list}{label}{text}`, `\printentries[heading]{list}` or `\printentries[heading=…, style=…]{list}` |
 | Dates | `\daterange{start}{end}`, `\formatdate{date}`, `\vitaedatelocale{name}{<keys>}` |
 | Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, parskip=…, photowidth=…}` |
-| Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|entry/<style>\|item}{code}`, using `\field{f}`, `\iffield{f}{yes}{no}`, `\ifanyfield{f,…}{yes}{no}`, `\joinfields{sep}{f, f=\format, …}` and `\addpunct{.}` inside |
+| Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|entry/<style>\|item}{code}`, using `\field{f}`, `\iffield{f}{yes}{no}`, `\ifanyfield{f,…}{yes}{no}`, `\joinfields{sep}{f, f=\format, …}` and `\addpunct{.}` inside; `\taggedheading`, `\decorative` and `\actualtext` for accessible output |
 
 Notes:
 - **Dates**: write them as ISO (`2020`, `2020-03` or `2020-03-01`), or as any other text, such as `Spring 2020`. ISO dates are printed in the chosen style; anything else is printed exactly as typed.
@@ -63,6 +81,8 @@ Requires TeX Live 2022 or later. `l3build` and `latexmk` are included in TeX Liv
 | Run one test | `l3build check <name>` |
 | Accept new test output | `l3build save <name>` |
 | Build examples into `build/examples/` | `scripts/build.sh [-e "pdf xe lua"] [-s]` |
+| Check built PDFs (PDF/UA, text extraction; needs poppler and veraPDF) | `scripts/check-pdf.sh` |
+| Check theme colour contrast (WCAG AA) | `scripts/check-contrast.py` |
 | Bump version in sources | `l3build tag X.Y.Z` |
 
 CI runs the tests and builds every example in strict mode on each pull request. Test results go to Codecov Test Analytics as a JUnit report (`scripts/junit.sh`); there is no line coverage, because TeX has no coverage tooling. CodeQL analyses the GitHub Actions workflows. Pushing a tag `vX.Y.Z` publishes a release with the package zip and the example PDFs. Design notes are in [docs/DESIGN.md](docs/DESIGN.md).
