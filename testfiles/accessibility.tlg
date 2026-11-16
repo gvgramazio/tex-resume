@@ -1,0 +1,28 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: built-in contacts carry a label for their icon
+============================================================
+icon=[\actualtext {Email:}{\faEnvelope }] url=[mailto:jane@example.com]
+sep
+icon=[\actualtext {GitHub:}{\faGithub }] url=[https://github.com/jdoe-example]
+============================================================
+============================================================
+TEST 2: \addcontact : plain URL, options, label only, nothing
+============================================================
+icon=[\actualtext {}{ICON}] url=[https://example.org]
+sep
+icon=[\actualtext {Blog:}{ICON}] url=[https://example.org/a?b=1]
+sep
+icon=[\actualtext {Fax:}{ICON}] url=[]
+sep
+icon=[\actualtext {}{ICON}] url=[]
+============================================================
+============================================================
+TEST 3: without tagging, the helpers only typeset their content
+============================================================
+actualtext: same
+empty actualtext: same
+taggedheading content
+decorative content
+============================================================

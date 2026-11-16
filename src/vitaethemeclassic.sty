@@ -31,7 +31,8 @@
 \settemplate { header }
   {
     { \centering
-      { \LARGE \scshape \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+      \taggedheading { 1 }
+        { { \LARGE \scshape \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par } }
       \ifvitaeset { jobtitle } { \smallskip { \large \itshape \thejobtitle \par } } { }
       \medskip \small \printcontacts \par }
     \bigskip
@@ -45,8 +46,8 @@
 \settemplate { section }
   {
     \par \addvspace { \bigskipamount }
-    { \large \scshape \color { vitaeaccent } \field { title } \par }
-    \nopagebreak \vspace { 1pt } \hrule \nopagebreak \medskip
+    \taggedheading { 2 } { { \large \scshape \color { vitaeaccent } \field { title } \par } }
+    \nopagebreak \vspace { 1pt } \decorative { \hrule } \nopagebreak \medskip
   }
 
 % Entry: bold title and dates on one line, italic org and location below.

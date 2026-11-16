@@ -21,7 +21,8 @@
 \RequirePackage { graphicx }
 \RequirePackage { fontawesome5 }
 \RequirePackage { hyperref }
-\hypersetup { hidelinks }
+\RequirePackage { accsupp }
+\hypersetup { hidelinks , pdfdisplaydoctitle }
 \urlstyle { same }
 
 % Resume defaults; themes may override.
@@ -31,6 +32,7 @@
 
 % --- Variants -------------------------------------------------------------
 \prg_generate_conditional_variant:Nnn \tl_if_blank:n { v , e } { T , F , TF }
+\cs_generate_variant:Nn \str_set_convert:Nnnn { NeVn }
 \cs_generate_variant:Nn \msg_warning:nnn { nnV }
 \cs_generate_variant:Nn \msg_error:nnnn { nnVn }
 
@@ -42,6 +44,12 @@
 \msg_new:nnn { vitae } { second-theme }
   { Theme~'#1'~already~loaded;~'#2'~ignored. }
 \msg_new:nnn { vitae } { empty-list } { List~'#1'~is~empty~or~undefined. }
+\msg_new:nnn { vitae } { tagging-engine }
+  {
+    Tagged~PDF~is~supported~with~LuaLaTeX~only:~on~this~engine~the~boxes~
+    vitae~layouts~use~are~not~tagged~correctly.~Text~extraction~is~
+    unaffected.
+  }
 \msg_new:nnn { vitae } { unknown-style }
   { Entry~style~'#1'~has~no~template~'entry/#1';~the~default~is~used. }
 \msg_new:nnn { vitae } { photo-missing } { Photo~'#1'~not~found;~skipped. }
@@ -443,7 +451,7 @@
 \cs_new_protected:cpn { __vitae_template_header: }
   {
     \begin { center }
-      { \LARGE \thefirstname \c_space_tl \thelastname \par }
+      \taggedheading { 1 } { { \LARGE \thefirstname \c_space_tl \thelastname \par } }
       \ifvitaeset { jobtitle } { \thejobtitle \par } { }
       \printcontacts
     \end { center }
@@ -452,7 +460,11 @@
   { \mbox { \field { icon } ~ \field { text } } }
 \cs_new_protected:cpn { __vitae_template_contactsep: } { \quad }
 \cs_new_protected:cpn { __vitae_template_section: }
-  { \par \bigskip { \large \bfseries \field { title } \par } \nopagebreak \medskip }
+  {
+    \par \bigskip
+    \taggedheading { 2 } { { \large \bfseries \field { title } \par } }
+    \nopagebreak \medskip
+  }
 \cs_new_protected:cpn { __vitae_template_entry: }
   {
     \par \textbf { \field { title } } \hfill \field { dates } \par
@@ -483,44 +495,155 @@
 \cs_new_protected:cpn { __vitae_template_item: }
   { \par \textbf { \field { label } } : ~ \field { body } \par }
 
-% --- Contacts -------------------------------------------------------------
-% Contacts are built at \makeheader time as a sequence of
-% \__vitae_contact:nnn {<icon>} {<url>} {<text>}: first the built-in fields
-% (in a fixed order), then those added with \addcontact.
-\seq_new:N \l__vitae_contacts_seq
-\seq_new:N \g__vitae_extra_contacts_seq
-\cs_new_protected:Npn \__vitae_contact:nnn #1#2#3
+% --- Accessibility --------------------------------------------------------
+% The PDF must read well for screen readers (tagged PDF, enabled by the
+% document's \DocumentMetadata) and for text extraction (ATS), tagged or not.
+% \actualtext{<text>}{<content>}: <content> is read and extracted as <text>
+% (empty: as nothing), on every engine and with or without tagging. Two
+% layers: marked-content ActualText (accsupp) serves plain text extraction,
+% which ATS use and which ignores structure; under tagging, a Span structure
+% element with the same ActualText (or an artifact, for empty <text>)
+% serves assistive technology and PDF/UA.
+\tl_new:N \l__vitae_actualtext_tl
+% The text is passed as UTF-16 hex, the one encoding every driver
+% (pdfTeX, LuaTeX, xdvipdfmx) writes faithfully; pdfTeX holds text as UTF-8
+% bytes, the other engines as Unicode characters.
+\str_new:N \l__vitae_actualtext_str
+\str_const:Ne \c__vitae_text_encoding_str { \sys_if_engine_pdftex:T { utf8 } }
+% XeTeX: xdvipdfmx writes replacement text where extraction reads it out of
+% order (labels pile up later on the page), so there <content> is only
+% hidden; use pdfTeX or LuaTeX for labelled output.
+\cs_new_protected:Npn \__vitae_accsupp:nn #1#2
+  {
+    \str_set_convert:NeVn \l__vitae_actualtext_str
+      { \sys_if_engine_xetex:F { \text_purify:n {#1} } }
+      \c__vitae_text_encoding_str { utf16 / hex }
+    \exp_args:Ne \BeginAccSupp
+      { method = hex , ActualText = \l__vitae_actualtext_str }
+    #2
+    \EndAccSupp { }
+  }
+\NewDocumentCommand \actualtext { m +m }
+  {
+    \tag_if_active:TF
+      {
+        \tag_mc_end_push:
+        \tl_if_blank:nTF {#1}
+          {
+            \tag_mc_begin:n { artifact }
+            \__vitae_accsupp:nn { } {#2}
+            \tag_mc_end:
+          }
+          {
+            % tagpdf stores the value almost verbatim: give it plain text.
+            \tl_set:Ne \l__vitae_actualtext_tl { \text_purify:n {#1} }
+            \exp_args:Ne \tag_struct_begin:n
+              { tag = Span , actualtext = { \exp_not:V \l__vitae_actualtext_tl } }
+            \tag_mc_begin:n { }
+            \__vitae_accsupp:nn {#1} {#2}
+            \tag_mc_end:
+            \tag_struct_end:
+          }
+        \tag_mc_begin_pop:n { }
+      }
+      { \__vitae_accsupp:nn {#1} {#2} }
+  }
+% \decorative{<material>}: rules and other drawn decoration; under tagging
+% it is marked as an artifact (pdfTeX does not do that by itself).
+\NewDocumentCommand \decorative { +m }
+  {
+    \tag_if_active:TF
+      { \tag_mc_artifact_group_begin:n { notype } #1 \tag_mc_artifact_group_end: }
+      {#1}
+  }
+% \taggedheading{<level>}{<material>}: under tagging, <material> (whole
+% paragraphs) becomes a heading H<level> instead of P; otherwise a no-op.
+\NewDocumentCommand \taggedheading { m +m }
+  {
+    \tag_if_active:TF
+      {
+        \par
+        \tag_struct_begin:n { tag = H#1 }
+        \tagpdfparaOff
+        \tag_mc_begin:n { }
+        #2
+        \tag_mc_end:
+        \tagpdfparaOn
+        \tag_struct_end:
+      }
+      {#2}
+  }
+% pdfTeX: map every Font Awesome glyph to its Unicode code point, so the
+% icon fonts carry a complete ToUnicode table (required by PDF/UA). The
+% mapping file is read again with a collecting definition of its entries.
+% Each mapping is scoped to the icon fonts ("tfm:<font>/<glyph>"): icons
+% named "at", "slash" or "plus" must not remap @, / and + in text fonts.
+\cs_new_protected:Npn \__vitae_fa_unicode:nnn #1#2#3
+  { \pdfglyphtounicode { tfm: #1 / #2 } { \int_to_Hex:n {#3} } }
+\sys_if_engine_pdftex:T
   {
     \group_begin:
-      \tl_set:Nn \l__vitae_f_icon_tl {#1}
-      \tl_set:Nn \l__vitae_f_url_tl {#2}
-      \tl_if_blank:nTF {#2}
-        { \tl_set:Nn \l__vitae_f_text_tl {#3} }
-        { \tl_set:Nn \l__vitae_f_text_tl { \href {#2} {#3} } }
+      \cs_set_protected:Npn \__fontawesome_def_icon:nnnnn #1#2#3#4#5
+        {
+          \tl_if_in:nnTF {#3} { brands }
+            { \__vitae_fa_unicode:nnn { fa5#3 } {#2} {#5} }
+            {
+              \__vitae_fa_unicode:nnn { fa5#3solid } {#2} {#5}
+              \__vitae_fa_unicode:nnn { fa5#3regular } {#2} {#5}
+            }
+        }
+      \file_input:n { fontawesome5-mapping.def }
+    \group_end:
+    \int_gset:Nn \pdfgentounicode { 1 }
+  }
+% A resume has no maths: skip LuaTeX's MathML generation under tagging
+% (it would otherwise warn that unicode-math is not loaded).
+\cs_if_exist:NT \tagpdfsetup
+  { \sys_if_engine_luatex:T { \tagpdfsetup { math / mathml / luamml / load = false } } }
+
+% --- Contacts -------------------------------------------------------------
+% Contacts are built at \makeheader time as a sequence of
+% \__vitae_contact:nnnn {<label>} {<icon>} {<url>} {<text>}: first the
+% built-in fields (in a fixed order), then those added with \addcontact.
+% The icon is read and extracted as "<label>:" (or not at all without a
+% label), so "GitHub: jdoe-example" survives screen readers and ATS.
+\seq_new:N \l__vitae_contacts_seq
+\seq_new:N \g__vitae_extra_contacts_seq
+\cs_new_protected:Npn \__vitae_contact:nnnn #1#2#3#4
+  {
+    \group_begin:
+      \tl_if_blank:nTF {#1}
+        { \tl_set:Nn \l__vitae_f_icon_tl { \actualtext { } {#2} } }
+        { \tl_set:Nn \l__vitae_f_icon_tl { \actualtext { #1 : } {#2} } }
+      \tl_set:Nn \l__vitae_f_url_tl {#3}
+      \tl_if_blank:nTF {#3}
+        { \tl_set:Nn \l__vitae_f_text_tl {#4} }
+        { \tl_set:Nn \l__vitae_f_text_tl { \href {#3} {#4} } }
       \__vitae_template_use:n { contact }
     \group_end:
   }
-% Text field: shown as typed, not linked.
-\cs_new_protected:Npn \__vitae_contact_text:nn #1#2
+% Text field: shown as typed, not linked. #1 field, #2 label, #3 icon.
+\cs_new_protected:Npn \__vitae_contact_text:nnn #1#2#3
   {
     \tl_if_blank:vF { g__vitae_field_#1_tl }
       {
         \seq_put_right:Nx \l__vitae_contacts_seq
           {
-            \exp_not:N \__vitae_contact:nnn { \exp_not:n {#2} } { }
+            \exp_not:N \__vitae_contact:nnnn {#2} { \exp_not:n {#3} } { }
               { \exp_not:v { g__vitae_field_#1_tl } }
           }
       }
   }
 % String field: linked to <prefix><value>, shown via \nolinkurl.
-\cs_new_protected:Npn \__vitae_contact_link:nnn #1#2#3
+% #1 field, #2 label, #3 icon, #4 URL prefix.
+\cs_new_protected:Npn \__vitae_contact_link:nnnn #1#2#3#4
   {
     \tl_if_blank:vF { g__vitae_field_#1_tl }
       {
         \seq_put_right:Nx \l__vitae_contacts_seq
           {
-            \exp_not:N \__vitae_contact:nnn { \exp_not:n {#2} }
-              { \exp_not:n {#3} \exp_not:v { g__vitae_field_#1_tl } }
+            \exp_not:N \__vitae_contact:nnnn {#2} { \exp_not:n {#3} }
+              { \exp_not:n {#4} \exp_not:v { g__vitae_field_#1_tl } }
               { \exp_not:N \nolinkurl { \exp_not:v { g__vitae_field_#1_tl } } }
           }
       }
@@ -528,30 +651,52 @@
 \cs_new_protected:Npn \__vitae_contacts_collect:
   {
     \seq_clear:N \l__vitae_contacts_seq
-    \__vitae_contact_link:nnn { email } { \faEnvelope } { mailto: }
-    \__vitae_contact_text:nn { phone } { \faPhone }
-    \__vitae_contact_text:nn { address } { \faMapMarker* }
-    \__vitae_contact_link:nnn { homepage } { \faGlobe } { https:// }
-    \__vitae_contact_link:nnn { linkedin } { \faLinkedin }
+    \__vitae_contact_link:nnnn { email } { Email } { \faEnvelope } { mailto: }
+    \__vitae_contact_text:nnn { phone } { Phone } { \faPhone }
+    \__vitae_contact_text:nnn { address } { Address } { \faMapMarker* }
+    \__vitae_contact_link:nnnn { homepage } { Website } { \faGlobe } { https:// }
+    \__vitae_contact_link:nnnn { linkedin } { LinkedIn } { \faLinkedin }
       { https://www.linkedin.com/in/ }
-    \__vitae_contact_link:nnn { github } { \faGithub } { https://github.com/ }
-    \__vitae_contact_link:nnn { orcid } { \faOrcid } { https://orcid.org/ }
+    \__vitae_contact_link:nnnn { github } { GitHub } { \faGithub } { https://github.com/ }
+    \__vitae_contact_link:nnnn { orcid } { ORCID } { \faOrcid } { https://orcid.org/ }
     \seq_concat:NNN \l__vitae_contacts_seq
       \l__vitae_contacts_seq \g__vitae_extra_contacts_seq
   }
-% \addcontact[<url>]{<icon>}{<text>}: any extra contact, appended in order.
+% \addcontact[<options>]{<icon>}{<text>}: any extra contact, appended in
+% order. Options: url, label (read for the icon); without "=" the whole
+% argument is the URL.
+\tl_new:N \l__vitae_contact_url_tl
+\tl_new:N \l__vitae_contact_label_tl
+\keys_define:nn { vitae / contact }
+  {
+    url   .tl_set:N = \l__vitae_contact_url_tl ,
+    label .tl_set:N = \l__vitae_contact_label_tl ,
+  }
 \NewDocumentCommand \addcontact { O { } m m }
   {
-    \seq_gput_right:Nn \g__vitae_extra_contacts_seq
-      { \__vitae_contact:nnn {#2} {#1} {#3} }
+    \group_begin:
+      \tl_clear:N \l__vitae_contact_url_tl
+      \tl_clear:N \l__vitae_contact_label_tl
+      \tl_if_in:nnTF {#1} { = }
+        { \keys_set:nn { vitae / contact } {#1} }
+        { \tl_set:Nn \l__vitae_contact_url_tl {#1} }
+      \seq_gput_right:Nx \g__vitae_extra_contacts_seq
+        {
+          \exp_not:N \__vitae_contact:nnnn
+            { \exp_not:V \l__vitae_contact_label_tl } { \exp_not:n {#2} }
+            { \exp_not:V \l__vitae_contact_url_tl } { \exp_not:n {#3} }
+        }
+    \group_end:
   }
 % \printcontacts: every contact, separated by the contactsep template.
 \NewDocumentCommand \printcontacts { }
   {
     \group_begin:
       \__vitae_contacts_collect:
+      % Separators are read and extracted as "; ", so contacts never run
+      % together, whatever the theme draws.
       \seq_use:Nn \l__vitae_contacts_seq
-        { \__vitae_template_use:n { contactsep } }
+        { \actualtext { ; ~ } { \__vitae_template_use:n { contactsep } } }
     \group_end:
   }
 
@@ -572,7 +717,12 @@
         \file_if_exist:nT { \g__vitae_field_photo_tl }
           { \bool_set_true:N \l__vitae_found_bool }
         \bool_if:NTF \l__vitae_found_bool
-          { \includegraphics [ width = \vitaephotowidth ] { \g__vitae_field_photo_tl } }
+          {
+            \includegraphics
+              [ width = \vitaephotowidth ,
+                alt = { Photo~of~\thefirstname \c_space_tl \thelastname } ]
+              { \g__vitae_field_photo_tl }
+          }
           { \msg_warning:nnV { vitae } { photo-missing } \g__vitae_field_photo_tl }
       }
   }
@@ -745,6 +895,9 @@
 \hook_gput_code:nnn { begindocument / before } { vitae }
   {
     \tl_if_empty:NT \g__vitae_theme_tl { \usetheme { classic } }
+    % Tagging (\DocumentMetadata) is validated on LuaTeX only.
+    \tag_if_active:T
+      { \sys_if_engine_luatex:F { \msg_warning:nn { vitae } { tagging-engine } } }
     % The main language (babel/polyglossia) should have a date locale.
     \bool_lazy_and:nnT
       { \tl_if_blank_p:V \l__vitae_date_locale_tl }
@@ -753,5 +906,15 @@
         \tl_if_exist:cF { g__vitae_date_alias_ \languagename _tl }
           { \msg_warning:nnV { vitae } { unknown-date-locale } \languagename }
       }
-    \hypersetup { pdfauthor = { \thefirstname \c_space_tl \thelastname } }
+    % Document title (shown by viewers; required by PDF/UA): the name,
+    % followed by the job title if set.
+    \hypersetup
+      {
+        pdfauthor = { \thefirstname \c_space_tl \thelastname } ,
+        pdftitle  =
+          {
+            \thefirstname \c_space_tl \thelastname
+            \ifvitaeset { jobtitle } { \c_space_tl \textendash \c_space_tl \thejobtitle } { }
+          } ,
+      }
   }
