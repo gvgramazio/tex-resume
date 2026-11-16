@@ -60,6 +60,33 @@ jobs:
           files: build/test/junit.xml
           report_type: test_results
 
+  # Accessibility and text extraction of the built examples: WCAG contrast
+  # of theme colours, veraPDF (PDF/UA-1 and UA-2) on the tagged examples,
+  # and the exact contact line of every showcase as text extraction (and so
+  # applicant-tracking systems) reads it.
+  pdf-checks:
+    name: pdf checks
+    needs: examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: examples-*
+          path: build/examples
+      # Artifacts land in build/examples/examples-<engine>; rename to <engine>.
+      - name: Arrange PDFs by engine
+        run: for d in build/examples/examples-*; do mv "$d" "build/examples/${d##*/examples-}"; done
+      - name: Install pdftotext
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Contrast of theme colours
+        run: scripts/check-contrast.py
+      - name: Check PDFs
+        env:
+          # veraPDF CLI v1.30.4, pinned by digest.
+          VERAPDF: docker run --rm -v ${{ github.workspace }}:/data verapdf/cli@sha256:f085855d442ad415e79fabbabcdd1803c2db4ee097cd5b94506c95ecdcfa1728
+        run: scripts/check-pdf.sh
+
   # Compile every example in strict mode, one job per engine.
   examples:
     name: examples (${{ matrix.engine }})
