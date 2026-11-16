@@ -7,6 +7,7 @@
 - `testfiles/`: l3build regression tests (`.lvt` input, `.tlg` expected log).
 - `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `stress-*` (layout edge cases), plus shared data in `examples/data/`.
 - `scripts/build.sh`: compiles the examples (used by both CI and the `build` skill).
+- `scripts/check-pdf.sh`: veraPDF (PDF/UA) and text-extraction checks of built examples; `scripts/check-contrast.py`: WCAG contrast of theme colours. Both run in CI and need `pdftotext` (poppler) and `verapdf` locally.
 - `scripts/junit.sh`: turns the last `l3build check` run into JUnit XML, which CI uploads to Codecov Test Analytics.
 - `.github/workflows/codeql.yml`: CodeQL analysis of the workflows themselves (`actions` language).
 - `.claude/skills/`: `build`, `test`, `new-theme`, `release`.
@@ -14,8 +15,8 @@
 ## Rules
 - **Never put personal data in the repo.** Use invented names (Jane Doe), `example.com` and lorem ipsum.
 - Every behaviour change needs an l3build test. Edge cases go in their own test file.
-- Code must work on pdfLaTeX, XeLaTeX and LuaLaTeX. Keep the engine-specific code (fonts) in themes, behind `\iftutex`.
-- Before you commit, run `l3build check` and `scripts/build.sh -s`. Both must pass.
+- Code must work on pdfLaTeX, XeLaTeX and LuaLaTeX. Keep the engine-specific code (fonts) in themes, behind `\sys_if_engine_pdftex:TF`. Tagged PDF is supported on LuaLaTeX; text extraction must stay clean on all three.
+- Before you commit, run `l3build check`, `scripts/build.sh -s` and `scripts/check-pdf.sh`. All must pass.
 - Work on a branch and merge through a PR. CI must be green to merge. Add an entry under *Unreleased* in `CHANGELOG.md`.
 - In workflows, pin third-party actions (anything outside `actions/*` and `github/*`) to a full commit SHA with a `# vX.Y.Z` comment. Dependabot keeps the pins current, and CodeQL flags unpinned tags.
 - Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `docs:`, `test:`, `ci:`, `chore:`, `refactor:`. Mark breaking changes with `feat!:` or a `BREAKING CHANGE:` footer. The commit types determine the next version. Don't use emoji.
@@ -27,4 +28,4 @@
 - Naming: internal names are `\l__vitae_...`, `\g__vitae_...`, `\__vitae_...:n`. Public commands are plain document-level names, created with `\NewDocumentCommand`.
 - Report problems with `\msg_new:nnn {vitae} {...}` and `\msg_error:nn`/`\msg_warning:nn`, never with raw `\errmessage`.
 - Keep it terse: no dead code, no options nobody asked for.
-- Templates never print raw dates. They always go through `\formatdate`/`\daterange`, which parse ISO input and localise the output (see DESIGN.md §6).
+- Templates never print raw dates. They always go through `\formatdate`/`\daterange`, which parse ISO input and localise the output (see DESIGN.md §7).

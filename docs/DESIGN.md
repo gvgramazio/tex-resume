@@ -71,13 +71,22 @@ CLAUDE.md             contributor conventions: code style, naming, testing
 - **`\printentries` options.** The optional argument is parsed as key=value (`heading`, `style`) when it contains `=`, and is otherwise a plain heading, which keeps `\printentries[Experience]{work}` working. Filters (`only`, `except`) and sorting will add keys here.
 - **Template helpers.** `\joinfields{<sep>}{title=\textbf, org, location}` prints only the fields that are set, each in its optional format, so templates leave no stray separators. `\ifanyfield` is its expandable test. `\addpunct{.}` adds punctuation unless the text already ends with sentence punctuation (space factor above 1000, as amsthm's `\@addpunct`; a word ending in a capital, such as "USA.", still gets a second period).
 
-## 5. Paragraph spacing
+## 5. Accessibility and text extraction
+- **Two readers.** Applicant-tracking systems read the plain text stream and ignore tags; assistive technology reads the tag structure. Both are served, whatever the engine and whether or not tagging is on.
+- **No option in vitae.** Tagging is switched on by the document's `\DocumentMetadata` line, which LaTeX requires before `\documentclass`. Everything vitae controls is always on, because it has no downside.
+- **Replacement text** (`\actualtext`) has two layers: marked-content ActualText (`accsupp`, passed as UTF-16 hex, the one encoding every driver writes faithfully) for plain extraction; and, under tagging, a `Span` structure element with the same ActualText, or an artifact if the text is empty. Contact icons use their label ("Email:"); separators read "; ". On XeTeX the text is left empty, because xdvipdfmx writes it where extraction reads it out of order.
+- **Structure.** `\taggedheading` tags the name as H1 and section titles as H2 (headings are template paragraphs, so paragraph tagging is switched off around them). `\decorative` marks drawn decoration as an artifact. The photo carries alt text. The PDF title is the name plus job title, and viewers are asked to show it.
+- **Fonts.** On pdfTeX, every Font Awesome glyph is mapped to its code point, scoped to the icon fonts with `tfm:<font>/<glyph>`: icons named `at`, `slash` and `plus` must not remap `@`, `/` and `+` in text fonts.
+- **Engines.** Tagged output is validated on LuaTeX only. pdfTeX's tagging cannot follow content through the boxes the layouts are built from (parboxes, measured and unpacked boxes), so vitae warns there. LuaTeX tags per glyph and passes PDF/UA-1 and UA-2 for every example, the stress tests included.
+- **Standards.** PDF/UA-2 (PDF 2.0) is the primary target; PDF/UA-1 also passes but needs `pdfversion=1.7`, because tagging defaults to PDF 2.0. PDF/A is optional (`ua-2` with `a-4f` works). WCAG is not a PDF standard; its design rules apply to themes, and CI checks theme colours for 4.5:1 contrast.
+
+## 6. Paragraph spacing
 - **Setting.** `parskip` takes a length and sets TeX's `\parskip`. The name follows the TeX length (and KOMA-Script's `parskip` option); vitae does not load the `parskip` package, which would also loosen template lines.
 - **Structure stays fixed.** The header, section, entry and item groups run with `\parskip` = 0, so a template's lines keep their exact spacing under any setting. That includes user templates written with `\par`.
 - **Bodies.** Blank lines in entry and item bodies are stored as `\__vitae_par:`, which ends the paragraph and adds the configured space with `\addvspace`. This works inside parboxes, lists and boxes, which reset `\parskip`, so every theme behaves the same.
 - **Free text** (for example a Profile section) uses the global `\parskip`. The first paragraph after a heading therefore gets the heading's space plus `\parskip`, as in any `parskip`-based layout.
 
-## 6. Dates
+## 7. Dates
 - **Input.** `start` and `end` are stored exactly as typed. Templates never print them directly: they always go through `\formatdate`, and ranges through `\daterange`.
 - **Parsing.** `\formatdate` is expandable. It turns its trimmed input into a string, splits it at `-`, and accepts it only if it rebuilds exactly as `YYYY`, `YYYY-MM` (01–12) or `YYYY-MM-DD` (01–31; days aren't checked against the month). Anything else is returned unchanged.
 - **Output.** `dateformat` (`long` | `short` | `numeric` | `iso` | `year`) picks a renderer. A year on its own is always printed as the year. Named styles take the month name from the locale's lists, and the day without its leading zero.
