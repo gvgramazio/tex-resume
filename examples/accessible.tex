@@ -1,0 +1,23 @@
+% engines: lua
+% Accessible PDF (PDF/UA-2, PDF 2.0) that also extracts cleanly for ATS.
+% \DocumentMetadata must come first. Tagged PDF needs LuaLaTeX.
+\DocumentMetadata{tagging=on, pdfstandard=ua-2, lang=en-US}
+\documentclass{vitae}
+\usetheme{modern}
+\input{data/janedoe}
+\addcontact[url=https://example.org/blog, label=Blog]{\faRss}{example.org/blog}
+
+\begin{document}
+\makeheader
+
+\section{Profile}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+\printentries[Experience]{experience}
+\printentries[Education]{education}
+\printentries[Skills]{skills}
+\printentries[Languages]{languages}
+\printentries[heading=Certifications, style=compact]{certs}
+\printentries[heading=Talks, style=inline]{talks}
+\end{document}
