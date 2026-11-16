@@ -34,6 +34,11 @@ for e in $engines; do
   out="$PWD/build/examples/$e"
   mkdir -p "$out"
   for f in "$@"; do
+    # A "% engines: <list>" line in the first five lines limits the engines.
+    only=$(sed -n '1,5s/^% engines: *//p' "$f")
+    if [ -n "$only" ]; then
+      case " $only " in *" $e "*) ;; *) echo "SKIP  $e $f"; continue ;; esac
+    fi
     name=$(basename "$f" .tex)
     log="$out/$name.log"
     # -cd: run from the file's directory so relative \input paths resolve.
