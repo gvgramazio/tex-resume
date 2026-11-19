@@ -7,7 +7,7 @@ module = "vitae"
 sourcefiledir = "src"
 sourcefiles   = {"*.cls", "*.sty"}
 installfiles  = {"*.cls", "*.sty"}
-tagfiles      = {"*.cls", "*.sty"}
+tagfiles      = {"*.cls", "*.sty", "vitae-doc.tex"}
 
 -- Tests: one .lvt per behaviour/edge case, checked on every supported engine.
 testfiledir  = "testfiles"
@@ -15,13 +15,47 @@ checkengines = {"pdftex", "xetex", "luatex"}
 stdengine    = "pdftex"
 checkruns    = 1
 
+-- Documentation: the user manual (docs/vitae-doc.tex, l3doc) and its samples,
+-- small complete vitae documents that are compiled first and cropped to their
+-- content, so the manual shows real code beside its real output.
+docfiledir   = "docs"
+typesetfiles = {"vitae-doc.tex"}
+docfiles     = {"sample-*.tex"}
+
+-- Compile each sample with pdfLaTeX in the typesetting directory (which holds
+-- the class, the themes and the samples). The preloaded hooks wrap the body in
+-- a 12 cm minipage inside preview's tight page, so the PDF is cropped exactly.
+local crop = "\\AddToHook{begindocument/before}"
+  .. "{\\RequirePackage[active,tightpage]{preview}}"
+  .. "\\AddToHook{begindocument/end}{\\begin{preview}\\begin{minipage}{12cm}}"
+  .. "\\AddToHook{enddocument}{\\end{minipage}\\end{preview}}"
+function typeset_demo_tasks()
+  for _, p in ipairs(tree(typesetdir, "sample-*.tex")) do
+    local name = jobname(p.src)
+    local errorlevel = run(typesetdir,
+      "pdflatex -interaction=nonstopmode -halt-on-error \"" .. crop
+      .. "\\input{" .. name .. "}\"" .. " > " .. os_null)
+    if errorlevel ~= 0 then
+      print("! Could not compile sample " .. name .. " (see " .. typesetdir
+        .. "/" .. name .. ".log)")
+      return errorlevel
+    end
+  end
+  return 0
+end
+
 -- Packaging: README and LICENSE ship with the CTAN/release zip.
 textfiles = {"README.md", "LICENSE", "CHANGELOG.md"}
 
--- Rewrite `\ProvidesExpl...{name}{date}{version}` on `l3build tag`.
+-- Rewrite versions on `l3build tag`: `\ProvidesExpl...{name}{date}{version}`
+-- in the sources and `\ProvidesFile{name}[date vversion ...]` in the manual.
 function update_tag(file, content, tagname, tagdate)
   local version = tagname:gsub("^v", "")
-  return (content:gsub(
-    "(\\ProvidesExpl%a+%s*{[%w]+}%s*){[%d%-]+}{[%w%.%-]+}",
-    "%1{" .. tagdate .. "}{" .. version .. "}"))
+  content = content:gsub(
+    "(\\ProvidesExpl%a+%s*{[%w%.%-]+}%s*){[%d%-]+}{[%w%.%-]+}",
+    "%1{" .. tagdate .. "}{" .. version .. "}")
+  content = content:gsub(
+    "(\\ProvidesFile%s*{[%w%.%-]+}%s*%[)[%d%-]+ v[%w%.%-]+",
+    "%1" .. tagdate .. " v" .. version)
+  return content
 end

@@ -1,0 +1,13 @@
+\documentclass{vitae}
+\usepackage[english,italian]{babel}  % main language: Italian
+\vitaesetup{today=2026-11}
+\addentry{work}{title=Lorem Ipsum, start=2021-04}{}
+\addentry{work}{title=Dolor Sit, start=2018-09, end=2021-03}{}
+\addentry{work}{title=Amet Award, date=2017-11-15}{}
+\addentry{work}{title=Free Text, start=Spring 2016, end=2017}{}
+\begin{document}
+\printentries[heading=Italiano, durations]{work}
+\selectlanguage{english}
+{\vitaesetup{dateformat=short}
+ \printentries[heading={English, short}, durations]{work}}
+\end{document}
