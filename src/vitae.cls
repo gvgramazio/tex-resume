@@ -635,7 +635,9 @@
       }
   }
 % String field: linked to <prefix><value>, shown via \nolinkurl.
-% #1 field, #2 label, #3 icon, #4 URL prefix.
+% #1 field, #2 label, #3 icon, #4 URL prefix. The prefix is made a string
+% like the value: an expl3-typed "https://" (":" a letter) glued to a string
+% makes hyperref write a GoToR file link instead of a URI.
 \cs_new_protected:Npn \__vitae_contact_link:nnnn #1#2#3#4
   {
     \tl_if_blank:vF { g__vitae_field_#1_tl }
@@ -643,7 +645,7 @@
         \seq_put_right:Nx \l__vitae_contacts_seq
           {
             \exp_not:N \__vitae_contact:nnnn {#2} { \exp_not:n {#3} }
-              { \exp_not:n {#4} \exp_not:v { g__vitae_field_#1_tl } }
+              { \tl_to_str:n {#4} \exp_not:v { g__vitae_field_#1_tl } }
               { \exp_not:N \nolinkurl { \exp_not:v { g__vitae_field_#1_tl } } }
           }
       }
