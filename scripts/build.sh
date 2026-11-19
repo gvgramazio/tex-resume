@@ -3,6 +3,8 @@
 # Usage: scripts/build.sh [-e "pdf xe lua"] [-s] [file.tex ...]
 #   -e  engines to use (default: all three)
 #   -s  strict: fail on any LaTeX/package warning or overfull box
+# Example headers: "% engines: <list>" limits engines; "% allow-warning: <ERE>"
+# exempts a known warning from strict mode.
 # With no files, every examples/*.tex is built.
 set -eu
 cd "$(dirname "$0")/.."
@@ -45,7 +47,14 @@ for e in $engines; do
     if latexmk "$flag" -cd -silent -interaction=nonstopmode -halt-on-error \
         -file-line-error -outdir="$out" "$f" >/dev/null 2>&1; then
       # Warnings are listed always; in strict mode they also fail the build.
-      if grep -nE "Warning|Overfull" "$log" >"$out/$name.warnings"; then
+      # "% allow-warning: <ERE>" lines in the first ten lines exempt known,
+      # harmless warnings (each must say why next to it).
+      grep -nE "Warning|Overfull" "$log" >"$out/$name.warnings" || true
+      sed -n '1,10s/^% allow-warning: *//p' "$f" | while read -r pattern; do
+        grep -vE -- "$pattern" "$out/$name.warnings" >"$out/$name.warnings.tmp" || true
+        mv "$out/$name.warnings.tmp" "$out/$name.warnings"
+      done
+      if [ -s "$out/$name.warnings" ]; then
         echo "WARN  $e $f (see $out/$name.warnings)"
         cat "$out/$name.warnings"
         [ $strict -eq 0 ] || status=1

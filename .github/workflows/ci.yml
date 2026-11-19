@@ -60,10 +60,10 @@ jobs:
           files: build/test/junit.xml
           report_type: test_results
 
-  # Accessibility and text extraction of the built examples: WCAG contrast
-  # of theme colours, veraPDF (PDF/UA-1 and UA-2) on the tagged examples,
-  # and the exact contact line of every showcase as text extraction (and so
-  # applicant-tracking systems) reads it.
+  # Accessibility, archiving and text extraction of the built examples: WCAG
+  # contrast of theme colours, veraPDF (PDF/UA-1, PDF/UA-2 and every supported
+  # PDF/A recipe), the exact contact line of every showcase as text
+  # extraction (and so applicant-tracking systems) reads it, and link actions.
   pdf-checks:
     name: pdf checks
     needs: examples
