@@ -3,44 +3,48 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
-### Added
-- Accessible output: with `\DocumentMetadata{tagging=on, pdfstandard=ua-2}` (or
-  `ua-1` with `pdfversion=1.7`) on LuaLaTeX, vitae PDFs conform to PDF/UA-2 or
-  PDF/UA-1: the name and section titles are headings, icons have replacement
-  text, decoration is an artifact, the photo has alt text, and the document
-  title is set. A warning is given if tagging is used on other engines.
-- Clean text extraction for applicant-tracking systems on every engine:
-  contact icons extract as their label ("Email:", "GitHub:") and separators
-  as "; ", and pdfTeX icon fonts get complete Unicode maps.
-- `\actualtext`, `\taggedheading` and `\decorative` for templates;
-  `\addcontact[url=…, label=…]`.
-- CI: veraPDF validation (PDF/UA-1 and UA-2), text-extraction checks and
-  WCAG contrast checks of theme colours (`scripts/check-pdf.sh`,
-  `scripts/check-contrast.py`); `examples/accessible*.tex`.
-- `scripts/build.sh` honours a `% engines: …` line in an example.
-- Archival output: PDF/A-4f + PDF/UA-2, PDF/A-3a + PDF/UA-1 and PDF/A-2a +
-  PDF/UA-1 (LuaLaTeX), PDF/A-2u (pdfLaTeX, LuaLaTeX) and PDF/A-2b (all
-  engines) are documented with ready-made recipes and validated in CI
-  (`examples/archival-*.tex`).
-- `scripts/build.sh` honours `% allow-warning: <pattern>` for a known,
-  harmless warning in an example.
 
-### Fixed
-- The website, LinkedIn, GitHub and ORCID contact links were written as file
-  links (GoToR to `<url>.pdf`) instead of web links; they now open the
-  address. CI checks the link actions of every built example.
+## [0.3.0] - 2026-11-19
+### Added
+- `parskip` setting: space between paragraphs of free text and of entry and
+  item bodies (default `0.5\baselineskip plus 2pt`; `0pt` disables it).
 - Entry styles: `compact` and `inline` alongside the default `full`, chosen
   per list (`\printentries[style=…]`) or per entry (`style` key). Users can
   override them or define new ones with `\settemplate{entry/<name>}`.
 - `\printentries` options as key=value (`heading`, `style`); a plain
   heading still works.
-- Template helpers `\joinfields`, `\ifanyfield` and `\addpunct`.
-- `parskip` setting: space between paragraphs of free text and of entry and
-  item bodies (default `0.5\baselineskip plus 2pt`; `0pt` disables it).
+- Accessible output: with `\DocumentMetadata{tagging=on, pdfstandard=ua-2}` (or
+  `ua-1` with `pdfversion=1.7`) on LuaLaTeX, vitae PDFs conform to PDF/UA-2 or
+  PDF/UA-1: the name and section titles are headings, icons have replacement
+  text, decoration is an artifact, the photo has alt text, and the document
+  title is set. A warning is given if tagging is used on other engines.
+- Archival output: PDF/A-4f + PDF/UA-2, PDF/A-3a + PDF/UA-1 and PDF/A-2a +
+  PDF/UA-1 (LuaLaTeX), PDF/A-2u (pdfLaTeX, LuaLaTeX) and PDF/A-2b (all
+  engines), with ready-made recipes in the README.
+- Clean text extraction for applicant-tracking systems on every engine:
+  contact icons extract as their label ("Email:", "GitHub:") and separators
+  as "; ", and pdfTeX icon fonts get complete Unicode maps.
+- `\addcontact[url=…, label=…]`.
+- Template helpers: `\joinfields`, `\ifanyfield` and `\addpunct` for lines
+  without stray punctuation; `\actualtext`, `\taggedheading` and
+  `\decorative` for accessible output.
+- Development: CI validates PDF/UA and every PDF/A recipe with veraPDF,
+  checks extracted text, link actions and theme colour contrast
+  (`scripts/check-pdf.sh`, `scripts/check-contrast.py`); examples
+  `accessible*.tex` and `archival-*.tex`; `scripts/build.sh` honours
+  `% engines:` and `% allow-warning:` header lines.
 
 ### Changed
 - Paragraphs are now separated by default. Template lines are unaffected;
   `\vitaesetup{parskip=0pt}` restores the previous output.
+- Contact icons extract as their label and PDFs carry a document title.
+
+### Fixed
+- The website, LinkedIn, GitHub and ORCID contact links were written as file
+  links (GoToR to `<url>.pdf`) instead of web links; they now open the
+  address. Present since 0.1.0.
+- Lists in tagged documents no longer warn with LaTeX 2026-11 (explicit list
+  indent instead of enumitem's `leftmargin=*`; the layout is unchanged).
 
 ## [0.2.0] - 2026-11-15
 ### Added
