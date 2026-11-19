@@ -80,8 +80,8 @@ Known limitations:
 | Entries | `\cventry{<keys>}{body}`. Keys: `title`, `org`, `location`, `start`, `end`, `date` (= start and end), `style`, `dateformat`, `datelocale` |
 | Items | `\cvitem{label}{text}` |
 | Lists | `\addentry{list}{<keys>}{body}`, `\additem{list}{label}{text}`, `\printentries[heading]{list}` or `\printentries[heading=…, style=…]{list}` |
-| Dates | `\daterange{start}{end}`, `\formatdate{date}`, `\vitaedatelocale{name}{<keys>}` |
-| Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, parskip=…, photowidth=…}` |
+| Dates | `\daterange{start}{end}`, `\formatdate{date}`, `\duration{start}{end}`, `\vitaedatelocale{name}{<keys>}` |
+| Look | `\usetheme{name}`, `\vitaesetup{accent=…, dateformat=…, datelocale=…, durations, today=…, present=…, datesep=…, parskip=…, photowidth=…}` |
 | Templates | `\settemplate{header\|contact\|contactsep\|section\|entry\|entry/<style>\|item}{code}`, using `\field{f}`, `\iffield{f}{yes}{no}`, `\ifanyfield{f,…}{yes}{no}`, `\joinfields{sep}{f, f=\format, …}` and `\addpunct{.}` inside; `\taggedheading`, `\decorative` and `\actualtext` for accessible output |
 
 Notes:
@@ -90,6 +90,11 @@ Notes:
   - The language follows babel or polyglossia, including `\selectlanguage`. Built-in locales are `english` (US order), `british`, `italian`, `german`, `french` and `spanish`, with the usual babel aliases. Any other language falls back to English with a warning. `datelocale=<name>` forces a locale.
   - Add a locale with `\vitaedatelocale{<name>}{months={…}, short={…}, present=…, ym={#2 #1}, ymd={#3 #2 #1}, numeric-ym=…, numeric-ymd=…, aliases={…}}`. Patterns receive `#1` = year, `#2` = month, `#3` = day; keys you omit are taken from English.
   - Scope: in the preamble, settings apply to the whole document. Inside a group (`{…}`, an environment) they apply only there. As entry keys they apply to that entry alone.
+  - **Durations:** `\vitaesetup{durations}` adds the length of each entry's range ("2 yrs 7 mos"), shown by the themes next to the dates. It can also be enabled for one list (`\printentries[durations]{work}`) or one entry (the `durations` key). Months count inclusively, so Sep 2018 – Mar 2021 is 2 yrs 7 mos.
+    - **Ongoing ranges** end at the date of compilation. Fix it with `\vitaesetup{today=2026-11}` for reproducible output.
+    - **Year-only dates** give whole years (2018 – 2021 is 3 yrs), and a range within one year gets none.
+    - **No duration** for single dates (`date=`), free text, or an end before the start.
+    - **Units** come from the date locale ("2 anni 7 mesi"). `\vitaedatelocale` takes `units={yr, yrs, mo, mos}`, and `\duration{start}{end}` prints one directly.
   - `\daterange` prints `start – end`. With no end it prints `start – present`, where the word comes from the locale unless you set `present`. Equal dates print once.
 - **Entry styles**: `full` (the default `entry` template), `compact` (one line: title, organisation, location, dates) and `inline` (a run-in paragraph, for talks or publications). Choose one per list with `\printentries[heading=Certifications, style=compact]{certs}`, or per entry with the `style` key, which wins over the list's. `\settemplate{entry/<name>}{…}` overrides a style or defines a new one. `\printentries[<text>]` without `=` is still a plain heading.
 - **Paragraphs** are separated by `parskip` (default half a line; `parskip=0pt` turns it off). It applies to free text and to blank lines inside entry and item bodies, while the lines a template draws (title, organisation, header, section rule) keep their exact spacing. The setting is the TeX `\parskip` length; vitae does not load the `parskip` package.

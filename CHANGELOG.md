@@ -3,6 +3,14 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Added
+- Durations: `\duration{start}{end}` gives the length of a range of ISO
+  dates in the locale's units ("2 yrs 7 mos", "2 anni 7 mesi"); with
+  `\vitaesetup{durations}`, `\printentries[durations]` or the entry key, the
+  themes show it next to entry dates. `\vitaesetup{today=…}` fixes the end
+  of ongoing ranges; date locales take `units`.
+- `\printentries` treats a first option name without a value (such as
+  `[durations]`) as an option rather than a heading.
 
 ## [0.3.0] - 2026-11-19
 ### Added
