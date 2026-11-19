@@ -60,6 +60,22 @@ jobs:
           files: build/test/junit.xml
           report_type: test_results
 
+  # The user manual (docs/vitae-doc.tex) with its compiled samples.
+  manual:
+    name: manual
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: l3build doc
+        run: l3build doc
+      - name: Upload the manual
+        uses: actions/upload-artifact@v7
+        with:
+          name: manual
+          path: docs/vitae-doc.pdf
+          if-no-files-found: error
+
   # Accessibility, archiving and text extraction of the built examples: WCAG
   # contrast of theme colours, veraPDF (PDF/UA-1, PDF/UA-2 and every supported
   # PDF/A recipe), the exact contact line of every showcase as text
