@@ -1,0 +1,11 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: built-in URLs are strings, prefix included
+============================================================
+mailto:jane@example.com: string
+https://example.com/~jane: string
+https://www.linkedin.com/in/jane-doe-example: string
+https://github.com/jdoe-example: string
+https://orcid.org/0000-0000-0000-0000: string
+============================================================

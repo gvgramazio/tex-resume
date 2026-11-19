@@ -1,0 +1,28 @@
+% Built-in contact URLs must be strings throughout, prefix included: an
+% expl3-typed "https://" glued to a string value makes hyperref write a
+% file link (GoToR) instead of a web link (URI). CI checks the actions in
+% the built PDFs too (scripts/check-pdf.sh).
+\documentclass{vitae}
+\input{regression-test}
+\ExplSyntaxOn
+\cs_new_protected:Npn \urlisstring
+  {
+    \tl_set:Ne \l_tmpa_tl { \exp_args:NV \tl_to_str:n \l__vitae_f_url_tl }
+    \TYPE { \tl_to_str:N \l__vitae_f_url_tl :~
+      \tl_if_eq:NNTF \l_tmpa_tl \l__vitae_f_url_tl { string } { not~a~string } }
+  }
+\ExplSyntaxOff
+\settemplate{contact}{\urlisstring}
+\settemplate{contactsep}{}
+\START
+
+\TEST{built-in URLs are strings, prefix included}{
+  \email{jane@example.com}
+  \homepage{example.com/~jane}
+  \linkedin{jane-doe-example}
+  \github{jdoe-example}
+  \orcid{0000-0000-0000-0000}
+  \printcontacts
+}
+
+\END
