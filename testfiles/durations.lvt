@@ -1,0 +1,67 @@
+% Durations: \duration arithmetic and precision, "today", locale units, and
+% the duration field (off by default; per document, list and entry).
+\documentclass{vitae}
+\input{regression-test}
+% A fixed "today", so results do not depend on the compilation date.
+\vitaesetup{today=2026-11, datesep=--}
+\settemplate{entry}{\TYPE{[\field{title}] dates=[\field{dates}] duration=[\field{duration}]}}
+\START
+
+\TEST{month precision, counted inclusively}{
+  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2020-12}]}
+  \TYPE{[\duration{2020-01}{2021-01}][\duration{2020-03}{2020-03}]}
+  \TYPE{days are ignored: [\duration{2020-01-31}{2020-02-01}]}
+}
+
+\TEST{year precision when either date is a year only}{
+  \TYPE{[\duration{2018}{2021}][\duration{2018-09}{2021}][\duration{2018}{2021-03}]}
+  \TYPE{within one year: [\duration{2020}{2020}]}
+}
+
+\TEST{no duration}{
+  \TYPE{end before start: [\duration{2021-03}{2018-09}]}
+  \TYPE{free text: [\duration{Spring 2016}{2017}][\duration{2016}{Summer 2017}]}
+  \TYPE{no start: [\duration{}{2020}]}
+}
+
+\TEST{ongoing ranges end today}{
+  \TYPE{[\duration{2025-06}{}][\duration{2024}{}]}
+  \vitaesetup{today=2026}
+  \TYPE{year-only today counts as December: [\duration{2026-01}{}]}
+}
+
+\TEST{an invalid today is an error}{
+  \vitaesetup{today=yesterday}
+}
+
+\TEST{units follow the locale, with singular and plural}{
+  \vitaesetup{datelocale=italian} \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaesetup{datelocale=german}  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaesetup{datelocale=french}  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaesetup{datelocale=spanish} \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaedatelocale{pirate}{months={a,b,c,d,e,f,g,h,i,j,k,l}}
+  \vitaesetup{datelocale=pirate}  \TYPE{inherits English: [\duration{2018-09}{2021-03}]}
+}
+
+\TEST{the duration field is off by default}{
+  \cventry{title=Off, start=2018-09, end=2021-03}{}
+}
+
+\TEST{durations on: ranges only, not single dates or empty lengths}{
+  \vitaesetup{durations}
+  \cventry{title=Range, start=2018-09, end=2021-03}{}
+  \cventry{title=Ongoing, start=2025-06}{}
+  \cventry{title=Single, date=2019-11}{}
+  \cventry{title=Same year, start=2020, end=2020}{}
+  \cventry{title=Free text, start=Spring 2016, end=2017}{}
+}
+
+\TEST{per entry and per list}{
+  \cventry{title=Entry key, start=2018-09, end=2021-03, durations}{}
+  \cventry{title=After it, start=2018-09, end=2021-03}{}
+  \addentry{jobs}{title=Listed, start=2019-01, end=2019-06}{}
+  \printentries[durations]{jobs}
+  \printentries[durations=false]{jobs}
+}
+
+\END
