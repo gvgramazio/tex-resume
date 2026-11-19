@@ -43,6 +43,32 @@ The name and section titles become headings, icons get replacement text, decorat
 - **Labels:** built-in contacts are labelled in English. For extra contacts, write `\addcontact[url=…, label=Blog]{\faRss}{example.org/blog}`; without a label, the icon is simply hidden from extracted text. Brace values that contain `=` or `,`, e.g. `url={https://example.org/?a=1}`.
 - **Your own templates:** wrap headings in `\taggedheading{<level>}{…}`, drawn decoration in `\decorative{…}`, and symbols that carry meaning in `\actualtext{<text>}{…}`.
 
+## Archival PDF (PDF/A)
+
+PDF/A is the ISO standard for long-term archiving, which some employers, job portals and public bodies require. Choose a recipe and make it the first line of the document. Every recipe below is validated with veraPDF in CI, using the `examples/archival-*.tex` files:
+
+| Goal | First line | Engines |
+|---|---|---|
+| Archival + accessible, PDF 2.0 (newest) | `\DocumentMetadata{tagging=on, pdfstandard={a-4f,ua-2}, lang=en-US}` | LuaLaTeX |
+| Archival + accessible, PDF 1.7 (widest support) | `\DocumentMetadata{tagging=on, tagging-setup={attach-css=false}, pdfstandard={a-2a,ua-1}, pdfversion=1.7, lang=en-US}` | LuaLaTeX |
+| Archival + accessible, PDF 1.7, embedded files allowed | `\DocumentMetadata{tagging=on, pdfstandard={a-3a,ua-1}, pdfversion=1.7, lang=en-US}` | LuaLaTeX |
+| Archival, all text as Unicode | `\DocumentMetadata{pdfstandard=a-2u, pdfversion=1.7, lang=en-US}` | pdfLaTeX, LuaLaTeX |
+| Archival, visual fidelity only | `\DocumentMetadata{pdfstandard=a-2b, pdfversion=1.7, lang=en-US}` | all three |
+
+Which to choose:
+- **An "a" level** (accessible) if you can use LuaLaTeX. It is the only one that is also PDF/UA, which an application form may ask for.
+- **PDF/A-4f + PDF/UA-2** needs no extra settings.
+- **PDF/A-2a + PDF/UA-1** is accepted by the widest range of validators and portals.
+- **2u or 2b** are for when tagging isn't possible.
+
+Known limitations:
+- **PDF/A-2 and PDF/A-3 need `pdfversion=1.7`.** LaTeX writes PDF 2.0 by default, which only PDF/A-4 accepts. The same goes for PDF/UA-1.
+- **PDF/A-2 with tagging needs `attach-css=false`.** LaTeX's tagging embeds two HTML stylesheets for PDF-to-HTML conversion, and PDF/A-2 forbids embedded files that aren't themselves PDF/A. PDF/A-3 and PDF/A-4 allow them.
+- **The "a" levels need tagging, so LuaLaTeX** (see the section above).
+- **XeLaTeX can't reach PDF/A-2u:** its icon fonts lack a Unicode map (#32). LaTeX also warns there that XeTeX can't write interword spaces. That warning is harmless and appears for any `\DocumentMetadata` document.
+- **PDF/A-1** (PDF 1.4, no transparency) is not tested.
+- **Your own photo** should be a JPEG, a PNG or a PDF/A-compliant PDF. Images are embedded as they are, so a non-conforming PDF image breaks conformance.
+
 ## Commands
 
 | Purpose | Commands |
