@@ -18,6 +18,12 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   WCAG contrast checks of theme colours (`scripts/check-pdf.sh`,
   `scripts/check-contrast.py`); `examples/accessible*.tex`.
 - `scripts/build.sh` honours a `% engines: …` line in an example.
+- Archival output: PDF/A-4f + PDF/UA-2, PDF/A-3a + PDF/UA-1 and PDF/A-2a +
+  PDF/UA-1 (LuaLaTeX), PDF/A-2u (pdfLaTeX, LuaLaTeX) and PDF/A-2b (all
+  engines) are documented with ready-made recipes and validated in CI
+  (`examples/archival-*.tex`).
+- `scripts/build.sh` honours `% allow-warning: <pattern>` for a known,
+  harmless warning in an example.
 
 ### Fixed
 - The website, LinkedIn, GitHub and ORCID contact links were written as file
