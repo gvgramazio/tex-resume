@@ -1,0 +1,10 @@
+\documentclass{vitae}
+% One line per entry: "Title, Org .......... dates".
+\settemplate{entry}{%
+  \par\joinfields{, }{title=\textbf, org=\textit}\hfill\field{dates}\par
+  \iffield{body}{\field{body}\par}{}\smallskip}
+\begin{document}
+\section{Experience}
+\cventry{title=Lorem Ipsum, org=Dolor Ltd., start=2020-01}{Sit amet.}
+\cventry{title=Consectetur, start=2017-03, end=2019-12}{}
+\end{document}

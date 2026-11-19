@@ -1,0 +1,396 @@
+% vitae-doc.tex -- user manual of the vitae class (built with `l3build doc`).
+% Samples (sample-*.tex) are complete vitae documents, compiled first and
+% shown here as source beside their output.
+\documentclass{l3doc}
+\ProvidesFile{vitae-doc.tex}[2026-11-19 v0.3.0 vitae user manual]
+\usepackage{fancyvrb,graphicx,booktabs,array}
+
+% \sample{<name>}: the source of <name>.tex, then its cropped output.
+\newcommand\sample[1]{%
+  \par\medskip
+  % gobble=0: l3doc (via doc) would strip two characters from each line.
+  \VerbatimInput[gobble=0, frame=single, fontsize=\small, framesep=2mm,
+    label={\normalfont\small\ttfamily #1.tex}]{#1.tex}%
+  \par\nopagebreak\smallskip
+  \begin{center}
+    \fbox{\includegraphics[width=0.92\linewidth]{#1.pdf}}
+  \end{center}\medskip}
+\providecommand\XeLaTeX{Xe\LaTeX}
+% \key{<name>}: a key in running text.
+\newcommand\key[1]{\texttt{#1}}
+
+\GetFileInfo{vitae-doc.tex}
+\title{The \pkg{vitae} class\thanks{This manual describes version \fileversion, dated \filedate.}}
+\author{\url{https://github.com/gvgramazio/tex-resume}}
+\date{Released \filedate}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+\pkg{vitae} is a \LaTeX{} class for resumes. You declare your data once, in
+the preamble or in a separate file, and a \emph{theme} decides how it looks,
+in the same way \pkg{beamer} separates content from presentation. It works
+with pdf\LaTeX, \XeLaTeX{} and Lua\LaTeX, produces text that applicant-tracking
+systems extract cleanly, and can produce accessible (PDF/UA) and archival
+(PDF/A) files.
+\end{abstract}
+
+\tableofcontents
+
+\section{Quick start}
+
+A resume is a list of declarations followed by a body that prints them.
+\cs{makeheader} prints the name and contacts, as \cs{maketitle} does for a
+title, and \cs{printentries} prints a list of entries under a heading.
+
+\sample{sample-quickstart}
+
+Every vitae document follows this pattern. The data can live in its own file
+(\cs{input}\{data\}) so that several documents, in different themes or
+languages, share it.
+
+\section{Personal data and contacts}
+
+\begin{function}{\name,\firstname,\lastname,\jobtitle,\photo}
+  \begin{syntax}
+    \cs{name}\marg{first}\marg{last}
+    \cs{jobtitle}\marg{text}
+    \cs{photo}\marg{file}
+  \end{syntax}
+  Identity. \cs{name} sets \cs{firstname} and \cs{lastname} at once. The photo
+  is a graphics file, with or without extension; a missing file only warns.
+  Its width is the \key{photowidth} setting.
+\end{function}
+
+\begin{function}{\email,\phone,\address,\homepage,\linkedin,\github,\orcid}
+  \begin{syntax}
+    \cs{email}\marg{address} \quad \cs{homepage}\marg{example.com/path}
+    \cs{linkedin}\marg{id} \quad \cs{github}\marg{user} \quad \cs{orcid}\marg{id}
+  \end{syntax}
+  Contacts, printed by \cs{makeheader} in this fixed order (email, phone,
+  address, website, LinkedIn, GitHub, ORCID), each with an icon and, except
+  for phone and address, a link. Values that are addresses or handles may
+  contain |_ & ~ #| as typed, and also accept |\_ \& \# \%|; a raw |%| starts
+  a comment, as everywhere in \LaTeX.
+\end{function}
+
+\begin{function}{\addcontact}
+  \begin{syntax}
+    \cs{addcontact}\oarg{url}\marg{icon}\marg{text}
+    \cs{addcontact}\oarg{options}\marg{icon}\marg{text}
+  \end{syntax}
+  Any other contact, printed after the built-in ones in the order given.
+  The options are \key{url} and \key{label}; the \key{label} (e.g.\ |Blog|) is what text extraction and screen readers
+  read for the icon; without it the icon is simply hidden from them. Brace
+  values that contain |=| or |,|, as in |url={https://example.org/?a=1}|.
+\end{function}
+
+\begin{function}{\thefirstname,\ifvitaeset,\makeheader,\printcontacts,\printphoto}
+  \begin{syntax}
+    \cs{the}\meta{field} \quad \cs{ifvitaeset}\marg{field}\marg{true}\marg{false}
+  \end{syntax}
+  Every field \meta{field} above has an expandable getter, such as
+  \cs{theemail}, and \cs{ifvitaeset} tests whether it is set. \cs{makeheader}
+  prints the header template; \cs{printcontacts} and \cs{printphoto} are its
+  building blocks, for use in templates.
+\end{function}
+
+\section{Entries, items and lists}
+
+\begin{function}{\cventry}
+  \begin{syntax}
+    \cs{cventry}\marg{keys}\marg{body}
+  \end{syntax}
+  An entry: a job, a degree, an award. All keys are optional:
+  \begin{description}
+    \item[\key{title}, \key{org}, \key{location}] the entry's text fields;
+    \item[\key{start}, \key{end}] its dates (see section~\ref{sec:dates});
+      an empty \key{end} means ongoing;
+    \item[\key{date}] a single date: sets \key{start} and \key{end} at once;
+    \item[\key{style}] the layout of this entry (section~\ref{sec:styles});
+    \item[\key{dateformat}, \key{datelocale}, \key{durations}] date settings
+      for this entry only.
+  \end{description}
+  The body is free text; blank lines separate paragraphs, spaced by the
+  \key{parskip} setting.
+\end{function}
+
+\begin{function}{\cvitem}
+  \begin{syntax}
+    \cs{cvitem}\marg{label}\marg{text}
+  \end{syntax}
+  A one-line item, for skills or languages.
+\end{function}
+
+\begin{function}{\addentry,\additem,\printentries}
+  \begin{syntax}
+    \cs{addentry}\marg{list}\marg{keys}\marg{body}
+    \cs{additem}\marg{list}\marg{label}\marg{text}
+    \cs{printentries}\oarg{heading}\marg{list}
+    \cs{printentries}\oarg{options}\marg{list}
+  \end{syntax}
+  Named lists store entries and items in the order they were added, so data
+  and layout stay apart: the same list can be printed several times, in
+  different documents or styles. \cs{printentries} prints a list under a
+  section heading, but only if the list has content; an empty or undefined
+  list warns and prints nothing. Its optional argument is either a plain
+  heading or options: \key{heading}, \key{style} and \key{durations}. It
+  counts as options if it contains |=| or starts with an option name, as in
+  |[durations]|; brace a heading that contains a comma, as in
+  |heading={Talks, Panels}|.
+\end{function}
+
+\section{Entry styles}\label{sec:styles}
+
+Each theme offers three layouts for entries. \key{full} is the default;
+\key{compact} puts an entry on one line, for certifications or awards;
+\key{inline} is a run-in paragraph, for talks or publications. Choose one for
+a whole list with \cs{printentries}|[style=...]|, or for one entry with the
+\key{style} key, which wins over the list's.
+
+\sample{sample-styles}
+
+A style \meta{name} is the template |entry/|\meta{name}; \cs{settemplate}
+overrides one, or defines a new style (section~\ref{sec:templates}). An
+unknown style warns once and falls back to \key{full}.
+
+\section{Dates}\label{sec:dates}
+
+Dates are written as ISO dates, |2020|, |2020-03| or |2020-03-01|, or as any
+other text, such as |Spring 2016|. ISO dates are printed in the current
+\emph{style} and \emph{locale}; any other text is printed exactly as typed.
+
+\begin{function}{\formatdate,\daterange,\duration}
+  \begin{syntax}
+    \cs{formatdate}\marg{date} \quad \cs{daterange}\marg{start}\marg{end}
+    \cs{duration}\marg{start}\marg{end}
+  \end{syntax}
+  All three are expandable. \cs{daterange} prints \enquote{start -- end};
+  without an end, \enquote{start -- present}, with the locale's word unless
+  the \key{present} setting gives one; equal dates print once.
+  \cs{duration} prints the length of a range, such as \enquote{2 yrs 7 mos}.
+\end{function}
+
+\subsection{Styles and locales}
+
+The \key{dateformat} setting picks the style: \key{long} (the default:
+\enquote{March 2020}, \enquote{March 1, 2020}), \key{short} (\enquote{Mar
+2020}), \key{numeric} (\enquote{03/2020}), \key{iso} (\enquote{2020-03}) or
+\key{year} (\enquote{2020}). A year on its own always prints as the year.
+
+The locale follows the document language, from \pkg{babel} or
+\pkg{polyglossia}, including \cs{selectlanguage}; the \key{datelocale}
+setting forces one. Built-in locales are \key{english} (US order),
+\key{british}, \key{italian}, \key{german}, \key{french} and \key{spanish},
+with the usual \pkg{babel} aliases (\key{ngerman}, \key{UKenglish},
+\ldots); any other language falls back to English with a warning.
+
+\begin{function}{\vitaedatelocale}
+  \begin{syntax}
+    \cs{vitaedatelocale}\marg{name}\marg{keys}
+  \end{syntax}
+  Defines a locale, starting from English for every key not given:
+  \key{months} and \key{short} (twelve names each), \key{present}, \key{units}
+  (|{yr, yrs, mo, mos}|: year and month, singular and plural), \key{aliases}
+  (other \cs{languagename} values), and the patterns \key{ym}, \key{ymd},
+  \key{numeric-ym} and \key{numeric-ymd}, which receive |#1| = year, |#2| =
+  month and |#3| = day.
+\end{function}
+
+\noindent For example:
+\begin{Verbatim}[gobble=0, fontsize=\small]
+\vitaedatelocale{portuguese}{
+  months  = {janeiro, fevereiro, março, abril, maio, junho, julho,
+             agosto, setembro, outubro, novembro, dezembro},
+  present = atual, units = {ano, anos, mês, meses},
+  ym = {#2 de #1}, ymd = {#3 de #2 de #1}}
+\end{Verbatim}
+
+\subsection{Durations}
+
+With the \key{durations} setting, each entry also shows the length of its
+range, next to its dates; it can be enabled for the whole document, for one
+list (\cs{printentries}|[durations]|) or for one entry (the \key{durations}
+key). Months count inclusively, so September 2018 -- March 2021 is
+\enquote{2 yrs 7 mos}. If either date is a year only, the length is in
+whole years (2018 -- 2021 is \enquote{3 yrs}) and a range within one year
+has none. Single dates, free text and an end before the start give none.
+An ongoing range ends \emph{today}: the date of each compilation, or the
+\key{today} setting, which fixes it for reproducible output.
+
+\sample{sample-dates}
+
+\subsection{Scope}
+
+Date settings, like every setting in this manual, are local: in the preamble
+they apply to the whole document, inside a group or environment only there,
+and as entry keys to one entry.
+
+\section{Themes and settings}
+
+\begin{function}{\usetheme}
+  \begin{syntax}
+    \cs{usetheme}\marg{name}
+  \end{syntax}
+  Loads the theme |vitaetheme|\meta{name}|.sty|, once, in the preamble.
+  Without \cs{usetheme}, \key{classic} is used. Two themes ship with vitae:
+  \key{classic} (serif, centred header, dates on the right, as in the
+  samples above) and \key{modern} (sans serif, accent colour, dates in a
+  margin column, photo).
+\end{function}
+
+\sample{sample-modern}
+
+\begin{function}{\vitaesetup}
+  \begin{syntax}
+    \cs{vitaesetup}\marg{keys}
+  \end{syntax}
+  General settings. User settings always win over theme defaults, whether
+  they are made before or after \cs{usetheme}.
+\end{function}
+
+\begin{center}
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{0.62\linewidth}@{}}
+  \toprule
+  Key & Meaning (default) \\
+  \midrule
+  \key{accent} & the theme's accent colour, any \pkg{xcolor} colour \\
+  \key{parskip} & space between paragraphs of free text and of entry
+    bodies (|0.5\baselineskip plus 2pt|; |0pt| turns it off) \\
+  \key{photowidth} & width of the photo (|2.5cm|) \\
+  \key{dateformat} & date style: \key{long}, \key{short}, \key{numeric},
+    \key{iso}, \key{year} (\key{long}) \\
+  \key{datelocale} & date locale (the document language) \\
+  \key{datesep} & separator in date ranges (a thin-spaced en dash) \\
+  \key{present} & word for an ongoing range (the locale's) \\
+  \key{durations} & show the duration of entries (off) \\
+  \key{today} & the end of ongoing durations, an ISO date (compilation date) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Templates}\label{sec:templates}
+
+A theme is a set of \emph{templates}: |header|, |contact|, |contactsep|,
+|section|, |entry|, the entry styles |entry/|\meta{style}, and |item|. Any of
+them can be replaced without writing a theme.
+
+\begin{function}{\settemplate,\field,\iffield,\ifanyfield,\joinfields,\addpunct}
+  \begin{syntax}
+    \cs{settemplate}\marg{name}\marg{code}
+    \cs{field}\marg{field} \quad \cs{iffield}\marg{field}\marg{true}\marg{false}
+    \cs{ifanyfield}\marg{field, \ldots}\marg{true}\marg{false}
+    \cs{joinfields}\marg{separator}\marg{fields}
+    \cs{addpunct}\marg{punctuation}
+  \end{syntax}
+  Inside a template, \cs{field} reads the current item's fields: |title|,
+  |org|, |location|, |start|, |end|, |dates| (the formatted range),
+  |duration|, |body| and |label|; and for contacts |icon|, |text| and |url|.
+  \cs{joinfields} prints only the fields that are set, from a list such as
+  |title=\textbf, org, location| (each with an optional format), so that missing fields leave no stray separator.
+  \cs{addpunct} adds punctuation unless the text already ends with some.
+  Defining |entry/|\meta{name} creates a new entry style.
+\end{function}
+
+\sample{sample-template}
+
+Templates should not handle paragraph spacing: vitae runs them with
+|\parskip| = 0 and spaces body paragraphs itself. For accessible output, a
+template wraps headings, decoration and meaningful symbols in the helpers of
+the next section.
+
+\section{Accessible PDF and applicant-tracking systems}
+
+Every vitae PDF extracts as clean text, which is what applicant-tracking
+systems (ATS) read: contact icons come out as their label (\enquote{Email:
+jane.doe@example.com}, \enquote{GitHub: jdoe-example}) and contacts never run
+together. That needs no setup.
+
+For a tagged, accessible PDF that conforms to PDF/UA, make this the first
+line and compile with \textbf{Lua\LaTeX}:
+\begin{Verbatim}[gobble=0, fontsize=\small]
+\DocumentMetadata{tagging=on, pdfstandard=ua-2, lang=en-US}  % PDF/UA-2
+% or: tagging=on, pdfstandard=ua-1, pdfversion=1.7, lang=en-US  % PDF/UA-1
+\documentclass{vitae}
+\end{Verbatim}
+The name and section titles become headings, icons get replacement text,
+decoration is marked as such, the photo gets alternative text, and the
+document title is set from \cs{name} and \cs{jobtitle}.
+
+\begin{function}{\taggedheading,\decorative,\actualtext}
+  \begin{syntax}
+    \cs{taggedheading}\marg{level}\marg{material}
+    \cs{decorative}\marg{material}
+    \cs{actualtext}\marg{text}\marg{content}
+  \end{syntax}
+  For templates. \cs{taggedheading} tags whole paragraphs as a heading of
+  the given level; \cs{decorative} marks rules and other drawn decoration;
+  \cs{actualtext} makes \meta{content} read, and extract, as \meta{text}
+  (or as nothing, if empty). Without tagging, they only typeset their
+  content.
+\end{function}
+
+\section{Archival PDF (PDF/A)}
+
+PDF/A is the ISO standard for long-term archiving, which some employers, job
+portals and public bodies ask for. Choose a recipe and make it the first
+line of the document:
+
+\begin{description}
+  \item[Archival and accessible, PDF 2.0] Lua\LaTeX:\\
+    |\DocumentMetadata{tagging=on, pdfstandard={a-4f,ua-2}}|
+  \item[Archival and accessible, PDF 1.7] Lua\LaTeX; the widest support:\\
+    |\DocumentMetadata{tagging=on, tagging-setup={attach-css=false},|\\
+    |  pdfstandard={a-2a,ua-1}, pdfversion=1.7}|
+  \item[Same, embedded files allowed] Lua\LaTeX:\\
+    |\DocumentMetadata{tagging=on,|\\
+    |  pdfstandard={a-3a,ua-1}, pdfversion=1.7}|
+  \item[Archival, all text as Unicode] pdf\LaTeX{} or Lua\LaTeX:\\
+    |\DocumentMetadata{pdfstandard=a-2u, pdfversion=1.7}|
+  \item[Archival, visual fidelity only] any engine:\\
+    |\DocumentMetadata{pdfstandard=a-2b, pdfversion=1.7}|
+\end{description}
+
+Add |lang=| with the document language to each. Known limitations:
+\begin{itemize}
+  \item PDF/A-2 and PDF/A-3 need |pdfversion=1.7|: \LaTeX{} writes PDF 2.0
+    by default, which only PDF/A-4 accepts (as for PDF/UA-1).
+  \item PDF/A-2 with tagging needs |attach-css=false|: \LaTeX's tagging
+    embeds two HTML stylesheets, and PDF/A-2 forbids embedded files that are
+    not PDF/A themselves. PDF/A-3 and PDF/A-4 allow them.
+  \item The accessible (\enquote{a}) levels need tagging, and so Lua\LaTeX.
+  \item \XeLaTeX{} cannot reach PDF/A-2u: its icon fonts have no Unicode map.
+  \item PDF/A-1 is not tested. A photo should be a JPEG, a PNG or a PDF/A
+    file: images are embedded as they are.
+\end{itemize}
+
+\section{Engines}
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+  \toprule
+  & pdf\LaTeX & \XeLaTeX & Lua\LaTeX \\
+  \midrule
+  Everything in this manual, untagged & yes & yes & yes \\
+  Clean text extraction (ATS), with labels & yes & without labels & yes \\
+  Tagged PDF (PDF/UA), PDF/A \enquote{a} levels & no (warns) & no (warns) & yes \\
+  PDF/A-2u & yes & no & yes \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent On \XeLaTeX{} the icons are hidden from extracted text rather than
+labelled, because its PDF driver would place the labels out of reading order.
+
+\section{Installation}
+
+\pkg{vitae} needs \TeX{} Live 2022 or later (or an equivalent MiK\TeX).
+Download |vitae-ctan.zip| from the latest release on GitHub and copy
+|vitae.cls| and the |vitaetheme*.sty| files either next to your document or
+into your personal tree (|~/texmf/tex/latex/vitae| on Linux,
+|~/Library/texmf/tex/latex/vitae| on macOS). From a clone of the repository,
+|l3build install| does the same.
+
+\end{document}

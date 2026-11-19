@@ -332,3 +332,6 @@ TSWLatexianTemp*
 
 ## Project build output (l3build, scripts/build.sh)
 build/
+
+## Manual and samples, built into docs/ by `l3build doc`
+docs/*.pdf
