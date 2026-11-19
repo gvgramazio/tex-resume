@@ -7,6 +7,8 @@
 #   2. Text extraction, as applicant-tracking systems read it: the header of
 #      every showcase must extract as the exact contact line, so any icon
 #      junk, lost character or missing label fails the check.
+#   3. Links: every link in a showcase must be a web link (URI action), never
+#      a file link (GoToR, Launch), and the showcase header has five of them.
 set -eu
 cd "$(dirname "$0")/.."
 VERAPDF=${VERAPDF:-verapdf}
@@ -45,6 +47,16 @@ for dir in "$@"; do
       *) fail "$e $f (text): expected \"$want\""
          printf '      got: %.300s\n' "$text" ;;
     esac
+
+    # 3. Link actions: all URI, at least the five contact links.
+    actions=$(scripts/pdf-links.py "$f" | sort | uniq -c | tr -s ' ' | tr '\n' ',')
+    uri=$(scripts/pdf-links.py "$f" | grep -c '^URI$' || true)
+    other=$(scripts/pdf-links.py "$f" | grep -vc '^URI$' || true)
+    if [ "$other" -eq 0 ] && [ "$uri" -ge 5 ]; then
+      echo "OK    $e $f (links)"
+    else
+      fail "$e $f (links): expected only URI actions, at least 5; got:$actions"
+    fi
   done
 done
 exit $status
