@@ -1,0 +1,13 @@
+% Shared document body for the archival examples (archival-*.tex), whose
+% files differ only in their \DocumentMetadata recipe and theme.
+\makeheader
+
+\section{Profile}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+\printentries[Experience]{experience}
+\printentries[Education]{education}
+\printentries[Skills]{skills}
+\printentries[heading=Certifications, style=compact]{certs}
+\printentries[heading=Talks, style=inline]{talks}

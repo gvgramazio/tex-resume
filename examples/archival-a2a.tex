@@ -1,0 +1,12 @@
+% engines: lua
+% Archival and accessible: PDF/A-2a + PDF/UA-1 (PDF 1.7). PDF/A-2 forbids the
+% HTML stylesheets LaTeX embeds when tagging, hence attach-css=false.
+\DocumentMetadata{tagging=on, tagging-setup={attach-css=false},
+  pdfstandard={a-2a,ua-1}, pdfversion=1.7, lang=en-US}
+\documentclass{vitae}
+\usetheme{modern}
+\input{data/janedoe}
+
+\begin{document}
+\input{data/body}
+\end{document}
