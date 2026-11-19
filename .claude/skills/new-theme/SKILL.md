@@ -26,6 +26,6 @@ Then:
    - Accessibility: wrap the name and section titles in `\taggedheading{1|2}{…}`, drawn rules in `\decorative{…}`, and meaningful symbols in `\actualtext{<text>}{…}`. Theme colours used for text need 4.5:1 contrast (`scripts/check-contrast.py`).
    - Don't handle paragraph spacing in templates. The class runs templates with `\parskip` = 0 and spaces body paragraphs itself (the `parskip` setting).
 2. Build with `scripts/build.sh -s examples/theme-<name>.tex examples/stress-<name>.tex` and check both PDFs visually (see the `build` skill). Then run `scripts/check-pdf.sh` for text extraction, and validate a tagged LuaLaTeX build of the showcase with veraPDF (see `examples/accessible.tex`).
-3. Add the theme to the README and CHANGELOG.
+3. Document the theme in the manual (`docs/vitae-doc.tex`, section "Themes and settings", with a `docs/sample-*.tex`), and add it to the CHANGELOG.
 
 Theme rendering is covered by the strict example builds. Class behaviour is covered by l3build tests (see the `test` skill), which use probe templates and don't depend on any theme.

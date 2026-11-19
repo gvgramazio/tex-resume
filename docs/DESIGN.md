@@ -61,7 +61,10 @@ build.lua             l3build config (engines: pdftex, xetex, luatex)
                       release.yml: on a vX.Y.Z tag, publish the package zip + example PDFs
 .claude/skills/       build, test, new-theme, release
 CLAUDE.md             contributor conventions: code style, naming, testing
+docs/                 vitae-doc.tex (user manual, l3doc) + sample-*.tex; DESIGN.md
 ```
+
+**Manual.** `docs/vitae-doc.tex` is the user reference, built with l3doc by `l3build doc`; the README only links to it. Visual examples are `docs/sample-*.tex`: complete vitae documents, which l3build's `typeset_demo_tasks` hook compiles first. Preloaded hooks wrap each body in a 12 cm minipage inside a `preview` tight page, so the PDF is cropped to the content; the manual then shows the file verbatim beside that PDF. The code shown is always the code that ran.
 
 `l3build` is the standard LaTeX test harness and comes with TeX Live. It compares each test's log against a reference on every engine, which catches regressions and confirms that the expected errors are raised.
 
