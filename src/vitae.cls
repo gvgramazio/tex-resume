@@ -136,7 +136,7 @@
 % writer sets them inside a group, so values never leak between items.
 % (\cs_if_exist_use:c is avoided: it breaks \MakeUppercase on LuaTeX.)
 \clist_map_inline:nn
-  { title, org, location, start, end, dates, body, label, icon, text, url }
+  { title, org, location, start, end, dates, duration, body, label, icon, text, url }
   { \tl_new:c { l__vitae_f_#1_tl } }
 \NewExpandableDocumentCommand \field { m }
   {
@@ -193,7 +193,20 @@
 % locale are local settings: a group limits them to part of the document.
 % Everything in this section is expandable unless noted.
 \tl_new:N \l__vitae_date_style_tl
+\bool_new:N \l__vitae_durations_bool
+\int_new:N \l__vitae_today_year_int
+\int_new:N \l__vitae_today_month_int
+\int_set_eq:NN \l__vitae_today_year_int \c_sys_year_int
+\int_set_eq:NN \l__vitae_today_month_int \c_sys_month_int
+% A year-only "today" counts as its last month.
+\cs_new_protected:Npn \__vitae_today_set:nnn #1#2#3
+  {
+    \int_set:Nn \l__vitae_today_year_int {#1}
+    \int_set:Nn \l__vitae_today_month_int { \tl_if_blank:nTF {#2} { 12 } {#2} }
+  }
 \tl_new:N \l__vitae_date_locale_tl
+\msg_new:nnn { vitae } { invalid-today }
+  { 'today'~must~be~an~ISO~date~(YYYY,~YYYY-MM~or~YYYY-MM-DD),~not~'#1'. }
 \msg_new:nnn { vitae } { unknown-date-locale }
   {
     No~date~locale~'#1';~English~is~used.~
@@ -205,6 +218,16 @@
       { long , short , numeric , iso , year }
       { \tl_set:Nn \l__vitae_date_style_tl {#1} } ,
     dateformat .initial:n = long ,
+    % Durations of entries (\field{duration}); off by default.
+    durations  .bool_set:N = \l__vitae_durations_bool ,
+    durations  .default:n  = true ,
+    % "Today", the end of ongoing durations: an ISO date; default the date
+    % of compilation (fix it for reproducible output).
+    today      .code:n =
+      {
+        \__vitae_date_if_iso:nTF {#1} { \__vitae_today_set:nnn }
+          { \msg_error:nnn { vitae } { invalid-today } {#1} }
+      } ,
     % Empty (default): follow \languagename (babel/polyglossia).
     datelocale .code:n =
       {
@@ -236,14 +259,16 @@
       { \prg_return_true: } { \prg_return_false: }
   }
 
-% Parsing: the input as a string (so active characters cannot interfere) is
-% split at "-" and accepted only if it rebuilds exactly as YYYY[-MM[-DD]].
-\NewExpandableDocumentCommand \formatdate { m }
-  { \tl_trim_spaces_apply:nN {#1} \__vitae_date_format:n }
-\cs_new:Npn \__vitae_date_format:n #1
-  { \exp_args:Ne \__vitae_date_parse:nn { \tl_to_str:n {#1} } {#1} }
-\cs_new:Npn \__vitae_date_parse:nn #1#2 { \__vitae_date_split:w #1 - - - \q_stop {#2} }
-\cs_new:Npn \__vitae_date_split:w #1 - #2 - #3 - #4 \q_stop #5
+% Parsing: \__vitae_date_if_iso:nTF {<date>} {<true>} {<false>} is <true>
+% followed by {<year>} {<month>} {<day>} (month and day may be blank) if the
+% trimmed <date>, taken as a string (so active characters cannot interfere)
+% and split at "-", rebuilds exactly as YYYY[-MM[-DD]]; otherwise <false>.
+\cs_new:Npn \__vitae_date_if_iso:nTF #1#2#3
+  { \tl_trim_spaces_apply:nN {#1} \__vitae_date_if_iso_aux:nnn {#2} {#3} }
+\cs_new:Npn \__vitae_date_if_iso_aux:nnn #1#2#3
+  { \exp_args:Ne \__vitae_date_parse:nnnn { \tl_to_str:n {#1} } {#1} {#2} {#3} }
+\cs_new:Npn \__vitae_date_parse:nnnn #1 { \__vitae_date_split:w #1 - - - \q_stop }
+\cs_new:Npn \__vitae_date_split:w #1 - #2 - #3 - #4 \q_stop #5#6#7
   {
     \bool_lazy_all:nTF
       {
@@ -255,9 +280,11 @@
             { #1 \tl_if_blank:nF {#2} { - #2 \tl_if_blank:nF {#3} { - #3 } } }
         }
       }
-      { \__vitae_date_render:nnn {#1} {#2} {#3} }
-      {#5}
+      { #6 {#1} {#2} {#3} }
+      {#7}
   }
+\NewExpandableDocumentCommand \formatdate { m }
+  { \__vitae_date_if_iso:nTF {#1} { \__vitae_date_render:nnn } { \tl_trim_spaces:n {#1} } }
 
 % Rendering: a year alone is always the year; otherwise the style decides.
 \cs_new:Npn \__vitae_date_render:nnn #1#2#3
@@ -322,6 +349,66 @@
       }
   }
 
+% \duration{<start>}{<end>}: the length of a range of ISO dates in the
+% locale's units, e.g. "2 yrs 7 mos". Months count inclusively, so
+% Sep 2018 - Mar 2021 is 31 months; a blank <end> means "today". If either
+% date is a year only, the length is in whole years (<end> - <start>), and a
+% range within one year has none. Non-ISO dates, or an <end> before the
+% <start>, give nothing. Expandable.
+\NewExpandableDocumentCommand \duration { m m }
+  { \__vitae_duration:nnN {#1} {#2} \__vitae_duration_text:nn }
+% \__vitae_duration:nnN {<start>} {<end>} <function>: <function> gets
+% {<y or m>} {<count>} if the range has a positive length, else nothing.
+\cs_new:Npn \__vitae_duration:nnN #1#2#3
+  { \__vitae_date_if_iso:nTF {#1} { \__vitae_duration_end:nNnnn {#2} #3 } { } }
+\cs_new:Npn \__vitae_duration_end:nNnnn #1#2#3#4#5
+  {
+    \tl_if_blank:nTF {#1}
+      {
+        \__vitae_duration_count:Nnnnnn #2 {#3} {#4}
+          { \int_use:N \l__vitae_today_year_int }
+          { \int_use:N \l__vitae_today_month_int } { }
+      }
+      { \__vitae_date_if_iso:nTF {#1} { \__vitae_duration_count:Nnnnnn #2 {#3} {#4} } { } }
+  }
+% #1 function, #2/#3 start year/month, #4/#5 end year/month, #6 end day.
+\cs_new:Npn \__vitae_duration_count:Nnnnnn #1#2#3#4#5#6
+  {
+    \bool_lazy_or:nnTF { \tl_if_blank_p:n {#3} } { \tl_if_blank_p:n {#5} }
+      { \__vitae_duration_positive:Nne #1 { y } { \int_eval:n { #4 - #2 } } }
+      {
+        \__vitae_duration_positive:Nne #1 { m }
+          { \int_eval:n { ( #4 * 12 + #5 ) - ( #2 * 12 + #3 ) + 1 } }
+      }
+  }
+\cs_new:Npn \__vitae_duration_positive:Nnn #1#2#3
+  { \int_compare:nNnT {#3} > { 0 } { #1 {#2} {#3} } }
+\cs_generate_variant:Nn \__vitae_duration_positive:Nnn { Nne }
+\cs_new:Npn \__vitae_duration_length:nn #1#2 {#2}
+% Text: "<years> <unit> <months> <unit>", leaving out zero parts; the units
+% list of the locale is: year (singular, plural), month (singular, plural).
+\cs_new:Npn \__vitae_duration_text:nn #1#2
+  {
+    \str_if_eq:nnTF {#1} { y }
+      { \__vitae_duration_part:nn {#2} { 1 } }
+      {
+        \exp_args:Nee \__vitae_duration_ym:nn
+          { \int_div_truncate:nn {#2} { 12 } } { \int_mod:nn {#2} { 12 } }
+      }
+  }
+\cs_new:Npn \__vitae_duration_ym:nn #1#2
+  {
+    \int_compare:nNnT {#1} > { 0 } { \__vitae_duration_part:nn {#1} { 1 } }
+    \int_compare:nNnT { #1 * #2 } > { 0 } { ~ }
+    \int_compare:nNnT {#2} > { 0 } { \__vitae_duration_part:nn {#2} { 3 } }
+  }
+\cs_new:Npn \__vitae_duration_part:nn #1#2
+  {
+    #1 ~
+    \clist_item:cn { g__vitae_date_ \__vitae_date_locale: _units_clist }
+      { #2 + \int_compare:nNnTF {#1} = { 1 } { 0 } { 1 } }
+  }
+
 % --- Date locales ---------------------------------------------------------
 % \vitaedatelocale{<name>}{<keys>} (not expandable) defines a locale,
 % starting from English for any key not given. Patterns get #1 = year,
@@ -331,6 +418,7 @@
   {
     months      .clist_set:N = \l__vitae_dl_months_clist ,
     short       .clist_set:N = \l__vitae_dl_short_clist ,
+    units       .clist_set:N = \l__vitae_dl_units_clist ,
     present     .tl_set:N    = \l__vitae_dl_present_tl ,
     aliases     .clist_set:N = \l__vitae_dl_aliases_clist ,
     ym          .code:n = \cs_set:Npn \__vitae_dl_ym:nnn ##1##2##3 {#1} ,
@@ -354,7 +442,7 @@
 % Stored locale <-> scratch record (\l__vitae_dl_... and \__vitae_dl_...).
 \cs_new_protected:Npn \__vitae_date_load:n #1
   {
-    \clist_map_inline:nn { months , short }
+    \clist_map_inline:nn { months , short , units }
       { \clist_set_eq:cc { l__vitae_dl_##1_clist } { g__vitae_date_#1_##1_clist } }
     \tl_set_eq:Nc \l__vitae_dl_present_tl { g__vitae_date_#1_present_tl }
     \clist_map_inline:nn { ym , ymd , nym , nymd }
@@ -362,7 +450,7 @@
   }
 \cs_new_protected:Npn \__vitae_date_save:n #1
   {
-    \clist_map_inline:nn { months , short }
+    \clist_map_inline:nn { months , short , units }
       { \clist_gset_eq:cc { g__vitae_date_#1_##1_clist } { l__vitae_dl_##1_clist } }
     \tl_gset_eq:cN { g__vitae_date_#1_present_tl } \l__vitae_dl_present_tl
     \clist_map_inline:nn { ym , ymd , nym , nymd }
@@ -372,6 +460,7 @@
 % Built-in locales. English (US order) first: the base for all others.
 \vitaedatelocale { english }
   {
+    units       = { yr , yrs , mo , mos } ,
     aliases     = { american , USenglish , canadian } ,
     months      = { January , February , March , April , May , June , July ,
                     August , September , October , November , December } ,
@@ -391,6 +480,7 @@
   }
 \vitaedatelocale { italian }
   {
+    units       = { anno , anni , mese , mesi } ,
     months      = { gennaio , febbraio , marzo , aprile , maggio , giugno ,
                     luglio , agosto , settembre , ottobre , novembre , dicembre } ,
     short       = { gen , feb , mar , apr , mag , giu , lug , ago , set , ott ,
@@ -401,6 +491,7 @@
   }
 \vitaedatelocale { german }
   {
+    units       = { Jahr , Jahre , Monat , Monate } ,
     aliases     = { ngerman , austrian , naustrian , swissgerman , nswissgerman } ,
     months      = { Januar , Februar , März , April , Mai , Juni , Juli ,
                     August , September , Oktober , November , Dezember } ,
@@ -412,6 +503,7 @@
   }
 \vitaedatelocale { french }
   {
+    units       = { an , ans , mois , mois } ,
     aliases     = { francais , frenchb , acadian } ,
     months      = { janvier , février , mars , avril , mai , juin , juillet ,
                     août , septembre , octobre , novembre , décembre } ,
@@ -425,6 +517,7 @@
   }
 \vitaedatelocale { spanish }
   {
+    units       = { año , años , mes , meses } ,
     months      = { enero , febrero , marzo , abril , mayo , junio , julio ,
                     agosto , septiembre , octubre , noviembre , diciembre } ,
     short       = { ene. , feb. , mar. , abr. , may. , jun. , jul. , ago. ,
@@ -467,7 +560,8 @@
   }
 \cs_new_protected:cpn { __vitae_template_entry: }
   {
-    \par \textbf { \field { title } } \hfill \field { dates } \par
+    \par \textbf { \field { title } } \hfill \field { dates }
+    \iffield { duration } { ~ ( \field { duration } ) } { } \par
     \iffield { org } { \field { org } \iffield { location } { , ~ \field { location } } { } \par } { }
     \iffield { body } { \field { body } \par } { }
     \medskip
@@ -475,7 +569,8 @@
 % Entry styles: "entry/<style>" templates, chosen with the style key.
 \cs_new_protected:cpn { __vitae_template_entry/compact: }
   {
-    \par \joinfields { , ~ } { title = \textbf , org , location } \hfill \field { dates } \par
+    \par \joinfields { , ~ } { title = \textbf , org , location } \hfill \field { dates }
+    \iffield { duration } { ~ ( \field { duration } ) } { } \par
     \iffield { body } { \field { body } \par } { }
     \smallskip
   }
@@ -485,7 +580,8 @@
     \ifanyfield { title , org , location }
       {
         \joinfields { , ~ } { title = \textbf , org , location }
-        \iffield { dates } { ~ ( \field { dates } ) } { }
+        \iffield { dates }
+          { ~ ( \field { dates } \iffield { duration } { , ~ \field { duration } } { } ) } { }
       }
       { \field { dates } }
     \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }
@@ -775,6 +871,8 @@
     % Date settings for this entry only (the entry is a group).
     dateformat .meta:nn = { vitae / setup } { dateformat = {#1} } ,
     datelocale .meta:nn = { vitae / setup } { datelocale = {#1} } ,
+    durations  .meta:nn = { vitae / setup } { durations = {#1} } ,
+    durations  .default:n = true ,
   }
 % \cventry{<keys>}{<body>}: set fields, derive "dates", run the template.
 \NewDocumentCommand \cventry { m +m }
@@ -792,6 +890,26 @@
               \exp_not:N \daterange
                 { \exp_not:V \l__vitae_f_start_tl }
                 { \exp_not:V \l__vitae_f_end_tl }
+            }
+        }
+      % "duration": only if enabled, for a real range (not a single date)
+      % that has a length.
+      \bool_lazy_and:nnT
+        { \l__vitae_durations_bool }
+        { ! \tl_if_eq_p:NN \l__vitae_f_start_tl \l__vitae_f_end_tl }
+        {
+          \int_compare:nNnT
+            {
+              \exp_args:NVV \__vitae_duration:nnN \l__vitae_f_start_tl
+                \l__vitae_f_end_tl \__vitae_duration_length:nn + 0
+            } > { 0 }
+            {
+              \tl_set:Nx \l__vitae_f_duration_tl
+                {
+                  \exp_not:N \duration
+                    { \exp_not:V \l__vitae_f_start_tl }
+                    { \exp_not:V \l__vitae_f_end_tl }
+                }
             }
         }
       \__vitae_entry_template:
@@ -840,8 +958,9 @@
   }
 \NewDocumentCommand \addentry { m m +m } { \__vitae_list_put:nn {#1} { \cventry {#2} {#3} } }
 \NewDocumentCommand \additem { m m +m } { \__vitae_list_put:nn {#1} { \cvitem {#2} {#3} } }
-% \printentries[<options>]{<list>}: options are key=value (heading,
-% style); without any "=" the whole argument is the heading. The heading
+% \printentries[<options>]{<list>}: options are key=value (heading, style,
+% durations); the argument is a plain heading unless it contains "=" or
+% its first item is an option name (as in [durations]). The heading
 % appears only if the list has content; an empty or undefined list warns
 % and prints nothing. Options are local to this call.
 \tl_new:N \l__vitae_print_heading_tl
@@ -849,6 +968,8 @@
   {
     heading .tl_set:N = \l__vitae_print_heading_tl ,
     style   .tl_set:N = \l__vitae_entry_style_tl ,
+    durations .meta:nn = { vitae / setup } { durations = {#1} } ,
+    durations .default:n = true ,
   }
 \NewDocumentCommand \printentries { o m }
   {
@@ -857,7 +978,12 @@
         {
           \tl_if_in:nnTF {#1} { = }
             { \keys_set:nn { vitae / print } {#1} }
-            { \tl_set:Nn \l__vitae_print_heading_tl {#1} }
+            {
+              \exp_args:Nne \keys_if_exist:nnTF { vitae / print }
+                { \clist_item:nn {#1} { 1 } }
+                { \keys_set:nn { vitae / print } {#1} }
+                { \tl_set:Nn \l__vitae_print_heading_tl {#1} }
+            }
         }
       \bool_lazy_and:nnTF
         { \seq_if_exist_p:c { g__vitae_list_#2_seq } }

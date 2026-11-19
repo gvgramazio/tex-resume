@@ -52,8 +52,14 @@
 
 % Entry: bold title and dates on one line, italic org and location below.
 % Each line is emitted only if one of its fields is set (no blank lines).
+% Dates, then " · <duration>" when durations are on.
+\cs_new_protected:Npn \__vitae_classic_dates:
+  {
+    \field { dates }
+    \iffield { duration } { ~ \textperiodcentered \c_space_tl \field { duration } } { }
+  }
 \cs_new_protected:Npn \__vitae_classic_first_line:
-  { \textbf { \field { title } } \hfill \field { dates } \par \nopagebreak }
+  { \textbf { \field { title } } \hfill \__vitae_classic_dates: \par \nopagebreak }
 \settemplate { entry }
   {
     \par
@@ -72,7 +78,7 @@
   {
     \par
     \joinfields { , ~ } { title = \textbf , org = \textit , location }
-    \hfill \field { dates } \par
+    \hfill \__vitae_classic_dates: \par
     \iffield { body } { \field { body } \par } { }
     \smallskip
   }
@@ -85,7 +91,8 @@
     \ifanyfield { title , org , location }
       {
         \joinfields { , ~ } { title = \textbf , org = \textit , location }
-        \iffield { dates } { ~ ( \field { dates } ) } { }
+        \iffield { dates }
+          { ~ ( \field { dates } \iffield { duration } { , ~ \field { duration } } { } ) } { }
       }
       { \field { dates } }
     \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }

@@ -1,0 +1,70 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: month precision, counted inclusively
+============================================================
+[2 yrs 7 mos][1 yr]
+[1 yr 1 mo][1 mo]
+days are ignored: [2 mos]
+============================================================
+============================================================
+TEST 2: year precision when either date is a year only
+============================================================
+[3 yrs][3 yrs][3 yrs]
+within one year: []
+============================================================
+============================================================
+TEST 3: no duration
+============================================================
+end before start: []
+free text: [][]
+no start: []
+============================================================
+============================================================
+TEST 4: ongoing ranges end today
+============================================================
+[1 yr 6 mos][2 yrs]
+year-only today counts as December: [1 yr]
+============================================================
+============================================================
+TEST 5: an invalid today is an error
+============================================================
+! Package vitae Error: 'today' must be an ISO date (YYYY, YYYY-MM or YYYY-MM-DD), not 'yesterday'.
+Type <return> to continue.
+ ...                                              
+l. ...}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+============================================================
+============================================================
+TEST 6: units follow the locale, with singular and plural
+============================================================
+[2 anni 7 mesi][1 anno 1 mese]
+[2 Jahre 7 Monate][1 Jahr 1 Monat]
+[2 ans 7 mois][1 an 1 mois]
+[2 a^^c3^^b1os 7 meses][1 a^^c3^^b1o 1 mes]
+inherits English: [2 yrs 7 mos]
+============================================================
+============================================================
+TEST 7: the duration field is off by default
+============================================================
+[Off] dates=[September 2018--March 2021] duration=[]
+============================================================
+============================================================
+TEST 8: durations on: ranges only, not single dates or empty lengths
+============================================================
+[Range] dates=[September 2018--March 2021] duration=[2 yrs 7 mos]
+[Ongoing] dates=[June 2025--Present] duration=[1 yr 6 mos]
+[Single] dates=[November 2019] duration=[]
+[Same year] dates=[2020] duration=[]
+[Free text] dates=[Spring 2016--2017] duration=[]
+============================================================
+============================================================
+TEST 9: per entry and per list
+============================================================
+[Entry key] dates=[September 2018--March 2021] duration=[2 yrs 7 mos]
+[After it] dates=[September 2018--March 2021] duration=[]
+[Listed] dates=[January 2019--June 2019] duration=[6 mos]
+[Listed] dates=[January 2019--June 2019] duration=[]
+============================================================
