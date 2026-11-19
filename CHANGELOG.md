@@ -18,6 +18,11 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   WCAG contrast checks of theme colours (`scripts/check-pdf.sh`,
   `scripts/check-contrast.py`); `examples/accessible*.tex`.
 - `scripts/build.sh` honours a `% engines: …` line in an example.
+
+### Fixed
+- The website, LinkedIn, GitHub and ORCID contact links were written as file
+  links (GoToR to `<url>.pdf`) instead of web links; they now open the
+  address. CI checks the link actions of every built example.
 - Entry styles: `compact` and `inline` alongside the default `full`, chosen
   per list (`\printentries[style=…]`) or per entry (`style` key). Users can
   override them or define new ones with `\settemplate{entry/<name>}`.
