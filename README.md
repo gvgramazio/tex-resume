@@ -31,6 +31,7 @@ More complete documents are in [examples/](examples/).
 
 - **Data apart from layout:** named lists of entries and items, printed in any order, any number of times.
 - **Themes and templates:** two themes (`classic`, `modern`); any template can be overridden, and entries come in `full`, `compact` and `inline` styles.
+- **Page footer:** name, page numbers and last-updated date on every page, for resumes of more than one page.
 - **Dates:** ISO or free text, localised styles that follow babel and polyglossia, and durations ("2 yrs 7 mos").
 - **Reaching readers:** text that applicant-tracking systems extract cleanly on every engine; accessible PDF/UA and archival PDF/A with LuaLaTeX, validated in CI.
 

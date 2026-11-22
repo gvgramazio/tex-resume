@@ -25,6 +25,8 @@ docfiles     = {"sample-*.tex"}
 -- Compile each sample with pdfLaTeX in the typesetting directory (which holds
 -- the class, the themes and the samples). The preloaded hooks wrap the body in
 -- a 12 cm minipage inside preview's tight page, so the PDF is cropped exactly.
+-- Samples named sample-page-* show page furniture (the footer): they set their
+-- own small page, are not cropped, and run twice to resolve the page count.
 local crop = "\\AddToHook{begindocument/before}"
   .. "{\\RequirePackage[active,tightpage]{preview}}"
   .. "\\AddToHook{begindocument/end}{\\begin{preview}\\begin{minipage}{12cm}}"
@@ -32,9 +34,11 @@ local crop = "\\AddToHook{begindocument/before}"
 function typeset_demo_tasks()
   for _, p in ipairs(tree(typesetdir, "sample-*.tex")) do
     local name = jobname(p.src)
-    local errorlevel = run(typesetdir,
-      "pdflatex -interaction=nonstopmode -halt-on-error \"" .. crop
-      .. "\\input{" .. name .. "}\"" .. " > " .. os_null)
+    local page = name:match("^sample%-page%-") ~= nil
+    local cmd = "pdflatex -interaction=nonstopmode -halt-on-error \""
+      .. (page and "" or crop) .. "\\input{" .. name .. "}\"" .. " > " .. os_null
+    local errorlevel = run(typesetdir, cmd)
+    if errorlevel == 0 and page then errorlevel = run(typesetdir, cmd) end
     if errorlevel ~= 0 then
       print("! Could not compile sample " .. name .. " (see " .. typesetdir
         .. "/" .. name .. ".log)")

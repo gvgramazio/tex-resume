@@ -1,0 +1,61 @@
+% Page footer: parts, locale words, \lastupdated, single-page documents.
+\documentclass{vitae}
+\input{regression-test}
+\settemplate{footer}{\TYPE{[\field{name}][\field{pages}][\field{updated}]}}
+\makeatletter
+\newcommand\footer{\@oddfoot}
+\makeatother
+\START
+
+\TEST{no footer parts: the footer template is not run}{
+  \footer
+  \TYPE{done}
+}
+
+\TEST{all parts; the total is ?? before a second run}{
+  \name{Jane}{Doe}
+  \lastupdated{2026-11-15}
+  \vitaesetup{footer={name, pages, updated}}
+  \footer
+}
+
+\TEST{only the parts listed are set}{
+  \name{Jane}{Doe}
+  \lastupdated{2026-11-15}
+  \vitaesetup{footer=pages}
+  \def\PreviousTotalPages{3}
+  \footer
+}
+
+\TEST{the words and date follow the date locale and style}{
+  \lastupdated{2026-11}
+  \vitaesetup{footer={pages, updated}, datelocale=italian}
+  \def\PreviousTotalPages{3}
+  \footer
+  \vitaesetup{datelocale=german, dateformat=numeric}
+  \footer
+  \vitaesetup{datelocale=french, dateformat=long}
+  \footer
+}
+
+\TEST{no name and no \lastupdated leave their parts blank}{
+  \name{}{}
+  \lastupdated{}
+  \vitaesetup{footer={name, pages, updated}}
+  \def\PreviousTotalPages{2}
+  \footer
+}
+
+\TEST{singlepagefooter=false skips the footer on a one-page document}{
+  \vitaesetup{footer=pages, singlepagefooter=false}
+  \def\PreviousTotalPages{1}
+  \footer
+  \def\PreviousTotalPages{2}
+  \footer
+}
+
+\TEST{unknown footer part is an error}{
+  \vitaesetup{footer={name, nosuchpart}}
+}
+
+\END

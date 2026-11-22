@@ -20,7 +20,6 @@
 % Page defaults; themes may override.
 \geometry { margin = 2cm }
 \setlength \parindent { 0pt }
-\pagestyle { empty }
 
 % --- Variants -------------------------------------------------------------
 \prg_generate_conditional_variant:Nnn \tl_if_blank:n { v , e } { T , F , TF }
@@ -106,7 +105,7 @@
       }
     \tl_gset_eq:cN { g__vitae_field_#1_tl } \l__vitae_tmp_str
   }
-\clist_map_inline:nn { firstname, lastname, jobtitle, address, phone }
+\clist_map_inline:nn { firstname, lastname, jobtitle, address, phone, lastupdated }
   { \__vitae_new_field:nn {#1} { \__vitae_set_text:nn } }
 \clist_map_inline:nn { email, homepage, linkedin, github, orcid, photo }
   { \__vitae_new_field:nn {#1} { \__vitae_set_string:nn } }
@@ -127,7 +126,7 @@
 \clist_map_inline:nn
   {
     title, org, location, start, end, dates, duration, body, label, icon, text, url,
-    name, address, date
+    name, address, date, pages, updated
   }
   { \tl_new:c { l__vitae_f_#1_tl } }
 \NewExpandableDocumentCommand \field { m }
@@ -405,7 +404,8 @@
 % \vitaedatelocale{<name>}{<keys>} (not expandable) defines a locale,
 % starting from English for any key not given. Patterns get #1 = year,
 % #2 = month (name, or two digits in numeric-*), #3 = day (number, or two
-% digits in numeric-*). "aliases" lists other \languagename values.
+% digits in numeric-*). Footer patterns: "pages" gets #1 = page, #2 = total;
+% "updated" gets #1 = the date. "aliases" lists other \languagename values.
 \keys_define:nn { vitae / datelocale }
   {
     months      .clist_set:N = \l__vitae_dl_months_clist ,
@@ -417,6 +417,8 @@
     ymd         .code:n = \cs_set:Npn \__vitae_dl_ymd:nnn ##1##2##3 {#1} ,
     numeric-ym  .code:n = \cs_set:Npn \__vitae_dl_nym:nnn ##1##2##3 {#1} ,
     numeric-ymd .code:n = \cs_set:Npn \__vitae_dl_nymd:nnn ##1##2##3 {#1} ,
+    pages       .code:n = \cs_set:Npn \__vitae_dl_pages:nnn ##1##2##3 {#1} ,
+    updated     .code:n = \cs_set:Npn \__vitae_dl_updated:nnn ##1##2##3 {#1} ,
   }
 \NewDocumentCommand \vitaedatelocale { m m }
   {
@@ -437,7 +439,7 @@
     \clist_map_inline:nn { months , short , units }
       { \clist_set_eq:cc { l__vitae_dl_##1_clist } { g__vitae_date_#1_##1_clist } }
     \tl_set_eq:Nc \l__vitae_dl_present_tl { g__vitae_date_#1_present_tl }
-    \clist_map_inline:nn { ym , ymd , nym , nymd }
+    \clist_map_inline:nn { ym , ymd , nym , nymd , pages , updated }
       { \cs_set_eq:cc { __vitae_dl_##1:nnn } { __vitae_date_#1_##1:nnn } }
   }
 \cs_new_protected:Npn \__vitae_date_save:n #1
@@ -445,7 +447,7 @@
     \clist_map_inline:nn { months , short , units }
       { \clist_gset_eq:cc { g__vitae_date_#1_##1_clist } { l__vitae_dl_##1_clist } }
     \tl_gset_eq:cN { g__vitae_date_#1_present_tl } \l__vitae_dl_present_tl
-    \clist_map_inline:nn { ym , ymd , nym , nymd }
+    \clist_map_inline:nn { ym , ymd , nym , nymd , pages , updated }
       { \cs_gset_eq:cc { __vitae_date_#1_##1:nnn } { __vitae_dl_##1:nnn } }
   }
 
@@ -463,6 +465,8 @@
     ymd         = { #2 ~ #3 , ~ #1 } ,
     numeric-ym  = { #2 / #1 } ,
     numeric-ymd = { #2 / #3 / #1 } ,
+    pages       = { Page ~ #1 ~ of ~ #2 } ,
+    updated     = { Last ~ updated ~ #1 } ,
   }
 \vitaedatelocale { british }
   {
@@ -480,6 +484,8 @@
     present     = presente ,
     ymd         = { #3 ~ #2 ~ #1 } ,
     numeric-ymd = { #3 / #2 / #1 } ,
+    pages       = { Pagina ~ #1 ~ di ~ #2 } ,
+    updated     = { Ultimo ~ aggiornamento: ~ #1 } ,
   }
 \vitaedatelocale { german }
   {
@@ -492,6 +498,8 @@
     present     = heute ,
     ymd         = { #3. ~ #2 ~ #1 } ,
     numeric-ymd = { #3 . #2 . #1 } ,
+    pages       = { Seite ~ #1 ~ von ~ #2 } ,
+    updated     = { Stand: ~ #1 } ,
   }
 \vitaedatelocale { french }
   {
@@ -506,6 +514,9 @@
     ymd         = { \int_compare:nNnTF {#3} = { 1 } { 1\textsuperscript{er} } {#3} ~
                     #2 ~ #1 } ,
     numeric-ymd = { #3 / #2 / #1 } ,
+    pages       = { Page ~ #1 ~ sur ~ #2 } ,
+    % French puts a non-breaking space before a colon.
+    updated     = { Dernière ~ mise ~ à ~ jour \nobreakspace : ~ #1 } ,
   }
 \vitaedatelocale { spanish }
   {
@@ -518,6 +529,8 @@
     ym          = { #2 ~ de ~ #1 } ,
     ymd         = { #3 ~ de ~ #2 ~ de ~ #1 } ,
     numeric-ymd = { #3 / #2 / #1 } ,
+    pages       = { Página ~ #1 ~ de ~ #2 } ,
+    updated     = { Última ~ actualización: ~ #1 } ,
   }
 
 % --- Templates ------------------------------------------------------------
@@ -598,6 +611,13 @@
     \iffield { text } { \field { text } \par \nopagebreak } { }
     \vspace { 2 \baselineskip } \nopagebreak
     \thefirstname \c_space_tl \thelastname \par
+  }
+% Footer: the parts that are set, centred on one line.
+\cs_new_protected:cpn { __vitae_template_footer: }
+  {
+    \hfil \footnotesize
+    \joinfields { \c_space_tl \textperiodcentered \c_space_tl } { name , pages , updated }
+    \hfil
   }
 
 % --- Accessibility --------------------------------------------------------
@@ -842,6 +862,81 @@
       { \msg_warning:nn { vitae } { no-name } }
     \group_begin: \skip_zero:N \parskip \__vitae_template_use:n { header } \group_end:
   }
+
+% --- Footer ---------------------------------------------------------------
+% The page style "vitae" (the default) runs the footer template on every
+% page, with the parts listed in the footer setting: name, pages ("Page 2
+% of 3") and updated ("Last updated <date>", from \lastupdated), in the
+% words of the date locale. Without parts it prints nothing, like "empty".
+\clist_new:N \l__vitae_footer_clist
+\bool_new:N \l__vitae_footer_single_bool
+\msg_new:nnn { vitae } { unknown-footer-part }
+  { Unknown~footer~part~'#1';~use~name,~pages~or~updated. }
+\keys_define:nn { vitae / setup }
+  {
+    footer           .code:n =
+      {
+        \clist_set:Nn \l__vitae_footer_clist {#1}
+        \clist_map_inline:Nn \l__vitae_footer_clist
+          {
+            \clist_if_in:nnF { name , pages , updated } {##1}
+              { \msg_error:nnn { vitae } { unknown-footer-part } {##1} }
+          }
+      } ,
+    % False: no footer on a document of one page (as counted last run).
+    singlepagefooter .bool_set:N = \l__vitae_footer_single_bool ,
+    singlepagefooter .initial:n  = true ,
+    singlepagefooter .default:n  = true ,
+  }
+% Total pages from the previous run (the kernel's count); ?? on the first.
+\cs_new:Npn \__vitae_total_pages:
+  { \int_compare:nNnTF { \PreviousTotalPages } > { 0 } { \PreviousTotalPages } { ?? } }
+\cs_new_protected:Npn \__vitae_footer:
+  {
+    \bool_lazy_and:nnT
+      { ! \clist_if_empty_p:N \l__vitae_footer_clist }
+      {
+        \bool_lazy_or_p:nn { \l__vitae_footer_single_bool }
+          { ! \int_compare_p:nNn { \PreviousTotalPages } = { 1 } }
+      }
+      {
+        \group_begin:
+          \clist_if_in:NnT \l__vitae_footer_clist { name }
+            {
+              \bool_lazy_and:nnF
+                { \tl_if_blank_p:V \g__vitae_field_firstname_tl }
+                { \tl_if_blank_p:V \g__vitae_field_lastname_tl }
+                { \tl_set:Nn \l__vitae_f_name_tl { \thefirstname \c_space_tl \thelastname } }
+            }
+          \clist_if_in:NnT \l__vitae_footer_clist { pages }
+            {
+              \tl_set:Nn \l__vitae_f_pages_tl
+                { \__vitae_date_pattern:nnnn { pages } { \thepage } { \__vitae_total_pages: } { } }
+            }
+          \clist_if_in:NnT \l__vitae_footer_clist { updated }
+            {
+              \tl_if_blank:VF \g__vitae_field_lastupdated_tl
+                {
+                  % \formatdate parses its argument as typed: pass the value.
+                  \tl_set:Ne \l__vitae_f_updated_tl
+                    {
+                      \exp_not:N \__vitae_date_pattern:nnnn { updated }
+                        { \exp_not:N \formatdate { \exp_not:V \g__vitae_field_lastupdated_tl } }
+                        { } { }
+                    }
+                }
+            }
+          \__vitae_template_use:n { footer }
+        \group_end:
+      }
+  }
+\cs_new_protected:Npn \ps@vitae
+  {
+    \ps@empty
+    \cs_set_eq:NN \@oddfoot \__vitae_footer:
+    \cs_set_eq:NN \@evenfoot \__vitae_footer:
+  }
+\pagestyle { vitae }
 
 % --- Lists ----------------------------------------------------------------
 % Named lists store unexpanded \cventry/\cvitem calls, which vitae prints in

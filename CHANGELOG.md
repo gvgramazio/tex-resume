@@ -9,6 +9,11 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   through `\formatdate`; default the day of compilation), `\opening` and
   `\closing`, with themable `opening` and `closing` templates. A resume data
   file loads unchanged.
+- Page footer: `\vitaesetup{footer={name, pages, updated}}` prints the name,
+  "Page 2 of 3" and "Last updated …" (from the new `\lastupdated`), in the
+  words of the date locale, through a themable `footer` template;
+  `singlepagefooter=false` leaves it off one-page documents. Date locales
+  take `pages` and `updated` patterns.
 
 ### Changed
 - The code shared by both classes moved from `vitae.cls` into

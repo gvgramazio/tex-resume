@@ -197,7 +197,9 @@ with the usual \pkg{babel} aliases (\key{ngerman}, \key{UKenglish},
   (|{yr, yrs, mo, mos}|: year and month, singular and plural), \key{aliases}
   (other \cs{languagename} values), and the patterns \key{ym}, \key{ymd},
   \key{numeric-ym} and \key{numeric-ymd}, which receive |#1| = year, |#2| =
-  month and |#3| = day.
+  month and |#3| = day. The footer words are patterns too: \key{pages}
+  (|{Page #1 of #2}|, page and total) and \key{updated}
+  (|{Last updated #1}|, the formatted date).
 \end{function}
 
 \noindent For example:
@@ -268,9 +270,37 @@ and as entry keys to one entry.
   \key{present} & word for an ongoing range (the locale's) \\
   \key{durations} & show the duration of entries (off) \\
   \key{today} & the end of ongoing durations, an ISO date (compilation date) \\
+  \key{footer} & footer parts: \key{name}, \key{pages}, \key{updated}
+    (none: no footer); see section~\ref{sec:footer} \\
+  \key{singlepagefooter} & print the footer on a one-page document (true) \\
   \bottomrule
 \end{tabular}
 \end{center}
+
+\section{Page footer}\label{sec:footer}
+
+Pages of a long resume can be told apart, and matched up when printed, with
+a footer. The \key{footer} setting lists its parts: \key{name} (the full
+name), \key{pages} (\enquote{Page 2 of 3}) and \key{updated} (\enquote{Last
+updated November 15, 2026}). The words come from the date locale, and the
+date goes through \cs{formatdate}, so both follow the document language and
+the \key{dateformat} setting. The theme decides the order and layout (the
+|footer| template); without parts there is no footer.
+
+\begin{function}{\lastupdated}
+  \begin{syntax}
+    \cs{lastupdated}\marg{date}
+  \end{syntax}
+  The date for the \key{updated} part, ideally ISO. Without it, that part
+  is left out.
+\end{function}
+
+\sample{sample-page-footer}
+
+The total number of pages is the count of the previous run, so it shows
+\enquote{??} after the first one; \texttt{latexmk} reruns as needed. With
+|singlepagefooter=false|, a document that fits on one page gets no footer.
+The footer also works in \pkg{vitaeletter}.
 
 \section{Cover letters}\label{sec:letter}
 
@@ -309,8 +339,8 @@ resume's header and look.
 
 A theme is a set of \emph{templates}: |header|, |contact|, |contactsep|,
 |section|, |entry|, the entry styles |entry/|\meta{style}, and |item|; and,
-for letters, |opening| and |closing|. Any of them can be replaced without
-writing a theme.
+for letters, |opening| and |closing|; and the page |footer|. Any of them can
+be replaced without writing a theme.
 
 \begin{function}{\settemplate,\field,\iffield,\ifanyfield,\joinfields,\addpunct}
   \begin{syntax}
@@ -324,7 +354,9 @@ writing a theme.
   |org|, |location|, |start|, |end|, |dates| (the formatted range),
   |duration|, |body| and |label|; for contacts |icon|, |text| and |url|;
   in |opening|, |name| and |address| (the recipient), |date| (formatted)
-  and |text| (the salutation); in |closing|, |text|.
+  and |text| (the salutation); in |closing|, |text|; in |footer|, |name|,
+  |pages| and |updated| (each set only if listed in the \key{footer}
+  setting).
   \cs{joinfields} prints only the fields that are set, from a list such as
   |title=\textbf, org, location| (each with an optional format), so that missing fields leave no stray separator.
   \cs{addpunct} adds punctuation unless the text already ends with some.

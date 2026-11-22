@@ -210,3 +210,12 @@
     { \bfseries \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
     \ifvitaeset { jobtitle } { \nopagebreak { \small \thejobtitle \par } } { }
   }
+
+% Footer: the name in bold accent on the left, pages and date on the right.
+\settemplate { footer }
+  {
+    \footnotesize
+    \iffield { name } { \textcolor { vitaeaccent } { \bfseries \field { name } } } { }
+    \hfill
+    \joinfields { \hspace { 1.2em } } { pages , updated }
+  }
