@@ -3,14 +3,8 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
-### Added
-- User manual, `vitae-doc.pdf` (`docs/vitae-doc.tex`, built by `l3build doc`):
-  every command, setting, template and recipe, with compiled samples shown
-  as source beside their output. CI builds it; releases and the package zip
-  ship it.
 
-### Changed
-- The README is a short front page that links to the manual.
+## [0.4.0] - 2026-11-22
 ### Added
 - Durations: `\duration{start}{end}` gives the length of a range of ISO
   dates in the locale's units ("2 yrs 7 mos", "2 anni 7 mesi"); with
@@ -19,6 +13,13 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   of ongoing ranges; date locales take `units`.
 - `\printentries` treats a first option name without a value (such as
   `[durations]`) as an option rather than a heading.
+- User manual, `vitae-doc.pdf` (`docs/vitae-doc.tex`, built by `l3build doc`):
+  every command, setting, template and recipe, with compiled samples shown
+  as source beside their output. CI builds it; releases and the package zip
+  ship it.
+
+### Changed
+- The README is a short front page that links to the manual.
 
 ## [0.3.0] - 2026-11-19
 ### Added
