@@ -3,6 +3,8 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-11-22
 ### Added
 - `vitaeletter`, a cover-letter class that shares the resume's data, header,
   themes and settings: `\recipient`, `\letterdate` (an ISO date, localised
