@@ -3,10 +3,10 @@
 `vitae` is a LaTeX resume class. The class stores the content; `vitaetheme<name>.sty` files supply the look. The design is in `docs/DESIGN.md` (read it before you change the API); the user-facing reference is the manual, `docs/vitae-doc.tex`.
 
 ## Layout
-- `src/`: `vitae.cls` and the themes. Only these files are shipped.
+- `src/`: `vitae.cls` (resume), `vitaeletter.cls` (cover letter), `vitaecore.sty` (code both share) and the themes. Only these files are shipped.
 - `docs/`: `vitae-doc.tex` (user manual, l3doc, built by `l3build doc`), `sample-*.tex` (small complete vitae documents that the manual shows as source and cropped output), `DESIGN.md`.
 - `testfiles/`: l3build regression tests (`.lvt` input, `.tlg` expected log).
-- `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `stress-*` (layout edge cases), `accessible*` (PDF/UA), `archival-*` (one PDF/A recipe each), plus shared data in `examples/data/`. A `% engines:` header line limits engines; `% allow-warning:` exempts one known, harmless warning (justify it next to it).
+- `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `letter-*` (cover letters), `stress-*` (layout edge cases), `accessible*` (PDF/UA), `archival-*` (one PDF/A recipe each), plus shared data in `examples/data/`. A `% engines:` header line limits engines; `% allow-warning:` exempts one known, harmless warning (justify it next to it).
 - `scripts/build.sh`: compiles the examples (used by both CI and the `build` skill).
 - `scripts/check-pdf.sh`: veraPDF (PDF/UA), text-extraction and link-action checks (`scripts/pdf-links.py`) of built examples; `scripts/check-contrast.py`: WCAG contrast of theme colours. Both run in CI and need `pdftotext` (poppler) and `verapdf` locally.
 - `scripts/junit.sh`: turns the last `l3build check` run into JUnit XML, which CI uploads to Codecov Test Analytics.

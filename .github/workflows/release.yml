@@ -33,3 +33,4 @@ jobs:
             build/distrib/ctan/vitae-ctan.zip
             docs/vitae-doc.pdf
             build/examples/pdf/theme-*.pdf
+            build/examples/pdf/letter-*.pdf

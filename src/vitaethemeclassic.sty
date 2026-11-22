@@ -108,3 +108,22 @@
     \parbox [ t ] { \dim_eval:n { \linewidth - 3cm } } { \field { body } }
     \par \smallskip
   }
+
+% Letter opening: recipient on the left, date on the right, salutation.
+\settemplate { opening }
+  {
+    \par
+    \iffield { name } { \field { name } \par } { }
+    \iffield { address } { \field { address } \par } { }
+    \iffield { date } { \bigskip { \raggedleft \field { date } \par } } { }
+    \bigskip
+    \iffield { text } { \field { text } \par \medskip } { }
+  }
+% Letter closing: closing words, space to sign, the name in small capitals.
+\settemplate { closing }
+  {
+    \par \medskip \nopagebreak
+    \iffield { text } { \field { text } \par \nopagebreak } { }
+    \vspace { 2 \baselineskip } \nopagebreak
+    { \scshape \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+  }

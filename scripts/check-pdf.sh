@@ -6,10 +6,10 @@
 #   1. veraPDF: every example in the table below must pass each listed
 #      profile (PDF/UA and PDF/A), on each engine that built it.
 #   2. Text extraction, as applicant-tracking systems read it: the header of
-#      every showcase must extract as the exact contact line, so any icon
-#      junk, lost character or missing label fails the check.
-#   3. Links: every link in a showcase must be a web link (URI action), never
-#      a file link (GoToR, Launch), and the showcase header has five of them.
+#      every showcase and letter must extract as the exact contact line, so
+#      any icon junk, lost character or missing label fails the check.
+#   3. Links: every link in a showcase or letter must be a web link (URI
+#      action), never a file link (GoToR, Launch), and the header has five.
 set -eu
 cd "$(dirname "$0")/.."
 VERAPDF=${VERAPDF:-verapdf}
@@ -24,6 +24,7 @@ labelled='Email: jane.doe@example.com Phone: +00 000 000 0000 Address: 1 Example
 validations='
 accessible       ua2
 accessible-ua1   ua1
+accessible-letter ua2
 archival-a4f     4f,ua2
 archival-a3a     3a,ua1
 archival-a2a     2a,ua1
@@ -55,7 +56,7 @@ for dir in "$@"; do
   # 2. Text extraction: whitespace normalised, contact separators (" ;")
   #    dropped, then the contact line must appear verbatim.
   if [ "$e" = xe ]; then want=$contacts; else want=$labelled; fi
-  for f in "$dir"/theme-*.pdf "$dir"/accessible*.pdf "$dir"/archival-*.pdf; do
+  for f in "$dir"/theme-*.pdf "$dir"/letter-*.pdf "$dir"/accessible*.pdf "$dir"/archival-*.pdf; do
     [ -f "$f" ] || continue
     text=$(pdftotext "$f" - | tr '\n\f' '  ' | tr -s ' ' | sed 's/ ;//g')
     case $text in
