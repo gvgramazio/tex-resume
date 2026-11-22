@@ -8,15 +8,15 @@ in the same way beamer splits content from themes.
 ### Functional
 | ID | Requirement |
 |----|-------------|
-| F1 | The preamble stores personal data in variables: `\name{First}{Last}`, `\jobtitle`, `\photo`, `\email`, `\phone`, `\address`, `\homepage`, `\linkedin`, `\github`, `\orcid`, plus a generic `\addcontact[url]{icon}{text}`. |
+| F1 | The preamble stores personal data in variables: `\name{First}{Last}`, `\jobtitle`, `\photo`, `\email`, `\phone`, `\address`, `\homepage`, `\linkedin`, `\github`, `\orcid`, `\lastupdated`, plus a generic `\addcontact[url]{icon}{text}`. |
 | F2 | Each variable can be read back with a getter (`\thefirstname`, `\theemail`, …) and tested with a conditional (`\ifvitaeset{email}{yes}{no}`). |
 | F3 | `\makeheader` typesets the stored identity and contacts, much as `\maketitle` does. |
 | F4 | Entries use key–value fields: `\cventry{title=…, org=…, location=…, start=…, end=…}{description}`. Every field is optional. |
 | F5 | Entries can be **stored** under a list name (`\addentry{education}{…}{…}`) and **printed** later (`\printentries{education}`). This keeps the data separate from the order it's printed in. |
 | F6 | One-line items handle skills, languages and the like: `\cvitem{label}{text}`, `\additem{list}{label}{text}`. |
 | F7 | `\usetheme{name}` loads `vitaetheme<name>.sty`. A default theme is used if none is chosen. |
-| F8 | Themes override named **templates** (`header`, `contact`, `contactsep`, `section`, `entry`, `item`). Users can override a single template with `\settemplate{entry}{…}` without writing a theme. |
-| F9 | Global options go through `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, photowidth=…}` (key–value). User settings take precedence over theme defaults, whatever their order. |
+| F8 | Themes override named **templates** (`header`, `contact`, `contactsep`, `section`, `entry`, `item`, `footer`, and `opening`/`closing` for letters). Users can override a single template with `\settemplate{entry}{…}` without writing a theme. |
+| F9 | Global options go through `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, photowidth=…, footer=…}` (key–value). User settings take precedence over theme defaults, whatever their order. |
 
 ### Non-functional
 | ID | Requirement |
@@ -106,3 +106,11 @@ docs/                 vitae-doc.tex (user manual, l3doc) + sample-*.tex; DESIGN.
 - **Shared data files.** List storage (`\addentry`, `\additem`) is in the core: a resume data file loads in a letter unchanged. Its entries are stored as unexpanded calls and never printed, so the letter does not need the entry code.
 - **Templates.** The core registers every template, letter ones included, so a theme is one file for both classes. `\opening` runs `\makeheader` (the resume's `header` template) and then `opening`, with the fields `name`, `address`, `date` and `text`; `\closing` runs `closing` with `text`, and the template signs with the stored name.
 - **Date.** `\letterdate` stores its argument as typed; `\opening` puts `\formatdate{…}` in the `date` field, so the letter follows the date style and locale like any entry. The default is the day of compilation (`\c_sys_year_int`, `\c_sys_month_int`, `\c_sys_day_int`) as an ISO date, which `SOURCE_DATE_EPOCH` fixes for reproducible builds.
+
+## 9. Page footer
+- **Page style.** The core defines the page style `vitae` and makes it the default instead of `empty`. It runs the `footer` template only when the `footer` setting lists parts, so documents without a footer are typeset exactly as before; `\thispagestyle` and `\pagestyle` still work.
+- **Parts, not layout.** `footer={name, pages, updated}` chooses which fields are filled; the template decides order and layout. Unknown parts are errors. The fields are ready-formatted text (`pages` is "Page 2 of 3"), so templates stay simple and the words follow the locale.
+- **Words.** "Page #1 of #2" and "Last updated #1" are patterns of the date locale (`pages`, `updated`), defined like the date patterns, so a locale carries all of its words. Where a phrase would only fit a full date ("aggiornato al 15"), the locale uses a "label: date" form, which reads for every date precision.
+- **Total pages.** The kernel's `\PreviousTotalPages` (the count of the previous run, from the aux file) replaces `lastpage`; the first run shows "??", as unresolved references do. `singlepagefooter=false` skips the footer when that count is 1.
+- **Date.** `\lastupdated` is a text field like the identity ones (getter `\thelastupdated`, test `\ifvitaeset`). The footer passes its value, not the getter, to `\formatdate`, which parses its argument as typed.
+- **Accessibility.** The footer is page furniture, which LaTeX's tagging handles in its output routine; the tagged example with a footer passes PDF/UA-2.

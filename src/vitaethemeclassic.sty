@@ -127,3 +127,11 @@
     \vspace { 2 \baselineskip } \nopagebreak
     { \scshape \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
   }
+
+% Footer: centred, small italic parts separated by bullets.
+\settemplate { footer }
+  {
+    \hfil \footnotesize \itshape
+    \joinfields { \kern .6em \textbullet \kern .6em } { name , pages , updated }
+    \hfil
+  }

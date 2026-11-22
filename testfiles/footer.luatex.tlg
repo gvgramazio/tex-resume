@@ -1,0 +1,45 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: no footer parts: the footer template is not run
+============================================================
+done
+============================================================
+============================================================
+TEST 2: all parts; the total is ?? before a second run
+============================================================
+[Jane Doe][Page 1 of ??][Last updated November 15, 2026]
+============================================================
+============================================================
+TEST 3: only the parts listed are set
+============================================================
+[][Page 1 of 3][]
+============================================================
+============================================================
+TEST 4: the words and date follow the date locale and style
+============================================================
+[][Pagina 1 di 3][Ultimo aggiornamento: novembre 2026]
+[][Seite 1 von 3][Stand: 11/2026]
+[][Page 1 sur 3][Derni^^e8re mise ^^e0 jour\protect \unhbox \voidb@x \protect \penalty \@M \ : novembre 2026]
+============================================================
+============================================================
+TEST 5: no name and no \lastupdated leave their parts blank
+============================================================
+[][Page 1 of 2][]
+============================================================
+============================================================
+TEST 6: singlepagefooter=false skips the footer on a one-page document
+============================================================
+[][Page 1 of 2][]
+============================================================
+============================================================
+TEST 7: unknown footer part is an error
+============================================================
+! Package vitae Error: Unknown footer part 'nosuchpart'; use name, pages or updated.
+Type <return> to continue.
+ ...                                              
+l. ...}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+============================================================
