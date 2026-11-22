@@ -189,3 +189,24 @@
     \parbox [ t ] { \dim_eval:n { \linewidth - \l__vitae_modern_col_dim } } { \field { body } }
     \par \smallskip
   }
+
+% Letter opening: date in the accent colour, recipient below, salutation.
+\settemplate { opening }
+  {
+    \par
+    \iffield { date } { { \small \color { vitaeaccent } \field { date } \par } \medskip } { }
+    \iffield { name } { \textbf { \field { name } } \par } { }
+    \iffield { address } { \field { address } \par } { }
+    \bigskip
+    \iffield { text } { \field { text } \par \medskip } { }
+  }
+% Letter closing: closing words, space to sign, the name in bold accent
+% with the job title below.
+\settemplate { closing }
+  {
+    \par \medskip \nopagebreak
+    \iffield { text } { \field { text } \par \nopagebreak } { }
+    \vspace { 2 \baselineskip } \nopagebreak
+    { \bfseries \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+    \ifvitaeset { jobtitle } { \nopagebreak { \small \thejobtitle \par } } { }
+  }

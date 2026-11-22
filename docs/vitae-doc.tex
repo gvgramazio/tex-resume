@@ -34,7 +34,8 @@ the preamble or in a separate file, and a \emph{theme} decides how it looks,
 in the same way \pkg{beamer} separates content from presentation. It works
 with pdf\LaTeX, \XeLaTeX{} and Lua\LaTeX, produces text that applicant-tracking
 systems extract cleanly, and can produce accessible (PDF/UA) and archival
-(PDF/A) files.
+(PDF/A) files. A companion class, \pkg{vitaeletter}, typesets a cover letter
+from the same data, with the same header and theme.
 \end{abstract}
 
 \tableofcontents
@@ -271,11 +272,45 @@ and as entry keys to one entry.
 \end{tabular}
 \end{center}
 
+\section{Cover letters}\label{sec:letter}
+
+The \pkg{vitaeletter} class shares everything except entries with
+\pkg{vitae}: personal data, themes, settings, templates and dates. A data
+file written for the resume loads unchanged (its entries and items are
+stored, but a letter does not print them), so the letter repeats the
+resume's header and look.
+
+\begin{function}{\recipient,\letterdate}
+  \begin{syntax}
+    \cs{recipient}\marg{name}\marg{address}
+    \cs{letterdate}\marg{date}
+  \end{syntax}
+  The addressee, with address lines separated by |\\|, and the date of the
+  letter. The date goes through \cs{formatdate}, so an ISO date follows the
+  \key{dateformat} and \key{datelocale} settings; it defaults to the day of
+  compilation, and \cs{letterdate}|{}| leaves it out.
+\end{function}
+
+\begin{function}{\opening,\closing}
+  \begin{syntax}
+    \cs{opening}\marg{salutation}
+    \cs{closing}\marg{text}
+  \end{syntax}
+  \cs{opening} prints the header (the |header| template, as \cs{makeheader}
+  does), then the recipient, the date and the salutation through the
+  |opening| template. \cs{closing} prints its text and the signature
+  block, the name below a space to sign, through the |closing| template.
+  The letter body between them is free text.
+\end{function}
+
+\sample{sample-letter}
+
 \section{Templates}\label{sec:templates}
 
 A theme is a set of \emph{templates}: |header|, |contact|, |contactsep|,
-|section|, |entry|, the entry styles |entry/|\meta{style}, and |item|. Any of
-them can be replaced without writing a theme.
+|section|, |entry|, the entry styles |entry/|\meta{style}, and |item|; and,
+for letters, |opening| and |closing|. Any of them can be replaced without
+writing a theme.
 
 \begin{function}{\settemplate,\field,\iffield,\ifanyfield,\joinfields,\addpunct}
   \begin{syntax}
@@ -287,7 +322,9 @@ them can be replaced without writing a theme.
   \end{syntax}
   Inside a template, \cs{field} reads the current item's fields: |title|,
   |org|, |location|, |start|, |end|, |dates| (the formatted range),
-  |duration|, |body| and |label|; and for contacts |icon|, |text| and |url|.
+  |duration|, |body| and |label|; for contacts |icon|, |text| and |url|;
+  in |opening|, |name| and |address| (the recipient), |date| (formatted)
+  and |text| (the salutation); in |closing|, |text|.
   \cs{joinfields} prints only the fields that are set, from a list such as
   |title=\textbf, org, location| (each with an optional format), so that missing fields leave no stray separator.
   \cs{addpunct} adds punctuation unless the text already ends with some.
@@ -388,7 +425,8 @@ labelled, because its PDF driver would place the labels out of reading order.
 
 \pkg{vitae} needs \TeX{} Live 2022 or later (or an equivalent MiK\TeX).
 Download |vitae-ctan.zip| from the latest release on GitHub and copy
-|vitae.cls| and the |vitaetheme*.sty| files either next to your document or
+|vitae.cls|, |vitaeletter.cls|, |vitaecore.sty| and the |vitaetheme*.sty|
+files either next to your document or
 into your personal tree (|~/texmf/tex/latex/vitae| on Linux,
 |~/Library/texmf/tex/latex/vitae| on macOS). From a clone of the repository,
 |l3build install| does the same.

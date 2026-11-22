@@ -33,7 +33,9 @@ Missing optional fields (no location, no end date, so it prints "present"); star
 ## 2. Architecture
 
 ```
-vitae.cls            core: options, data store, keys, list storage, templates, public API
+vitaecore.sty        shared: data store, contacts, dates, templates, accessibility, themes, list storage
+vitae.cls            resume: sections, entries, items, printing lists
+vitaeletter.cls      cover letter: recipient, date, opening, closing
 vitaetheme<n>.sty    look: fonts, colors, template definitions (classic, modern)
 ```
 
@@ -43,7 +45,7 @@ vitaetheme<n>.sty    look: fonts, colors, template definitions (classic, modern)
 
 **Templates.** Each template is a macro `\__vitae_template_<name>:`. Themes and users redefine it with `\settemplate`. Inside a template, fields are read with the expandable `\field{title}` and tested with `\iffield{title}{…}{…}`. Every writer sets fields inside a group, so values never leak from one item to the next. Themes set their defaults with `\keys_set:nn {vitae/setup}`, which isn't recorded, so the user's `\vitaesetup` keys are replayed after the theme loads and take precedence.
 
-**Base class.** It loads `article` for page setup and sectioning, adds `geometry`, `hyperref`, `xcolor` and `fontawesome5` (icons, which work on all engines), and remaps `\section` to the `section` template.
+**Base class.** Each class loads `article` for page setup and sectioning, adds `geometry`, `hyperref`, `xcolor` and `fontawesome5` (icons, which work on all engines), and remaps `\section` to the `section` template.
 
 **Themes.**
 - `classic`: serif font, a centered header and a right-aligned date column.
@@ -98,3 +100,9 @@ docs/                 vitae-doc.tex (user manual, l3doc) + sample-*.tex; DESIGN.
 - **Scope.** Style, locale, separator and "present" are local variables. Preamble settings apply to the whole document, settings inside a group apply only to that group, and `dateformat`/`datelocale` entry keys apply to a single entry, because each entry is a group.
 - **Layout.** Localised dates are long, so date columns must cope with labels that wrap. The default separator can break after the dash. The `modern` theme sets its hanging labels at zero depth, so a wrapped label doesn't push the body's lines down. If a label is taller than its body, the theme adds the missing space after the entry.
 - **Durations.** `\duration` reuses the ISO test (`\__vitae_date_if_iso:nTF`, which hands year, month and day to a continuation) and stays expandable. Months count inclusively, LinkedIn-style (Sep 2018 – Mar 2021 is 31 months), because entries name whole months. With a year-only date, the precision drops to whole years (`end − start`): spanning to the last month of the end year would inflate "2018 – 2021" to four years. "Today" defaults to the compilation date (`\c_sys_year_int`, `\c_sys_month_int`); `today=` fixes it for reproducible builds and tests. The `duration` field is filled only when durations are on, the start and end differ (so `date=` entries get none), and the length is positive. Its blankness can therefore be tested with `\iffield`, as for every other field.
+
+## 8. Cover letters
+- **One core, two classes.** `vitaeletter` and `vitae` load the same `vitaecore.sty`, so the header, contacts, dates, settings and theme mechanism cannot drift apart. Resume-only code (sections, `\cventry`, `\cvitem`, `\printentries`) stays in `vitae.cls`.
+- **Shared data files.** List storage (`\addentry`, `\additem`) is in the core: a resume data file loads in a letter unchanged. Its entries are stored as unexpanded calls and never printed, so the letter does not need the entry code.
+- **Templates.** The core registers every template, letter ones included, so a theme is one file for both classes. `\opening` runs `\makeheader` (the resume's `header` template) and then `opening`, with the fields `name`, `address`, `date` and `text`; `\closing` runs `closing` with `text`, and the template signs with the stored name.
+- **Date.** `\letterdate` stores its argument as typed; `\opening` puts `\formatdate{…}` in the `date` field, so the letter follows the date style and locale like any entry. The default is the day of compilation (`\c_sys_year_int`, `\c_sys_month_int`, `\c_sys_day_int`) as an ISO date, which `SOURCE_DATE_EPOCH` fixes for reproducible builds.

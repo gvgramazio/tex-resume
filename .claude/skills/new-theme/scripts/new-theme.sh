@@ -11,7 +11,7 @@ case $name in *[!a-z]*) echo "theme name must be [a-z]+" >&2; exit 2 ;; esac
 src="src/vitaetheme$base.sty"
 sty="src/vitaetheme$name.sty"
 [ -f "$src" ] || { echo "base theme not found: $src" >&2; exit 1; }
-for f in "$sty" "examples/theme-$name.tex" "examples/stress-$name.tex"; do
+for f in "$sty" "examples/theme-$name.tex" "examples/stress-$name.tex" "examples/letter-$name.tex"; do
   [ ! -e "$f" ] || { echo "already exists: $f" >&2; exit 1; }
 done
 
@@ -20,11 +20,12 @@ sed -e "s/vitaetheme$base/vitaetheme$name/g" \
     -e "s/vitae $base theme/vitae $name theme/" \
     -e "s/__vitae_${base}_/__vitae_${name}_/g" "$src" >"$sty"
 
-# Examples: the base theme's showcase and stress test, switched over.
-for kind in theme stress; do
+# Examples: the base theme's showcase, stress test and letter, switched over.
+for kind in theme stress letter; do
   sed -e "s/\\\\usetheme{$base}/\\\\usetheme{$name}/" \
       -e "s/the $base theme/the $name theme/" \
+      -e "s/theme-$base/theme-$name/" \
       "examples/$kind-$base.tex" >"examples/$kind-$name.tex"
 done
 
-echo "created: $sty examples/theme-$name.tex examples/stress-$name.tex"
+echo "created: $sty examples/theme-$name.tex examples/stress-$name.tex examples/letter-$name.tex"

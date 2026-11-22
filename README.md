@@ -1,6 +1,6 @@
 # vitae
 
-A LaTeX class for resumes. You declare your data once, and a theme decides how it looks, in the same way beamer separates content from themes. It works with pdfLaTeX, XeLaTeX and LuaLaTeX.
+A LaTeX class for resumes. You declare your data once, and a theme decides how it looks, in the same way beamer separates content from themes. A companion class, `vitaeletter`, typesets a matching cover letter from the same data. It works with pdfLaTeX, XeLaTeX and LuaLaTeX.
 
 **[User manual (PDF)](https://github.com/gvgramazio/tex-resume/releases/latest/download/vitae-doc.pdf)**: every command, setting and template, with examples.
 
@@ -36,7 +36,7 @@ More complete documents are in [examples/](examples/).
 
 ## Installation
 
-Download `vitae-ctan.zip` from the [latest release](https://github.com/gvgramazio/tex-resume/releases/latest), and copy `vitae.cls` and the `vitaetheme*.sty` files next to your document or into your personal TeX tree (`~/texmf/tex/latex/vitae` on Linux, `~/Library/texmf/tex/latex/vitae` on macOS). From a clone of this repository, `l3build install` does the same. TeX Live 2022 or later is required.
+Download `vitae-ctan.zip` from the [latest release](https://github.com/gvgramazio/tex-resume/releases/latest), and copy `vitae.cls`, `vitaeletter.cls`, `vitaecore.sty` and the `vitaetheme*.sty` files next to your document or into your personal TeX tree (`~/texmf/tex/latex/vitae` on Linux, `~/Library/texmf/tex/latex/vitae` on macOS). From a clone of this repository, `l3build install` does the same. TeX Live 2022 or later is required.
 
 ## Development
 

@@ -3,6 +3,16 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Added
+- `vitaeletter`, a cover-letter class that shares the resume's data, header,
+  themes and settings: `\recipient`, `\letterdate` (an ISO date, localised
+  through `\formatdate`; default the day of compilation), `\opening` and
+  `\closing`, with themable `opening` and `closing` templates. A resume data
+  file loads unchanged.
+
+### Changed
+- The code shared by both classes moved from `vitae.cls` into
+  `vitaecore.sty`, which must be installed alongside the classes.
 
 ## [0.4.0] - 2026-11-22
 ### Added
