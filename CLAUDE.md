@@ -8,7 +8,7 @@
 - `testfiles/`: l3build regression tests (`.lvt` input, `.tlg` expected log).
 - `examples/`: compilable documents, all built in CI in strict mode: `theme-*` (showcase), `letter-*` (cover letters), `stress-*` (layout edge cases), `accessible*` (PDF/UA), `archival-*` (one PDF/A recipe each), plus shared data in `examples/data/`. A `% engines:` header line limits engines; `% allow-warning:` exempts one known, harmless warning (justify it next to it).
 - `scripts/build.sh`: compiles the examples (used by both CI and the `build` skill).
-- `scripts/check-pdf.sh`: veraPDF (PDF/UA), text-extraction and link-action checks (`scripts/pdf-links.py`) of built examples; `scripts/check-contrast.py`: WCAG contrast of theme colours. Both run in CI and need `pdftotext` (poppler) and `verapdf` locally.
+- `scripts/check-pdf.sh`: veraPDF (PDF/UA), text-extraction, link-action (`scripts/pdf-links.py`) and active-content (`scripts/pdf-active.py`) checks of built examples; `scripts/check-contrast.py`: WCAG contrast of theme colours. Both run in CI and need `pdftotext` (poppler) and `verapdf` locally.
 - `scripts/junit.sh`: turns the last `l3build check` run into JUnit XML, which CI uploads to Codecov Test Analytics.
 - `.github/workflows/codeql.yml`: CodeQL analysis of the workflows themselves (`actions` language).
 - `.claude/skills/`: `build`, `test`, `new-theme`, `release`.

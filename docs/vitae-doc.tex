@@ -377,6 +377,14 @@ systems (ATS) read: contact icons come out as their label (\enquote{Email:
 jane.doe@example.com}, \enquote{GitHub: jdoe-example}) and contacts never run
 together. That needs no setup.
 
+The PDF also has no \emph{active content}: no JavaScript, forms,
+attachments or actions that run when the file opens. Upload filters of some
+ATS, such as SAP SuccessFactors, reject a file that has any. For the same
+reason the PDF does not tell the viewer to open at page~1 fitted to the
+window, which \pkg{hyperref} does by default; the viewer uses its own zoom.
+|\hypersetup{pdfstartpage=1, pdfstartview=Fit}| in the preamble brings that
+back, and with it the rejection.
+
 For a tagged, accessible PDF that conforms to PDF/UA, make this the first
 line and compile with \textbf{Lua\LaTeX}:
 \begin{Verbatim}[gobble=0, fontsize=\small]
@@ -429,6 +437,9 @@ Add |lang=| with the document language to each. Known limitations:
   \item PDF/A-2 with tagging needs |attach-css=false|: \LaTeX's tagging
     embeds two HTML stylesheets, and PDF/A-2 forbids embedded files that are
     not PDF/A themselves. PDF/A-3 and PDF/A-4 allow them.
+  \item PDF/A-4f requires an embedded file (\LaTeX{} adds a placeholder),
+    which some ATS upload filters reject as active content. To upload to an
+    ATS, prefer |pdfstandard={a-4,ua-2}|, or one of the other recipes.
   \item The accessible (\enquote{a}) levels need tagging, and so Lua\LaTeX.
   \item \XeLaTeX{} cannot reach PDF/A-2u: its icon fonts have no Unicode map.
   \item PDF/A-1 is not tested. A photo should be a JPEG, a PNG or a PDF/A

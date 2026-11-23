@@ -3,6 +3,12 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Fixed
+- PDFs no longer have an `/OpenAction` in the catalog (hyperref's default
+  start view), which made applicant tracking systems such as SAP
+  SuccessFactors reject them as having active content. The viewer now opens
+  them at its own zoom; `\hypersetup{pdfstartpage=1, pdfstartview=Fit}`
+  restores the old behaviour.
 
 ## [0.5.0] - 2026-11-22
 ### Added
