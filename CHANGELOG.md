@@ -11,6 +11,16 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   through the `.aux` file, so a theme can place it before the point where it
   is routed; a rerun is requested when it changes. Content for a region the
   theme does not place prints in place, with a warning.
+- Aside column, a layout helper for themes (and documents with a layout of
+  their own): `\vitaeasidecolumn{width=…, sep=…, side=…, order=…}` takes a
+  column from the text block and `\placeaside` starts it, at the top of the
+  page or below a masthead; it continues on the next pages, which are added
+  if it outlasts main. It holds the new `aside` template (by default the
+  aside region). Under tagging it is an `Aside` structure element, read
+  after main by default.
+- Development: `scripts/check-pdf.sh` also checks that no two words of any
+  example overlap (`scripts/pdf-overlap.py`) and that the aside stress
+  examples print every part of their column once.
 - `\makemasthead` and the `masthead` template, the new names of
   `\makeheader` and the `header` template for the identity block (name, job
   title, contacts, photo).
