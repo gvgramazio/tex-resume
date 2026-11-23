@@ -10,12 +10,12 @@ in the same way beamer splits content from themes.
 |----|-------------|
 | F1 | The preamble stores personal data in variables: `\name{First}{Last}`, `\jobtitle`, `\photo`, `\email`, `\phone`, `\address`, `\homepage`, `\linkedin`, `\github`, `\orcid`, `\lastupdated`, plus a generic `\addcontact[url]{icon}{text}`. |
 | F2 | Each variable can be read back with a getter (`\thefirstname`, `\theemail`, …) and tested with a conditional (`\ifvitaeset{email}{yes}{no}`). |
-| F3 | `\makeheader` typesets the stored identity and contacts, much as `\maketitle` does. |
+| F3 | `\makemasthead` typesets the masthead (the stored identity, contacts and photo), much as `\maketitle` does. `\makeheader` is its deprecated name: in LaTeX a *header* is the running page header, a separate thing that vitae keeps the word for. |
 | F4 | Entries use key–value fields: `\cventry{title=…, org=…, location=…, start=…, end=…}{description}`. Every field is optional. |
 | F5 | Entries can be **stored** under a list name (`\addentry{education}{…}{…}`) and **printed** later (`\printentries{education}`). This keeps the data separate from the order it's printed in. |
 | F6 | One-line items handle skills, languages and the like: `\cvitem{label}{text}`, `\additem{list}{label}{text}`. |
 | F7 | `\usetheme{name}` loads `vitaetheme<name>.sty`. A default theme is used if none is chosen. |
-| F8 | Themes override named **templates** (`header`, `contact`, `contactsep`, `section`, `entry`, `item`, `footer`, and `opening`/`closing` for letters). Users can override a single template with `\settemplate{entry}{…}` without writing a theme. |
+| F8 | Themes override named **templates** (`masthead`, `contact`, `contactsep`, `section`, `entry`, `item`, `footer`, and `opening`/`closing` for letters). Users can override a single template with `\settemplate{entry}{…}` without writing a theme. |
 | F9 | Global options go through `\vitaesetup{accent=…, dateformat=…, datelocale=…, present=…, datesep=…, photowidth=…, footer=…}` (key–value). User settings take precedence over theme defaults, whatever their order. |
 
 ### Non-functional
@@ -28,7 +28,7 @@ in the same way beamer splits content from themes.
 | N5 | Code stays small, each block has a comment, and the style is the same across every file. |
 
 ### Edge cases to cover with tests
-Missing optional fields (no location, no end date, so it prints "present"); start equal to end (a single date); an empty or undefined list; unknown keys and themes; calling `\usetheme` twice; characters like `_ # % & ~` in emails and URLs; Unicode names on pdfLaTeX; no photo, or a missing photo file; long titles that wrap; page breaks between entries; `\makeheader` with only a name; all three engines.
+Missing optional fields (no location, no end date, so it prints "present"); start equal to end (a single date); an empty or undefined list; unknown keys and themes; calling `\usetheme` twice; characters like `_ # % & ~` in emails and URLs; Unicode names on pdfLaTeX; no photo, or a missing photo file; long titles that wrap; page breaks between entries; `\makemasthead` with only a name; all three engines.
 
 ## 2. Architecture
 
@@ -48,8 +48,8 @@ vitaetheme<n>.sty    look: fonts, colors, template definitions (classic, modern)
 **Base class.** Each class loads `article` for page setup and sectioning, adds `geometry`, `hyperref`, `xcolor` and `fontawesome5` (icons, which work on all engines), and remaps `\section` to the `section` template.
 
 **Themes.**
-- `classic`: serif font, a centered header and a right-aligned date column.
-- `modern`: sans-serif font, an accent color, a left-aligned header with icons and a date margin.
+- `classic`: serif font, a centered masthead and a right-aligned date column.
+- `modern`: sans-serif font, an accent color, a left-aligned masthead with icons and a date margin.
 
 ## 3. Repository and tooling
 
@@ -88,7 +88,7 @@ docs/                 vitae-doc.tex (user manual, l3doc) + sample-*.tex; DESIGN.
 
 ## 6. Paragraph spacing
 - **Setting.** `parskip` takes a length and sets TeX's `\parskip`. The name follows the TeX length (and KOMA-Script's `parskip` option); vitae does not load the `parskip` package, which would also loosen template lines.
-- **Structure stays fixed.** The header, section, entry and item groups run with `\parskip` = 0, so a template's lines keep their exact spacing under any setting. That includes user templates written with `\par`.
+- **Structure stays fixed.** The masthead, section, entry and item groups run with `\parskip` = 0, so a template's lines keep their exact spacing under any setting. That includes user templates written with `\par`.
 - **Bodies.** Blank lines in entry and item bodies are stored as `\__vitae_par:`, which ends the paragraph and adds the configured space with `\addvspace`. This works inside parboxes, lists and boxes, which reset `\parskip`, so every theme behaves the same.
 - **Free text** (for example a Profile section) uses the global `\parskip`. The first paragraph after a heading therefore gets the heading's space plus `\parskip`, as in any `parskip`-based layout.
 
@@ -102,9 +102,9 @@ docs/                 vitae-doc.tex (user manual, l3doc) + sample-*.tex; DESIGN.
 - **Durations.** `\duration` reuses the ISO test (`\__vitae_date_if_iso:nTF`, which hands year, month and day to a continuation) and stays expandable. Months count inclusively, LinkedIn-style (Sep 2018 – Mar 2021 is 31 months), because entries name whole months. With a year-only date, the precision drops to whole years (`end − start`): spanning to the last month of the end year would inflate "2018 – 2021" to four years. "Today" defaults to the compilation date (`\c_sys_year_int`, `\c_sys_month_int`); `today=` fixes it for reproducible builds and tests. The `duration` field is filled only when durations are on, the start and end differ (so `date=` entries get none), and the length is positive. Its blankness can therefore be tested with `\iffield`, as for every other field.
 
 ## 8. Cover letters
-- **One core, two classes.** `vitaeletter` and `vitae` load the same `vitaecore.sty`, so the header, contacts, dates, settings and theme mechanism cannot drift apart. Resume-only code (sections, `\cventry`, `\cvitem`, `\printentries`) stays in `vitae.cls`.
+- **One core, two classes.** `vitaeletter` and `vitae` load the same `vitaecore.sty`, so the masthead, contacts, dates, settings and theme mechanism cannot drift apart. Resume-only code (sections, `\cventry`, `\cvitem`, `\printentries`) stays in `vitae.cls`.
 - **Shared data files.** List storage (`\addentry`, `\additem`) is in the core: a resume data file loads in a letter unchanged. Its entries are stored as unexpanded calls and never printed, so the letter does not need the entry code.
-- **Templates.** The core registers every template, letter ones included, so a theme is one file for both classes. `\opening` runs `\makeheader` (the resume's `header` template) and then `opening`, with the fields `name`, `address`, `date` and `text`; `\closing` runs `closing` with `text`, and the template signs with the stored name.
+- **Templates.** The core registers every template, letter ones included, so a theme is one file for both classes. `\opening` runs `\makemasthead` (the resume's `masthead` template) and then `opening`, with the fields `name`, `address`, `date` and `text`; `\closing` runs `closing` with `text`, and the template signs with the stored name.
 - **Date.** `\letterdate` stores its argument as typed; `\opening` puts `\formatdate{…}` in the `date` field, so the letter follows the date style and locale like any entry. The default is the day of compilation (`\c_sys_year_int`, `\c_sys_month_int`, `\c_sys_day_int`) as an ISO date, which `SOURCE_DATE_EPOCH` fixes for reproducible builds.
 
 ## 9. Page footer

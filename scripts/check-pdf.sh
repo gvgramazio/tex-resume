@@ -5,11 +5,11 @@
 # (CI runs it in a container).
 #   1. veraPDF: every example in the table below must pass each listed
 #      profile (PDF/UA and PDF/A), on each engine that built it.
-#   2. Text extraction, as applicant-tracking systems read it: the header of
+#   2. Text extraction, as applicant-tracking systems read it: the masthead of
 #      every showcase and letter must extract as the exact contact line, so
 #      any icon junk, lost character or missing label fails the check.
 #   3. Links: every link in a showcase or letter must be a web link (URI
-#      action), never a file link (GoToR, Launch), and the header has five.
+#      action), never a file link (GoToR, Launch), and the masthead has five.
 #   4. Active content: no example may have a key that upload filters of
 #      applicant-tracking systems reject (OpenAction, JavaScript, ...).
 set -eu
