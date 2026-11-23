@@ -1,0 +1,28 @@
+% engines: lua
+% Accessible PDF (PDF/UA-2) with an aside column: the aside is an Aside
+% structure element, read after main.
+\DocumentMetadata{tagging=on, pdfstandard=ua-2, lang=en-US}
+\documentclass{vitae}
+\usetheme{modern}
+\input{data/janedoe}
+\vitaeasidecolumn{width=4.8cm, sep=8mm}
+% Narrow measures: let TeX stretch spaces rather than overflow.
+\setlength\emergencystretch{3em}
+\vitaesetup{footer={name, pages, updated}}
+\lastupdated{2026-11-15}
+
+\begin{document}
+\placeaside
+\makemasthead
+
+\section{Profile}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+\printentries[Experience]{experience}
+\printentries[Education]{education}
+\printentries[heading=Skills, region=aside, style=compact]{skills}
+\printentries[heading=Languages, region=aside, style=compact]{languages}
+\printentries[heading=Certifications, style=compact]{certs}
+\printentries[heading=Talks, style=inline]{talks}
+\end{document}

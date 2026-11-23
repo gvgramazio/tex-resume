@@ -12,6 +12,10 @@
 #      action), never a file link (GoToR, Launch), and the masthead has five.
 #   4. Active content: no example may have a key that upload filters of
 #      applicant-tracking systems reject (OpenAction, JavaScript, ...).
+#   5. Aside column: in the aside stress examples, the first and last words
+#      of the column extract exactly once (no part lost or printed twice).
+#   6. Overprinting: in every example, no two words overlap on the page
+#      (scripts/pdf-overlap.py), as a column printed over main would.
 set -eu
 cd "$(dirname "$0")/.."
 VERAPDF=${VERAPDF:-verapdf}
@@ -26,6 +30,7 @@ labelled='Email: jane.doe@example.com Phone: +00 000 000 0000 Address: 1 Example
 validations='
 accessible       ua2
 accessible-ua1   ua1
+accessible-aside ua2
 accessible-letter ua2
 archival-a4f     4f,ua2
 archival-a3a     3a,ua1
@@ -87,6 +92,32 @@ for dir in "$@"; do
       echo "OK    $e $f (active content)"
     else
       fail "$e $f (active content): $keys"
+    fi
+  done
+
+  # 5. Aside column: each marker once, whitespace normalised.
+  for f in "$dir"/stress-aside-*.pdf; do
+    [ -f "$f" ] || continue
+    text=$(pdftotext "$f" - | tr '\n\f' '  ' | tr -s ' ')
+    for m in 'Aside start.' 'Aside end.'; do
+      n=$(printf '%s' "$text" | grep -o "$m" | wc -l | tr -d ' ')
+      if [ "$n" -eq 1 ]; then
+        echo "OK    $e $f (aside: $m)"
+      else
+        fail "$e $f (aside): \"$m\" extracted $n times, expected once"
+      fi
+    done
+  done
+
+  # 6. Overprinting, in every example.
+  for f in "$dir"/*.pdf; do
+    [ -f "$f" ] || continue
+    pairs=$(scripts/pdf-overlap.py "$f")
+    if [ -z "$pairs" ]; then
+      echo "OK    $e $f (no overprint)"
+    else
+      fail "$e $f (overprint): $(echo "$pairs" | wc -l | tr -d ' ') overlapping words"
+      echo "$pairs" | head -3 | sed 's/^/      /'
     fi
   done
 done
