@@ -4,6 +4,13 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Regions: `\printentries[region=aside]` and the `region` environment route
+  content to a part of the page, such as a sidebar, in reading order; themes
+  declare the regions they place with `\vitaeplaceregions` and print them
+  with `\useregion` (`\ifregionempty` tests one). Region content goes
+  through the `.aux` file, so a theme can place it before the point where it
+  is routed; a rerun is requested when it changes. Content for a region the
+  theme does not place prints in place, with a warning.
 - `\makemasthead` and the `masthead` template, the new names of
   `\makeheader` and the `header` template for the identity block (name, job
   title, contacts, photo).

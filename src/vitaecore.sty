@@ -27,6 +27,7 @@
 \prg_generate_conditional_variant:Nnn \tl_if_blank:n { v , e } { T , F , TF }
 \cs_generate_variant:Nn \str_set_convert:Nnnn { NeVn }
 \cs_generate_variant:Nn \msg_warning:nnn { nnV }
+\cs_generate_variant:Nn \msg_warning:nnnn { nnnV }
 \cs_generate_variant:Nn \msg_error:nnnn { nnVn }
 
 % --- Messages -------------------------------------------------------------
@@ -975,6 +976,147 @@
   }
 \NewDocumentCommand \addentry { m m +m } { \__vitae_list_put:nn {#1} { \cventry {#2} {#3} } }
 \NewDocumentCommand \additem { m m +m } { \__vitae_list_put:nn {#1} { \cvitem {#2} {#3} } }
+
+% --- Regions --------------------------------------------------------------
+% A region is a part of the page that a theme lays out: "main" is the normal
+% flow, "aside" complementary content; themes may place other regions. The
+% document routes content to a region (\printentries[region=...], the region
+% environment) in reading order; the theme declares the regions it places
+% (\vitaeplaceregions) and prints each where its layout wants it
+% (\useregion). Content for main, or for a region the theme does not place,
+% is printed in place.
+\msg_new:nnn { vitae } { region-in-place }
+  {
+    Theme~'#2'~does~not~place~region~'#1':~its~content~is~printed~in~
+    place,~which~may~not~look~as~intended.
+  }
+\msg_new:nnn { vitae } { region-unused }
+  { Theme~'#2'~places~region~'#1'~but~never~prints~its~content. }
+\msg_new:nnn { vitae } { region-changed }
+  { Region~'#1'~has~changed.~Rerun~to~get~it~right. }
+\seq_new:N \g__vitae_regions_seq
+\seq_new:N \g__vitae_regions_warned_seq
+\tl_new:N \l__vitae_region_tl
+% \vitaeplaceregions{<regions>}: in a theme, the regions it prints.
+\NewDocumentCommand \vitaeplaceregions { m }
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \str_if_eq:nnF {##1} { main }
+          {
+            \seq_if_in:NnF \g__vitae_regions_seq {##1}
+              {
+                \seq_gput_right:Nn \g__vitae_regions_seq {##1}
+                \tl_new:c { g__vitae_region_##1_tl }
+              }
+          }
+      }
+  }
+\@onlypreamble \vitaeplaceregions
+% Route: store <content> in a placed region, else run <in place> (with one
+% warning per region, unless it is main).
+\cs_new_protected:Npn \__vitae_region:nnn #1#2#3
+  {
+    \seq_if_in:NnTF \g__vitae_regions_seq {#1}
+      { \tl_gput_right:cn { g__vitae_region_#1_tl } {#2} }
+      {
+        \str_if_eq:nnF {#1} { main }
+          {
+            \seq_if_in:NnF \g__vitae_regions_warned_seq {#1}
+              {
+                \seq_gput_right:Nn \g__vitae_regions_warned_seq {#1}
+                \msg_warning:nnnV { vitae } { region-in-place } {#1} \g__vitae_theme_tl
+              }
+          }
+        #3
+      }
+  }
+\cs_generate_variant:Nn \__vitae_region:nnn { V }
+% \begin{region}{<region>} ... \end{region}: route free text.
+\NewDocumentEnvironment { region } { m +b } { \__vitae_region:nnn {#1} {#2} {#2} } { }
+% Two passes, like a table of contents: region content is written to the
+% .aux file and printed from there on the next run, so a theme can print it
+% before the point where the document routes it (an aside at the top of
+% page 1). Without an .aux entry, what was routed so far is printed; if that
+% differs from the final content, a rerun is requested.
+\cs_new_protected:Npn \__vitae_region_get:nN #1#2
+  {
+    \tl_if_exist:cTF { g__vitae_region_#1_aux_tl }
+      { \tl_set_eq:Nc #2 { g__vitae_region_#1_aux_tl } }
+      {
+        \tl_if_exist:cTF { g__vitae_region_#1_tl }
+          { \tl_set_eq:Nc #2 { g__vitae_region_#1_tl } }
+          { \tl_clear:N #2 }
+      }
+  }
+% \useregion{<region>}: print it (in a theme); what is printed is kept for
+% the comparison at the end of the document.
+\NewDocumentCommand \useregion { m }
+  {
+    \__vitae_region_get:nN {#1} \l__vitae_region_tl
+    \tl_gset_eq:cN { g__vitae_region_#1_used_tl } \l__vitae_region_tl
+    \tl_use:N \l__vitae_region_tl
+  }
+\NewDocumentCommand \ifregionempty { m +m +m }
+  {
+    \__vitae_region_get:nN {#1} \l__vitae_region_tl
+    \tl_if_empty:NTF \l__vitae_region_tl {#2} {#3}
+  }
+% .aux entries: \vitae@region{<region>}{<content>}. The content is read as
+% the body of a definition, so the # that writing doubled come back single.
+% Only the read at \begin{document} counts (LaTeX reads the file again at
+% the end).
+\tl_new:N \g__vitae_region_name_tl
+\tl_new:N \g__vitae_region_read_tl
+\cs_new_protected:Npn \vitae@region #1
+  {
+    \tl_gset:Nn \g__vitae_region_name_tl {#1}
+    \tex_afterassignment:D \__vitae_region_read:
+    \tex_long:D \tex_gdef:D \g__vitae_region_read_tl
+  }
+\cs_new_protected:Npn \__vitae_region_read:
+  {
+    \tl_gset_eq:cN { g__vitae_region_ \g__vitae_region_name_tl _aux_tl }
+      \g__vitae_region_read_tl
+  }
+\hook_gput_code:nnn { begindocument } { vitae }
+  {
+    \cs_gset_protected:Npn \vitae@region #1#2 { }
+    % The .aux stays readable if vitae is no longer used.
+    \bool_lazy_and:nnT
+      { \legacy_if_p:n { @filesw } }
+      { ! \seq_if_empty_p:N \g__vitae_regions_seq }
+      { \iow_now:Nn \@auxout { \providecommand \vitae@region [2] { } } }
+  }
+% At the end: write each region's content, warn about content the theme
+% never printed and about printed content that has changed since.
+\cs_new_protected:Npn \__vitae_region_finish:
+  {
+    \seq_map_inline:Nn \g__vitae_regions_seq
+      {
+        \tl_if_empty:cF { g__vitae_region_##1_tl }
+          {
+            \legacy_if:nT { @filesw }
+              {
+                \iow_now:Ne \@auxout
+                  {
+                    \token_to_str:N \vitae@region {##1}
+                      { \exp_not:v { g__vitae_region_##1_tl } }
+                  }
+              }
+            \tl_if_exist:cF { g__vitae_region_##1_used_tl }
+              { \msg_warning:nnnV { vitae } { region-unused } {##1} \g__vitae_theme_tl }
+          }
+        \tl_if_exist:cT { g__vitae_region_##1_used_tl }
+          {
+            \str_if_eq:eeF
+              { \tl_to_str:c { g__vitae_region_##1_used_tl } }
+              { \tl_to_str:c { g__vitae_region_##1_tl } }
+              { \msg_warning:nnn { vitae } { region-changed } {##1} }
+          }
+      }
+  }
+\hook_gput_code:nnn { enddocument / afterlastpage } { vitae } { \__vitae_region_finish: }
 
 % --- Themes ---------------------------------------------------------------
 % \usetheme{<name>} loads vitaetheme<name>.sty once, then re-applies user

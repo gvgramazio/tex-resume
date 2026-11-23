@@ -139,12 +139,17 @@
 % durations); the argument is a plain heading unless it contains "=" or
 % its first item is an option name (as in [durations]). The heading
 % appears only if the list has content; an empty or undefined list warns
-% and prints nothing. Options are local to this call.
+% and prints nothing. Options are local to this call. With region=<name>
+% the call is routed to that region (see vitaecore), as a call with
+% region=main, which prints when the theme places the region.
 \tl_new:N \l__vitae_print_heading_tl
+\tl_new:N \l__vitae_print_region_tl
 \keys_define:nn { vitae / print }
   {
     heading .tl_set:N = \l__vitae_print_heading_tl ,
     style   .tl_set:N = \l__vitae_entry_style_tl ,
+    region  .tl_set:N = \l__vitae_print_region_tl ,
+    region  .initial:n = main ,
     durations .meta:nn = { vitae / setup } { durations = {#1} } ,
     durations .default:n = true ,
   }
@@ -162,14 +167,18 @@
                 { \tl_set:Nn \l__vitae_print_heading_tl {#1} }
             }
         }
-      \bool_lazy_and:nnTF
-        { \seq_if_exist_p:c { g__vitae_list_#2_seq } }
-        { ! \seq_if_empty_p:c { g__vitae_list_#2_seq } }
+      \__vitae_region:Vnn \l__vitae_print_region_tl
+        { \printentries [ #1 , region = main ] {#2} }
         {
-          \tl_if_blank:VF \l__vitae_print_heading_tl
-            { \exp_args:NV \section \l__vitae_print_heading_tl }
-          \seq_use:cn { g__vitae_list_#2_seq } { }
+          \bool_lazy_and:nnTF
+            { \seq_if_exist_p:c { g__vitae_list_#2_seq } }
+            { ! \seq_if_empty_p:c { g__vitae_list_#2_seq } }
+            {
+              \tl_if_blank:VF \l__vitae_print_heading_tl
+                { \exp_args:NV \section \l__vitae_print_heading_tl }
+              \seq_use:cn { g__vitae_list_#2_seq } { }
+            }
+            { \msg_warning:nnn { vitae } { empty-list } {#2} }
         }
-        { \msg_warning:nnn { vitae } { empty-list } {#2} }
     \group_end:
   }
