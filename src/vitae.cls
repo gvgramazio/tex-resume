@@ -32,7 +32,7 @@
   }
 
 % --- Entries and items ----------------------------------------------------
-% Structural groups (header, section, entry, item) run with \parskip = 0,
+% Structural groups (masthead, section, entry, item) run with \parskip = 0,
 % so template lines keep their exact spacing whatever the setting. Blank
 % lines in bodies become \__vitae_par:, which adds the configured space
 % explicitly: it also works inside parboxes and lists, which reset \parskip.

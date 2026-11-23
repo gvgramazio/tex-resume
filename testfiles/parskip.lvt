@@ -40,8 +40,8 @@
   \cventry{}{}
   \settemplate{section}{\TYPE{inside section: \the\parskip}}
   \section{Lorem}
-  \settemplate{header}{\TYPE{inside header: \the\parskip}}
-  \name{Jane}{Doe}\makeheader
+  \settemplate{masthead}{\TYPE{inside masthead: \the\parskip}}
+  \name{Jane}{Doe}\makemasthead
   \TYPE{after them: \the\parskip}
 }
 

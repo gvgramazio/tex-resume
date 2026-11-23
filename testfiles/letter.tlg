@@ -6,9 +6,9 @@ TEST 1: the date defaults to the day of compilation, as an ISO date
 2016-05-20
 ============================================================
 ============================================================
-TEST 2: \opening prints the header, then the opening template
+TEST 2: \opening prints the masthead, then the opening template
 ============================================================
-header: Jane/Doe
+masthead: Jane/Doe
 [Hiring Manager][Lorem Ltd.][November 2026][Dear Hiring Manager,]
 ============================================================
 ============================================================

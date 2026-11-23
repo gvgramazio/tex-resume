@@ -18,19 +18,26 @@ section=[Lorem]
 section=[Ipsum]
 ============================================================
 ============================================================
-TEST 3: \makeheader without a name warns
+TEST 3: \makemasthead without a name warns
 ============================================================
 Package vitae Warning: No name set; use \name{First}{Last}.
-header
+masthead
 ============================================================
 ============================================================
-TEST 4: \makeheader with only a name is silent
+TEST 4: \makemasthead with only a name is silent
 ============================================================
-header: Jane/
+masthead: Jane/
 ============================================================
 ============================================================
 TEST 5: template overrides are scoped like any definition
 ============================================================
 inner
 outer
+============================================================
+============================================================
+TEST 6: deprecated names still work and warn
+============================================================
+Package vitae Warning: The template 'header' is deprecated; use 'masthead' instead (in LaTeX a header is the running page header).
+Package vitae Warning: \makeheader is deprecated; use \makemasthead instead.
+masthead via the old template name
 ============================================================

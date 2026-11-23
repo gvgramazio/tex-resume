@@ -32,6 +32,14 @@
 % --- Messages -------------------------------------------------------------
 \msg_new:nnn { vitae } { unknown-field } { Unknown~field~'#1'. }
 \msg_new:nnn { vitae } { unknown-template } { Unknown~template~'#1'. }
+% Deprecated names, kept as aliases.
+\msg_new:nnn { vitae } { deprecated-makeheader }
+  { \iow_char:N \\makeheader~is~deprecated;~use~\iow_char:N \\makemasthead~instead. }
+\msg_new:nnn { vitae } { deprecated-header-template }
+  {
+    The~template~'header'~is~deprecated;~use~'masthead'~instead~
+    (in~LaTeX~a~header~is~the~running~page~header).
+  }
 \msg_new:nnn { vitae } { unknown-theme }
   { Theme~'#1'~not~found~(no~file~vitaetheme#1.sty). }
 \msg_new:nnn { vitae } { second-theme }
@@ -540,7 +548,18 @@
 % ships plain defaults; themes and users replace them via \settemplate.
 \cs_new_protected:Npn \__vitae_template_use:n #1 { \use:c { __vitae_template_#1: } }
 % Any "entry/<style>" name may be defined, which creates a new entry style.
+% "header" is the deprecated name of the "masthead" template: in LaTeX a
+% header is the running page header, which vitae keeps free for that use.
 \NewDocumentCommand \settemplate { m +m }
+  {
+    \str_if_eq:nnTF {#1} { header }
+      {
+        \msg_warning:nn { vitae } { deprecated-header-template }
+        \__vitae_template_set:nn { masthead } {#2}
+      }
+      { \__vitae_template_set:nn {#1} {#2} }
+  }
+\cs_new_protected:Npn \__vitae_template_set:nn #1#2
   {
     \bool_lazy_or:nnTF
       { \cs_if_exist_p:c { __vitae_template_#1: } }
@@ -548,7 +567,7 @@
       { \cs_set_protected:cpn { __vitae_template_#1: } {#2} }
       { \msg_error:nnn { vitae } { unknown-template } {#1} }
   }
-\cs_new_protected:cpn { __vitae_template_header: }
+\cs_new_protected:cpn { __vitae_template_masthead: }
   {
     \begin { center }
       \taggedheading { 1 } { { \LARGE \thefirstname \c_space_tl \thelastname \par } }
@@ -729,7 +748,7 @@
   { \sys_if_engine_luatex:T { \tagpdfsetup { math / mathml / luamml / load = false } } }
 
 % --- Contacts -------------------------------------------------------------
-% Contacts are built at \makeheader time as a sequence of
+% Contacts are built at \makemasthead time as a sequence of
 % \__vitae_contact:nnnn {<label>} {<icon>} {<url>} {<text>}: first the
 % built-in fields (in a fixed order), then those added with \addcontact.
 % The icon is read and extracted as "<label>:" (or not at all without a
@@ -829,7 +848,7 @@
     \group_end:
   }
 
-% --- Header and photo -----------------------------------------------------
+% --- Masthead and photo ---------------------------------------------------
 % \printphoto: the photo at \vitaephotowidth; a missing file only warns.
 % Without an extension, the usual graphics extensions are tried.
 \bool_new:N \l__vitae_found_bool
@@ -855,14 +874,20 @@
           { \msg_warning:nnV { vitae } { photo-missing } \g__vitae_field_photo_tl }
       }
   }
-% \makeheader: typeset the header template, like \maketitle.
-\NewDocumentCommand \makeheader { }
+% \makemasthead: typeset the masthead template (name, job title, contacts,
+% photo), like \maketitle. \makeheader is its deprecated name.
+\NewDocumentCommand \makemasthead { }
   {
     \bool_lazy_and:nnT
       { \tl_if_blank_p:V \g__vitae_field_firstname_tl }
       { \tl_if_blank_p:V \g__vitae_field_lastname_tl }
       { \msg_warning:nn { vitae } { no-name } }
-    \group_begin: \skip_zero:N \parskip \__vitae_template_use:n { header } \group_end:
+    \group_begin: \skip_zero:N \parskip \__vitae_template_use:n { masthead } \group_end:
+  }
+\NewDocumentCommand \makeheader { }
+  {
+    \msg_warning:nn { vitae } { deprecated-makeheader }
+    \makemasthead
   }
 
 % --- Footer ---------------------------------------------------------------

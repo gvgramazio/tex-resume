@@ -6,14 +6,14 @@
 \START
 
 \TEST{the date defaults to the day of compilation, as an ISO date}{
-  \settemplate{header}{}
+  \settemplate{masthead}{}
   \settemplate{opening}{\TYPE{\field{date}}}
   \vitaesetup{dateformat=iso}
   \opening{}
 }
 
-\TEST{\opening prints the header, then the opening template}{
-  \settemplate{header}{\TYPE{header: \thefirstname/\thelastname}}
+\TEST{\opening prints the masthead, then the opening template}{
+  \settemplate{masthead}{\TYPE{masthead: \thefirstname/\thelastname}}
   \settemplate{opening}{\TYPE{[\field{name}][\field{address}][\field{date}][\field{text}]}}
   \recipient{Hiring Manager}{Lorem Ltd.}
   \letterdate{2026-11}
@@ -21,7 +21,7 @@
 }
 
 \TEST{the date follows the date style and locale}{
-  \settemplate{header}{}
+  \settemplate{masthead}{}
   \settemplate{opening}{\TYPE{[\field{date}]}}
   \letterdate{2026-11}
   \vitaesetup{datelocale=italian}
@@ -33,14 +33,14 @@
 }
 
 \TEST{\letterdate{} leaves the date out}{
-  \settemplate{header}{}
+  \settemplate{masthead}{}
   \settemplate{opening}{\iffield{date}{\TYPE{date set}}{\TYPE{no date}}}
   \letterdate{}
   \opening{}
 }
 
 \TEST{blank recipient and salutation are blank fields}{
-  \settemplate{header}{}
+  \settemplate{masthead}{}
   \settemplate{opening}{\TYPE{[\iffield{name}{name}{}][\iffield{address}{address}{}][\iffield{text}{text}{}]}}
   \recipient{}{}
   \opening{}
@@ -52,7 +52,7 @@
 }
 
 \TEST{letter fields do not leak}{
-  \settemplate{header}{}
+  \settemplate{masthead}{}
   \settemplate{opening}{}
   \recipient{Hiring Manager}{Lorem Ltd.}
   \opening{Dear Hiring Manager,}
