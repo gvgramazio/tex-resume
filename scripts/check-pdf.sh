@@ -10,6 +10,8 @@
 #      any icon junk, lost character or missing label fails the check.
 #   3. Links: every link in a showcase or letter must be a web link (URI
 #      action), never a file link (GoToR, Launch), and the header has five.
+#   4. Active content: no example may have a key that upload filters of
+#      applicant-tracking systems reject (OpenAction, JavaScript, ...).
 set -eu
 cd "$(dirname "$0")/.."
 VERAPDF=${VERAPDF:-verapdf}
@@ -73,6 +75,18 @@ for dir in "$@"; do
       echo "OK    $e $f (links)"
     else
       fail "$e $f (links): expected only URI actions, at least 5; got:$actions"
+    fi
+  done
+
+  # 4. Active content (scripts/pdf-active.py), in every example. PDF/A-4f
+  #    requires an attachment (LaTeX adds a placeholder), so it is exempt.
+  for f in "$dir"/*.pdf; do
+    [ -f "$f" ] && [ "$(basename "$f")" != archival-a4f.pdf ] || continue
+    keys=$(scripts/pdf-active.py "$f" | sort -u | tr '\n' ' ')
+    if [ -z "$keys" ]; then
+      echo "OK    $e $f (active content)"
+    else
+      fail "$e $f (active content): $keys"
     fi
   done
 done

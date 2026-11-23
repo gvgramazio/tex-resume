@@ -14,7 +14,9 @@
 \RequirePackage { fontawesome5 }
 \RequirePackage { hyperref }
 \RequirePackage { accsupp }
-\hypersetup { hidelinks , pdfdisplaydoctitle }
+% No start page, hence no /OpenAction: upload filters of applicant tracking
+% systems reject it as active content.
+\hypersetup { hidelinks , pdfdisplaydoctitle , pdfstartpage = { } }
 \urlstyle { same }
 
 % Page defaults; themes may override.

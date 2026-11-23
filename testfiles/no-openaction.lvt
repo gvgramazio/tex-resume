@@ -1,0 +1,11 @@
+% No start page, so hyperref writes no /OpenAction (applicant tracking
+% systems reject it as active content); a start page set by the user brings
+% it back. The pdfmanagement driver is checked on the built PDFs
+% (scripts/check-pdf.sh).
+\documentclass{vitae}
+\input{regression-test}
+\makeatletter
+\START
+\TEST{default}{\TYPE{start page: [\@pdfstartpage]}}
+\TEST{user start page}{\hypersetup{pdfstartpage=1}\TYPE{start page: [\@pdfstartpage]}}
+\END
