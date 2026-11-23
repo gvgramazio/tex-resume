@@ -641,6 +641,8 @@
     \joinfields { \c_space_tl \textperiodcentered \c_space_tl } { name , pages , updated }
     \hfil
   }
+% Aside column (\vitaeasidecolumn): what the column holds.
+\cs_new_protected:cpn { __vitae_template_aside: } { \useregion { aside } }
 
 % --- Accessibility --------------------------------------------------------
 % The PDF must read well for screen readers (tagged PDF, enabled by the
@@ -1117,6 +1119,176 @@
       }
   }
 \hook_gput_code:nnn { enddocument / afterlastpage } { vitae } { \__vitae_region_finish: }
+
+% --- Aside column ---------------------------------------------------------
+% A layout helper that themes may call: the "aside" template (by default
+% the aside region) in a column beside main. At \begin{document} the text
+% block is split: the column takes <width> plus <sep> on its <side>, and
+% main keeps the rest, on every page. \placeaside typesets the column into
+% a box, in source order, and hangs the part that fits beside main at the
+% current point; each later page gets the next part at its top, from the
+% output routine (build/page/before), until the column is used up, adding
+% pages if it outlasts main. Content stays in the page body: column layouts
+% that move typeset material (paracol) or add it from shipout hooks lose
+% the structure of tagged PDF. Under tagging the column is an Aside element,
+% moved after main in the structure tree (order=after) or left where
+% \placeaside is (order=before).
+\msg_new:nnn { vitae } { no-aside-column }
+  { \iow_char:N \\placeaside~needs~\iow_char:N \\vitaeasidecolumn~in~the~preamble. }
+\msg_new:nnn { vitae } { aside-twice } { \iow_char:N \\placeaside~used~twice;~ignored. }
+\tl_new:N \l__vitae_aside_width_tl
+\tl_new:N \l__vitae_aside_sep_tl
+\bool_new:N \l__vitae_aside_left_bool
+\bool_new:N \l__vitae_aside_after_bool
+\keys_define:nn { vitae / aside }
+  {
+    width .tl_set:N   = \l__vitae_aside_width_tl ,
+    width .initial:n  = 0.3 \textwidth ,
+    sep   .tl_set:N   = \l__vitae_aside_sep_tl ,
+    sep   .initial:n  = 1cm ,
+    side  .choices:nn = { left , right }
+      { \bool_set:Nn \l__vitae_aside_left_bool { \int_compare_p:nNn { \l_keys_choice_int } = { 1 } } } ,
+    side  .initial:n  = left ,
+    order .choices:nn = { after , before }
+      { \bool_set:Nn \l__vitae_aside_after_bool { \int_compare_p:nNn { \l_keys_choice_int } = { 1 } } } ,
+    order .initial:n  = after ,
+  }
+\bool_new:N \g__vitae_aside_bool
+\bool_new:N \g__vitae_aside_placed_bool
+\dim_new:N \g__vitae_aside_width_dim
+\dim_new:N \g__vitae_aside_shift_dim
+\box_new:N \g__vitae_aside_box
+\box_new:N \l__vitae_aside_slice_box
+\mark_new_class:n { vitae-aside }
+% \vitaeasidecolumn{<keys>}: in a theme's preamble code.
+\NewDocumentCommand \vitaeasidecolumn { m }
+  {
+    \keys_set:nn { vitae / aside } {#1}
+    \bool_gset_true:N \g__vitae_aside_bool
+    \vitaeplaceregions { aside }
+  }
+\@onlypreamble \vitaeasidecolumn
+% Split the text block (after geometry has set it). The shift is where the
+% column's left edge lies, from main's left edge.
+\hook_gput_code:nnn { begindocument / end } { vitae }
+  {
+    \bool_if:NT \g__vitae_aside_bool
+      {
+        \dim_gset:Nn \g__vitae_aside_width_dim { \l__vitae_aside_width_tl }
+        \dim_set:Nn \l_tmpa_dim { \g__vitae_aside_width_dim + \l__vitae_aside_sep_tl }
+        \dim_gsub:Nn \textwidth { \l_tmpa_dim }
+        \dim_set_eq:NN \hsize \textwidth
+        \dim_set_eq:NN \linewidth \textwidth
+        \dim_set_eq:NN \columnwidth \textwidth
+        \bool_if:NTF \l__vitae_aside_left_bool
+          {
+            \dim_gadd:Nn \oddsidemargin { \l_tmpa_dim }
+            \dim_gadd:Nn \evensidemargin { \l_tmpa_dim }
+            \dim_gset:Nn \g__vitae_aside_shift_dim { - \l_tmpa_dim }
+          }
+          { \dim_gset:Nn \g__vitae_aside_shift_dim { \textwidth + \l__vitae_aside_sep_tl } }
+      }
+  }
+% Take the next part of the column, at most #2 high, into #1 (top-aligned).
+\cs_new_protected:Npn \__vitae_aside_split:Nn #1#2
+  {
+    \group_begin:
+      \int_set:Nn \vbadness { 10000 }
+      \skip_set_eq:NN \splittopskip \topskip
+      \vbox_set_split_to_ht:NNn \l__vitae_aside_slice_box \g__vitae_aside_box {#2}
+      \vbox_gset_top:Nn #1 { \vbox_unpack_drop:N \l__vitae_aside_slice_box }
+    \group_end:
+  }
+% Hang #1 beside main from the current point, taking no space.
+\cs_new_protected:Npn \__vitae_aside_hang:N #1
+  {
+    \vbox_to_zero:n
+      {
+        \hbox_to_zero:n
+          { \skip_horizontal:n { \g__vitae_aside_shift_dim } \box_use_drop:N #1 \tex_hss:D }
+        \tex_vss:D
+      }
+  }
+\box_new:N \g__vitae_aside_part_box
+% \placeaside: start the column here (in a theme's template, once).
+\NewDocumentCommand \placeaside { }
+  {
+    \bool_if:NTF \g__vitae_aside_bool
+      {
+        \bool_if:NTF \g__vitae_aside_placed_bool
+          { \msg_warning:nn { vitae } { aside-twice } }
+          {
+            \bool_gset_true:N \g__vitae_aside_placed_bool
+            \par
+            \vbox_gset:Nn \g__vitae_aside_box
+              {
+                \dim_set_eq:NN \hsize \g__vitae_aside_width_dim
+                \dim_set_eq:NN \linewidth \hsize
+                \dim_set_eq:NN \columnwidth \hsize
+                \dim_set_eq:NN \textwidth \hsize
+                \tag_if_active:T
+                  {
+                    \bool_if:NTF \l__vitae_aside_after_bool
+                      { \tag_struct_begin:n { tag = Aside , stash , label = vitae-aside } }
+                      { \tag_struct_begin:n { tag = Aside } }
+                  }
+                \__vitae_template_use:n { aside }
+                \par
+                \tag_if_active:T { \tag_struct_end: }
+              }
+            \box_if_empty:NF \g__vitae_aside_box
+              {
+                % On an empty page \pagegoal is \maxdimen: the first line
+                % comes \topskip below the top of the text block.
+                \__vitae_aside_split:Nn \g__vitae_aside_part_box
+                  {
+                    \dim_compare:nNnTF \pagegoal = \c_max_dim
+                      { \textheight - \topskip }
+                      { \pagegoal - \pagetotal - \pagedepth }
+                  }
+                \mark_insert:nn { vitae-aside } { start }
+                \nointerlineskip
+                \__vitae_aside_hang:N \g__vitae_aside_part_box
+              }
+          }
+      }
+      { \msg_error:nn { vitae } { no-aside-column } }
+  }
+% Each later page: the next part at the top of the page body. The page
+% where the column starts (its mark is first on the page) is skipped.
+\hook_gput_code:nnn { build / page / before } { vitae }
+  {
+    \box_if_empty:NF \g__vitae_aside_box
+      {
+        \mark_if_eq:nnnnT { page } { vitae-aside } { top } { first }
+          {
+            \__vitae_aside_split:Nn \g__vitae_aside_part_box { \box_ht:N \@outputbox }
+            \vbox_set_to_ht:Nnn \@outputbox { \box_ht:N \@outputbox }
+              {
+                \__vitae_aside_hang:N \g__vitae_aside_part_box
+                \vbox_unpack_drop:N \@outputbox
+              }
+          }
+      }
+  }
+% At the end: pages for a column that outlasts main; the Aside element
+% after main in the structure tree.
+\hook_gput_code:nnn { enddocument } { vitae }
+  {
+    \box_if_empty:NF \g__vitae_aside_box
+      {
+        \clearpage
+        \bool_until_do:nn { \box_if_empty_p:N \g__vitae_aside_box }
+          { \hbox:n { } \clearpage }
+      }
+    \bool_lazy_all:nT
+      {
+        { \tag_if_active_p: }
+        { \g__vitae_aside_placed_bool }
+        { \l__vitae_aside_after_bool }
+      }
+      { \tag_struct_use:n { vitae-aside } }
+  }
 
 % --- Themes ---------------------------------------------------------------
 % \usetheme{<name>} loads vitaetheme<name>.sty once, then re-applies user

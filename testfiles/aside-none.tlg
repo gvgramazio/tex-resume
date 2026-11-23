@@ -1,0 +1,27 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: \placeaside without a column is an error
+============================================================
+! Package vitae Error: \placeaside needs \vitaeasidecolumn in the preamble.
+Type <return> to continue.
+ ...                                              
+l. ...}
+LaTeX does not know anything more about this error, sorry.
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+============================================================
+============================================================
+TEST 2: an unknown side or order is an error
+============================================================
+! LaTeX Error: Key 'vitae/aside/side' accepts only a fixed set of choices.
+For immediate help type H <return>.
+ ...                                              
+l. ...}
+The key 'vitae/aside/side' only accepts predefined values, and 'top' is not one of these.
+! LaTeX Error: Key 'vitae/aside/order' accepts only a fixed set of choices.
+For immediate help type H <return>.
+ ...                                              
+l. ...}
+The key 'vitae/aside/order' only accepts predefined values, and 'never' is not one of these.
+============================================================

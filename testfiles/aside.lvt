@@ -1,0 +1,31 @@
+% Aside column: the split text block, placement, a column that outlasts main.
+\documentclass{vitae}
+\input{regression-test}
+\vitaeasidecolumn{width=5cm, sep=1cm}
+% After each page: the height of the column still to place (rules of fixed
+% height, so the result does not depend on fonts).
+\makeatletter
+\ExplSyntaxOn
+\hook_gput_code:nnn { build / page / after } { test }
+  { \TYPE { column~left~after~page~\int_eval:n { \c@page - 1 } :~\dim_use:N \box_ht:N \g__vitae_aside_box } }
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\START
+
+\TEST{the column takes width and sep from the left of the text block}{
+  \TYPE{textwidth \the\textwidth, linewidth \the\linewidth,
+    oddsidemargin \the\oddsidemargin}
+}
+
+\TEST{a column taller than main continues on the next pages, which are added}{
+  \settemplate{aside}{%
+    \rule{1pt}{400pt}\par\rule{1pt}{400pt}\par\rule{1pt}{400pt}\par\useregion{aside}}
+  \begin{region}{aside}\TYPE{aside region typeset}\end{region}
+  \placeaside
+  Lorem ipsum.
+  \placeaside
+  \UseOneTimeHook{enddocument}
+}
+
+\END

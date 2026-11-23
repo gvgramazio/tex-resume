@@ -1,0 +1,14 @@
+% Aside column misuse: \placeaside without \vitaeasidecolumn, bad keys.
+\documentclass{vitae}
+\input{regression-test}
+\START
+
+\TEST{\placeaside without a column is an error}{
+  \placeaside
+}
+
+\TEST{an unknown side or order is an error}{
+  \vitaeasidecolumn{side=top, order=never}
+}
+
+\END

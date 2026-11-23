@@ -1,0 +1,12 @@
+% Aside column on the right: main keeps the left edge.
+\documentclass{vitae}
+\input{regression-test}
+\vitaeasidecolumn{width=4cm, sep=5mm, side=right}
+\begin{document}
+\START
+
+\TEST{the column takes width and sep from the right of the text block}{
+  \TYPE{textwidth \the\textwidth, oddsidemargin \the\oddsidemargin}
+}
+
+\END

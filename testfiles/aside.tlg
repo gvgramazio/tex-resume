@@ -1,0 +1,22 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the column takes width and sep from the left of the text block
+============================================================
+textwidth 312.98035pt, linewidth 312.98035pt, oddsidemargin 155.35204pt
+============================================================
+============================================================
+TEST 2: a column taller than main continues on the next pages, which are added
+============================================================
+aside region typeset
+Package vitae Warning: \placeaside used twice; ignored.
+[1
+]
+column left after page 1: 807.8pt
+[2
+]
+column left after page 2: 400.0pt
+[3
+]
+column left after page 3: 0.0pt
+============================================================
