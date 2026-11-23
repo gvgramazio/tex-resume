@@ -13,9 +13,9 @@ import zlib
 def main() -> int:
     data = open(sys.argv[1], "rb").read()
     parts = [data]
-    for match in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", data, re.S):
+    for match in re.finditer(rb"stream\r?\n(.*?)endstream", data, re.S):
         try:
-            parts.append(zlib.decompress(match.group(1)))
+            parts.append(zlib.decompressobj().decompress(match.group(1)))
         except zlib.error:
             pass
     for match in re.finditer(rb"/S\s*/(URI|GoToR|GoToE|Launch)\b", b"\n".join(parts)):
