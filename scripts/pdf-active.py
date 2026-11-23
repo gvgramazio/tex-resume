@@ -19,9 +19,9 @@ KEYS = rb"OpenAction|AA|JS|JavaScript|Launch|EmbeddedFiles|RichMedia|AcroForm|XF
 def main() -> int:
     data = open(sys.argv[1], "rb").read()
     parts = [data]
-    for match in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", data, re.S):
+    for match in re.finditer(rb"stream\r?\n(.*?)endstream", data, re.S):
         try:
-            parts.append(zlib.decompress(match.group(1)))
+            parts.append(zlib.decompressobj().decompress(match.group(1)))
         except zlib.error:
             pass
     for match in re.finditer(rb"/(" + KEYS + rb")(?![^\s/<>\[\]()%{}])", b"\n".join(parts)):
