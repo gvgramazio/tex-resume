@@ -1,0 +1,47 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: routed content waits for \useregion , in order
+============================================================
+-- now the theme prints the aside:
+section Skills
+entry Lorem
+free text
+============================================================
+============================================================
+TEST 2: main and no region print in place
+============================================================
+section Skills
+entry Lorem
+free text in main
+section Skills
+entry Lorem
+============================================================
+============================================================
+TEST 3: a region the theme does not place prints in place, warning once
+============================================================
+Package vitae Warning: Theme 'classic' does not place region 'sidebar': its content is printed in place, which may not look as intended.
+section Skills
+entry Lorem
+free text in place
+============================================================
+============================================================
+TEST 4: \ifregionempty 
+============================================================
+aside has content
+nosuchregion empty
+============================================================
+============================================================
+TEST 5: the previous run's content comes first
+============================================================
+tools from the last run: a ## b
+============================================================
+============================================================
+TEST 6: end of document: .aux entries, rerun and unused warnings
+============================================================
+\vitae@region{aside}{\printentries [heading=Skills, region=aside,region=main]{skills}\TYPE {free text}}
+\vitae@region{tools}{\TYPE {tools from this run}}
+Package vitae Warning: Region 'tools' has changed. Rerun to get it right.
+\vitae@region{unused}{\TYPE {never printed}}
+Package vitae Warning: Theme 'classic' places region 'unused' but never prints its content.
+============================================================

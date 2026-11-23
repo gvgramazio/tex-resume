@@ -1,0 +1,61 @@
+% Regions: routing, printing in place, the .aux round trip, end warnings.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\vitaeplaceregions{aside, main, aside}
+\addentry{skills}{title=Lorem}{}
+\addentry{tools}{title=Ipsum}{}
+% As read from the previous run's .aux file: a doubled # comes back single
+% (\detokenize shows that single # as ##).
+\makeatletter
+\vitae@region{tools}{\TYPE{tools from the last run: \detokenize{a ## b}}}
+\vitaeplaceregions{tools, unused}
+% The end-of-document step, writing the .aux entries to the log instead.
+\ExplSyntaxOn
+\cs_new_protected:Npn \regionsfinish
+  {
+    \group_begin:
+      \cs_set_eq:NN \@auxout \c_log_iow
+      \__vitae_region_finish:
+    \group_end:
+  }
+\ExplSyntaxOff
+\makeatother
+\START
+\settemplate{entry}{\TYPE{entry \field{title}}}
+\settemplate{section}{\TYPE{section \field{title}}}
+
+\TEST{routed content waits for \useregion, in order}{
+  \printentries[heading=Skills, region=aside]{skills}
+  \begin{region}{aside}\TYPE{free text}\end{region}
+  \TYPE{-- now the theme prints the aside:}
+  \useregion{aside}
+}
+
+\TEST{main and no region print in place}{
+  \printentries[heading=Skills, region=main]{skills}
+  \begin{region}{main}\TYPE{free text in main}\end{region}
+  \printentries[Skills]{skills}
+}
+
+\TEST{a region the theme does not place prints in place, warning once}{
+  \printentries[heading=Skills, region=sidebar]{skills}
+  \begin{region}{sidebar}\TYPE{free text in place}\end{region}
+}
+
+\TEST{\ifregionempty}{
+  \ifregionempty{aside}{\TYPE{aside empty}}{\TYPE{aside has content}}
+  \ifregionempty{nosuchregion}{\TYPE{nosuchregion empty}}{\TYPE{nosuchregion has content}}
+}
+
+\TEST{the previous run's content comes first}{
+  \begin{region}{tools}\TYPE{tools from this run}\end{region}
+  \useregion{tools}
+}
+
+\TEST{end of document: .aux entries, rerun and unused warnings}{
+  \begin{region}{unused}\TYPE{never printed}\end{region}
+  \regionsfinish
+}
+
+\END
