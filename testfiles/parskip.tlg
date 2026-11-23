@@ -21,7 +21,7 @@ TEST 4: template lines get no \parskip
 ============================================================
 inside entry: 0.0pt
 inside section: 0.0pt
-inside header: 0.0pt
+inside masthead: 0.0pt
 after them: 6.8pt plus 2.0pt
 ============================================================
 ============================================================

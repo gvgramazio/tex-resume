@@ -3,6 +3,16 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Added
+- `\makemasthead` and the `masthead` template, the new names of
+  `\makeheader` and the `header` template for the identity block (name, job
+  title, contacts, photo).
+
+### Deprecated
+- `\makeheader` and the `header` template: they still work, with a warning.
+  In LaTeX a header is the running page header, so vitae keeps the word for
+  that and calls the identity block the masthead.
+
 ### Fixed
 - PDFs no longer have an `/OpenAction` in the catalog (hyperref's default
   start view), which made applicant tracking systems such as SAP

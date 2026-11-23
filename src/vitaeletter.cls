@@ -1,5 +1,5 @@
 %% vitaeletter.cls -- a cover letter that matches a vitae resume.
-%% Same data, header and theme as vitae.cls; see vitaecore.sty.
+%% Same data, masthead and theme as vitae.cls; see vitaecore.sty.
 %% Distributed under the MIT license (see LICENSE).
 
 % --- Identification -------------------------------------------------------
@@ -36,12 +36,12 @@
 \NewDocumentCommand \letterdate { m } { \tl_gset:Nn \g__vitae_letterdate_tl {#1} }
 
 % --- Opening and closing --------------------------------------------------
-% \opening{<salutation>}: the header (as in the resume), then the opening
+% \opening{<salutation>}: the masthead (as in the resume), then the opening
 % template with the recipient, the date (through \formatdate, so it follows
 % the date style and locale) and the salutation.
 \NewDocumentCommand \opening { m }
   {
-    \makeheader
+    \makemasthead
     \group_begin:
       \skip_zero:N \parskip
       \tl_set_eq:NN \l__vitae_f_name_tl \g__vitae_recipient_name_tl

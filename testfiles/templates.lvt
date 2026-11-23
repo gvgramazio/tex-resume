@@ -1,4 +1,4 @@
-% Templates: overriding, unknown names, sections, header warning.
+% Templates: overriding, unknown names, sections, masthead warning, aliases.
 \documentclass{vitae}
 \input{regression-test}
 \START
@@ -13,21 +13,27 @@
   \section*{Ipsum}
 }
 
-\TEST{\makeheader without a name warns}{
-  \settemplate{header}{\TYPE{header}}
-  \makeheader
+\TEST{\makemasthead without a name warns}{
+  \settemplate{masthead}{\TYPE{masthead}}
+  \makemasthead
 }
 
-\TEST{\makeheader with only a name is silent}{
-  \settemplate{header}{\TYPE{header: \thefirstname/\thelastname}}
+\TEST{\makemasthead with only a name is silent}{
+  \settemplate{masthead}{\TYPE{masthead: \thefirstname/\thelastname}}
   \name{Jane}{}
-  \makeheader
+  \makemasthead
 }
 
 \TEST{template overrides are scoped like any definition}{
   \settemplate{item}{\TYPE{outer}}
   {\settemplate{item}{\TYPE{inner}}\cvitem{}{}}
   \cvitem{}{}
+}
+
+\TEST{deprecated names still work and warn}{
+  \settemplate{header}{\TYPE{masthead via the old template name}}
+  \name{Jane}{Doe}
+  \makeheader
 }
 
 \END
