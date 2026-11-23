@@ -35,7 +35,7 @@ in the same way \pkg{beamer} separates content from presentation. It works
 with pdf\LaTeX, \XeLaTeX{} and Lua\LaTeX, produces text that applicant-tracking
 systems extract cleanly, and can produce accessible (PDF/UA) and archival
 (PDF/A) files. A companion class, \pkg{vitaeletter}, typesets a cover letter
-from the same data, with the same header and theme.
+from the same data, with the same masthead and theme.
 \end{abstract}
 
 \tableofcontents
@@ -43,8 +43,8 @@ from the same data, with the same header and theme.
 \section{Quick start}
 
 A resume is a list of declarations followed by a body that prints them.
-\cs{makeheader} prints the name and contacts, as \cs{maketitle} does for a
-title, and \cs{printentries} prints a list of entries under a heading.
+\cs{makemasthead} prints the masthead (name, job title, contacts and
+photo), as \cs{maketitle} does for a title, and \cs{printentries} prints a list of entries under a heading.
 
 \sample{sample-quickstart}
 
@@ -70,7 +70,7 @@ languages, share it.
     \cs{email}\marg{address} \quad \cs{homepage}\marg{example.com/path}
     \cs{linkedin}\marg{id} \quad \cs{github}\marg{user} \quad \cs{orcid}\marg{id}
   \end{syntax}
-  Contacts, printed by \cs{makeheader} in this fixed order (email, phone,
+  Contacts, printed by \cs{makemasthead} in this fixed order (email, phone,
   address, website, LinkedIn, GitHub, ORCID), each with an icon and, except
   for phone and address, a link. Values that are addresses or handles may
   contain |_ & ~ #| as typed, and also accept |\_ \& \# \%|; a raw |%| starts
@@ -88,14 +88,20 @@ languages, share it.
   values that contain |=| or |,|, as in |url={https://example.org/?a=1}|.
 \end{function}
 
-\begin{function}{\thefirstname,\ifvitaeset,\makeheader,\printcontacts,\printphoto}
+\begin{function}{\thefirstname,\ifvitaeset,\makemasthead,\printcontacts,\printphoto}
   \begin{syntax}
     \cs{the}\meta{field} \quad \cs{ifvitaeset}\marg{field}\marg{true}\marg{false}
   \end{syntax}
   Every field \meta{field} above has an expandable getter, such as
-  \cs{theemail}, and \cs{ifvitaeset} tests whether it is set. \cs{makeheader}
-  prints the header template; \cs{printcontacts} and \cs{printphoto} are its
-  building blocks, for use in templates.
+  \cs{theemail}, and \cs{ifvitaeset} tests whether it is set.
+  \cs{makemasthead} prints the |masthead| template; \cs{printcontacts} and
+  \cs{printphoto} are its building blocks, for use in templates.
+
+  \cs{makeheader} and the |header| template are deprecated names for
+  \cs{makemasthead} and |masthead|. They still work, with a warning. In
+  \LaTeX{} a \emph{header} is the running page header, repeated on every
+  page; vitae keeps the word for that use and calls the identity block the
+  masthead.
 \end{function}
 
 \section{Entries, items and lists}
@@ -239,7 +245,7 @@ and as entry keys to one entry.
   \end{syntax}
   Loads the theme |vitaetheme|\meta{name}|.sty|, once, in the preamble.
   Without \cs{usetheme}, \key{classic} is used. Two themes ship with vitae:
-  \key{classic} (serif, centred header, dates on the right, as in the
+  \key{classic} (serif, centred masthead, dates on the right, as in the
   samples above) and \key{modern} (sans serif, accent colour, dates in a
   margin column, photo).
 \end{function}
@@ -308,7 +314,7 @@ The \pkg{vitaeletter} class shares everything except entries with
 \pkg{vitae}: personal data, themes, settings, templates and dates. A data
 file written for the resume loads unchanged (its entries and items are
 stored, but a letter does not print them), so the letter repeats the
-resume's header and look.
+resume's masthead and look.
 
 \begin{function}{\recipient,\letterdate}
   \begin{syntax}
@@ -326,8 +332,8 @@ resume's header and look.
     \cs{opening}\marg{salutation}
     \cs{closing}\marg{text}
   \end{syntax}
-  \cs{opening} prints the header (the |header| template, as \cs{makeheader}
-  does), then the recipient, the date and the salutation through the
+  \cs{opening} prints the masthead (the |masthead| template, as
+  \cs{makemasthead} does), then the recipient, the date and the salutation through the
   |opening| template. \cs{closing} prints its text and the signature
   block, the name below a space to sign, through the |closing| template.
   The letter body between them is free text.
@@ -337,7 +343,7 @@ resume's header and look.
 
 \section{Templates}\label{sec:templates}
 
-A theme is a set of \emph{templates}: |header|, |contact|, |contactsep|,
+A theme is a set of \emph{templates}: |masthead|, |contact|, |contactsep|,
 |section|, |entry|, the entry styles |entry/|\meta{style}, and |item|; and,
 for letters, |opening| and |closing|; and the page |footer|. Any of them can
 be replaced without writing a theme.

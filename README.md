@@ -19,7 +19,7 @@ A LaTeX class for resumes. You declare your data once, and a theme decides how i
 \additem{skills}{Programming}{Lorem, Ipsum}
 
 \begin{document}
-\makeheader
+\makemasthead
 \printentries[Experience]{experience}
 \printentries[Skills]{skills}
 \end{document}
