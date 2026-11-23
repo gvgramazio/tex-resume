@@ -1,0 +1,21 @@
+% Stress test for the aside column: from the top of page 1 on the left,
+% routed after main in the source, longer than main (pages are added).
+% scripts/check-pdf.sh checks that every part of the column appears once.
+\documentclass{vitae}
+\usetheme{modern}
+\input{data/stress}
+\vitaeasidecolumn{width=5cm, sep=8mm}
+% Narrow measures: let TeX stretch spaces rather than overflow.
+\setlength\emergencystretch{3em}
+
+\begin{document}
+\placeaside
+\makemasthead
+\printentries[Edge Cases]{odd}
+\printentries[Page Breaks]{many}
+\begin{region}{aside}
+  \section{Notes}
+  \raggedright
+  Aside start. \lipsum[1-12] Aside end.
+\end{region}
+\end{document}

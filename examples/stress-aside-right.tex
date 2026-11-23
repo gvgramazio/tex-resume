@@ -1,0 +1,31 @@
+% Stress test for the aside column: on the right, starting below the
+% masthead (mid-page), shorter than main, lists and free text routed to it.
+% scripts/check-pdf.sh checks that every part of the column appears once.
+\documentclass{vitae}
+\usetheme{modern}
+\input{data/stress}
+\vitaesetup{footer={name, pages, updated}}
+\lastupdated{2026-11-15}
+\vitaeasidecolumn{width=4.5cm, sep=6mm, side=right}
+% Narrow measures: let TeX stretch spaces rather than overflow.
+\setlength\emergencystretch{3em}
+% In the narrow column, compact entries stack their lines (a local override).
+\settemplate{aside}{%
+  \settemplate{entry/compact}{%
+    \par\textbf{\field{title}}\par\joinfields{, }{org, dates}\par\smallskip}%
+  \useregion{aside}}
+\addentry{tools}{title=Lorem, org=Ipsum}{}
+\addentry{tools}{title=Dolor Sit Amet, start=2020, end=2022}{Consectetur adipiscing elit.}
+
+\begin{document}
+\makemasthead
+\placeaside
+\printentries[heading=Tools, region=aside, style=compact]{tools}
+\begin{region}{aside}
+  \section{Notes}
+  \raggedright
+  Aside start. \lipsum[1-3] Aside end.
+\end{region}
+\printentries[Edge Cases]{odd}
+\printentries[Page Breaks]{many}
+\end{document}
