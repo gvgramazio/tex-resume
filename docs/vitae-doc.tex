@@ -96,6 +96,10 @@ languages, share it.
   \cs{theemail}, and \cs{ifvitaeset} tests whether it is set.
   \cs{makemasthead} prints the |masthead| template; \cs{printcontacts} and
   \cs{printphoto} are its building blocks, for use in templates.
+  \cs{printphoto} finds the photo (trying the usual graphics extensions when
+  the name has none), warns if it is missing, and prints it through the
+  |photo| template, which may give it any shape or frame
+  (section~\ref{sec:templates}).
 
   \cs{makeheader} and the |header| template are deprecated names for
   \cs{makemasthead} and |masthead|. They still work, with a warning. In
@@ -441,9 +445,9 @@ follow it; column layouts that move typeset material, such as
 
 A theme is a set of \emph{templates}: |masthead|, |contact|, |contactsep|,
 |section|, |entry|, the entry styles |entry/|\meta{style}, and |item|; and,
-for letters, |opening| and |closing|; the page |footer|; and |aside|, the
-content of the aside column. Any of them can be replaced without writing a
-theme.
+for letters, |opening| and |closing|; the page |footer|; |photo|; and
+|aside|, the content of the aside column. Any of them can be replaced
+without writing a theme.
 
 \begin{function}{\settemplate,\field,\iffield,\ifanyfield,\joinfields,\addpunct}
   \begin{syntax}
@@ -457,7 +461,8 @@ theme.
   |org|, |location|, |start|, |end|, |dates| (the formatted range),
   |duration|, |body| and |label|; for contacts |icon|, |text| and |url|;
   in |opening|, |name| and |address| (the recipient), |date| (formatted)
-  and |text| (the salutation); in |closing|, |text|; in |footer|, |name|,
+  and |text| (the salutation); in |closing|, |text|; in |photo|, |file|
+  (the photo found) and |width| (the \key{photowidth} setting); in |footer|, |name|,
   |pages| and |updated| (each set only if listed in the \key{footer}
   setting).
   \cs{joinfields} prints only the fields that are set, from a list such as
@@ -467,6 +472,14 @@ theme.
 \end{function}
 
 \sample{sample-template}
+
+The |photo| template draws the photo in any shape. Draw the image itself
+with \cs{includegraphics}: vitae gives every \cs{includegraphics} in the
+template the photo's alternative text, so in tagged PDF the image is a
+figure that screen readers announce, whatever surrounds it. Frames and clip
+outlines drawn around it are not part of that figure.
+
+\sample{sample-photo}
 
 Templates should not handle paragraph spacing: vitae runs them with
 |\parskip| = 0 and spaces body paragraphs itself. For accessible output, a

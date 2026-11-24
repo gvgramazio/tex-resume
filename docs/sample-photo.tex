@@ -1,0 +1,18 @@
+\documentclass{vitae}
+\usetheme{modern}
+\name{Jane}{Doe}
+\photo{example-image-a}
+\usepackage{tikz}
+% A round photo with a ring in the accent colour.
+\settemplate{photo}{%
+  \begin{tikzpicture}
+    \begin{scope}
+      \clip (0,0) circle ({\field{width}/2});
+      \node[inner sep=0pt]
+        {\includegraphics[height=\field{width}]{\field{file}}};
+    \end{scope}
+    \draw[vitaeaccent, line width=2pt] (0,0) circle ({\field{width}/2});
+  \end{tikzpicture}}
+\begin{document}
+\makemasthead
+\end{document}
