@@ -52,6 +52,7 @@ vitaetheme<n>.sty    look: fonts, colors, template definitions (classic, modern)
 - `modern`: sans-serif font, an accent color, a left-aligned masthead with icons and a date margin.
 - `sidebar`: a full-height column (the aside column helper) holding a round photo, the contacts and the aside region, over a light or dark fill drawn as decoration on every page; the name heads main. Templates for the column's narrow measure are set inside the `aside` template, so they are local to the column.
 - `banner`: a band across the top of page 1 (`\vitaefullwidth`), drawn as decoration from the page edges to below its content, holding a square photo, the name, the contacts and the masthead body; the aside column starts below it. Letters have no column (the theme calls `\vitaeasidecolumn` for `vitae` only).
+- `minimal`: no fills, one family in several weights; the aside column on the right from the top of the page, holding the contacts, the photo and the aside region. Its two-line name is one paragraph broken with a penalty: `\newline` removes the space before it, and the tagged heading would read "JANEDOE".
 - Each theme uses its own fonts, so the themes also show different looks. A font must extract cleanly on every engine: Source Sans 3 and Lato were rejected for `sidebar` because on XeTeX their hyphens extract as U+2011 and U+2010.
 
 ## 3. Repository and tooling
