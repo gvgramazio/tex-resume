@@ -1097,6 +1097,43 @@
 % Total pages from the previous run (the kernel's count); ?? on the first.
 \cs_new:Npn \__vitae_total_pages:
   { \int_compare:nNnTF { \PreviousTotalPages } > { 0 } { \PreviousTotalPages } { ?? } }
+% Readers. The footer repeats on every page; readers should not get it
+% every time. name and pages (furniture) are hidden from text extraction
+% (an empty ActualText) on every page; the updated date is hidden on every
+% page but the last, where it is real content: read once, at the end of
+% the document. On other pages the whole footer, separators included, is
+% hidden. Under tagging LaTeX makes the footer an artifact and suspends
+% tagging (label headfoot); the last date resumes it for a paragraph at the
+% end of the structure tree. (While suspended, \tag_if_active is false: the
+% state is recorded at \begin{document}.) The last page is known from the
+% previous run; on the first run the date is hidden.
+\bool_new:N \g__vitae_tagging_bool
+\hook_gput_code:nnn { begindocument } { vitae }
+  { \tag_if_active:T { \bool_gset_true:N \g__vitae_tagging_bool } }
+\cs_new_protected:Npn \__vitae_footer_hide:n #1 { \__vitae_accsupp:nn { } {#1} }
+\cs_new_protected:Npn \__vitae_footer_read:n #1
+  {
+    \bool_if:NTF \g__vitae_tagging_bool
+      {
+        \tag_resume:n { headfoot }
+        \tag_mc_end:
+        \tag_struct_begin:n { tag = P }
+        \tag_mc_begin:n { }
+        #1
+        \tag_mc_end:
+        \tag_struct_end:
+        \tag_mc_begin:n { artifact }
+        \tag_suspend:n { headfoot }
+      }
+      {#1}
+  }
+\prg_new_conditional:Npnn \__vitae_footer_if_last: { T , F , TF }
+  {
+    \bool_lazy_and:nnTF
+      { \int_compare_p:nNn { \PreviousTotalPages } > { 0 } }
+      { \int_compare_p:nNn { \c@page } = { \PreviousTotalPages } }
+      \prg_return_true: \prg_return_false:
+  }
 \cs_new_protected:Npn \__vitae_footer:
   {
     \bool_lazy_and:nnT
@@ -1112,12 +1149,18 @@
               \bool_lazy_and:nnF
                 { \tl_if_blank_p:V \g__vitae_field_firstname_tl }
                 { \tl_if_blank_p:V \g__vitae_field_lastname_tl }
-                { \tl_set:Nn \l__vitae_f_name_tl { \thefirstname \c_space_tl \thelastname } }
+                {
+                  \tl_set:Nn \l__vitae_f_name_tl
+                    { \__vitae_footer_hide:n { \thefirstname \c_space_tl \thelastname } }
+                }
             }
           \clist_if_in:NnT \l__vitae_footer_clist { pages }
             {
               \tl_set:Nn \l__vitae_f_pages_tl
-                { \__vitae_date_pattern:nnnn { pages } { \thepage } { \__vitae_total_pages: } { } }
+                {
+                  \__vitae_footer_hide:n
+                    { \__vitae_date_pattern:nnnn { pages } { \thepage } { \__vitae_total_pages: } { } }
+                }
             }
           \clist_if_in:NnT \l__vitae_footer_clist { updated }
             {
@@ -1126,13 +1169,20 @@
                   % \formatdate parses its argument as typed: pass the value.
                   \tl_set:Ne \l__vitae_f_updated_tl
                     {
-                      \exp_not:N \__vitae_date_pattern:nnnn { updated }
-                        { \exp_not:N \formatdate { \exp_not:V \g__vitae_field_lastupdated_tl } }
-                        { } { }
+                      \__vitae_footer_if_last:TF
+                        { \exp_not:N \__vitae_footer_read:n }
+                        { \exp_not:N \__vitae_footer_hide:n }
+                        {
+                          \exp_not:N \__vitae_date_pattern:nnnn { updated }
+                            { \exp_not:N \formatdate { \exp_not:V \g__vitae_field_lastupdated_tl } }
+                            { } { }
+                        }
                     }
                 }
             }
-          \__vitae_template_use:n { footer }
+          \__vitae_footer_if_last:TF
+            { \__vitae_template_use:n { footer } }
+            { \__vitae_footer_hide:n { \__vitae_template_use:n { footer } } }
         \group_end:
       }
   }
