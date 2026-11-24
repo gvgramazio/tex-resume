@@ -4,7 +4,7 @@
 
 % --- Identification -------------------------------------------------------
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
-\ProvidesExplClass{vitae}{2026-11-22}{0.5.0}{Resume class}
+\ProvidesExplClass{vitae}{2026-11-24}{0.6.0}{Resume class}
 
 % --- Options and base class -----------------------------------------------
 % Defaults first, user options after: the last paper/size option wins.
