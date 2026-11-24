@@ -8,29 +8,29 @@ done
 ============================================================
 TEST 2: all parts; the total is ?? before a second run
 ============================================================
-[Jane Doe][Page 1 of ??][Last updated November 15, 2026]
+[\__vitae_footer_hide:n {Jane Doe}][\__vitae_footer_hide:n {Page 1 of ??}][\__vitae_footer_hide:n {Last updated November 15, 2026}]
 ============================================================
 ============================================================
 TEST 3: only the parts listed are set
 ============================================================
-[][Page 1 of 3][]
+[][\__vitae_footer_hide:n {Page 1 of 3}][]
 ============================================================
 ============================================================
 TEST 4: the words and date follow the date locale and style
 ============================================================
-[][Pagina 1 di 3][Ultimo aggiornamento: novembre 2026]
-[][Seite 1 von 3][Stand: 11/2026]
-[][Page 1 sur 3][Derni^^c3^^a8re mise ^^c3^^a0 jour\protect \unhbox \voidb@x \protect \penalty \@M \ : novembre 2026]
+[][\__vitae_footer_hide:n {Pagina 1 di 3}][\__vitae_footer_hide:n {Ultimo aggiornamento: novembre 2026}]
+[][\__vitae_footer_hide:n {Seite 1 von 3}][\__vitae_footer_hide:n {Stand: 11/2026}]
+[][\__vitae_footer_hide:n {Page 1 sur 3}][\__vitae_footer_hide:n {Derni^^c3^^a8re mise ^^c3^^a0 jour\protect \unhbox \voidb@x \protect \penalty \@M \ : novembre 2026}]
 ============================================================
 ============================================================
 TEST 5: no name and no \lastupdated leave their parts blank
 ============================================================
-[][Page 1 of 2][]
+[][\__vitae_footer_hide:n {Page 1 of 2}][]
 ============================================================
 ============================================================
 TEST 6: singlepagefooter=false skips the footer on a one-page document
 ============================================================
-[][Page 1 of 2][]
+[][\__vitae_footer_hide:n {Page 1 of 2}][]
 ============================================================
 ============================================================
 TEST 7: unknown footer part is an error
@@ -42,4 +42,10 @@ l. ...}
 LaTeX does not know anything more about this error, sorry.
 Try typing <return> to proceed.
 If that doesn't work, type X <return> to quit.
+============================================================
+============================================================
+TEST 8: the date is read on the last page only; name and pages stay hidden
+============================================================
+[\__vitae_footer_hide:n {Jane Doe}][\__vitae_footer_hide:n {Page 2 of 3}][\__vitae_footer_hide:n {Last updated November 15, 2026}]
+[\__vitae_footer_hide:n {Jane Doe}][\__vitae_footer_hide:n {Page 3 of 3}][\__vitae_footer_read:n {Last updated November 15, 2026}]
 ============================================================

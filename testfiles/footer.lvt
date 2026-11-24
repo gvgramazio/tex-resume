@@ -1,4 +1,5 @@
-% Page footer: parts, locale words, \lastupdated, single-page documents.
+% Page footer: parts, locale words, \lastupdated, single-page documents;
+% readers: name and pages hidden, the date read on the last page only.
 \documentclass{vitae}
 \input{regression-test}
 \settemplate{footer}{\TYPE{[\field{name}][\field{pages}][\field{updated}]}}
@@ -56,6 +57,15 @@
 
 \TEST{unknown footer part is an error}{
   \vitaesetup{footer={name, nosuchpart}}
+}
+
+\TEST{the date is read on the last page only; name and pages stay hidden}{
+  \name{Jane}{Doe}
+  \lastupdated{2026-11-15}
+  \vitaesetup{footer={name, pages, updated}}
+  \def\PreviousTotalPages{3}
+  \setcounter{page}{2} \footer
+  \setcounter{page}{3} \footer
 }
 
 \END

@@ -22,6 +22,14 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   now holds dates, footer words and labels, so it is no longer named after
   dates.
 
+### Changed
+- Footer reading order: screen readers and applicant-tracking systems no
+  longer get the footer on every page. The name and the page numbers are
+  hidden from them (the name is the masthead heading), and the update date
+  is read once, at the end of the document; on the first run it is not
+  read. Entries that cross a page break no longer extract with the footer
+  in the middle. The printed footer is unchanged.
+
 ### Deprecated
 - `\vitaedatelocale` and the `datelocale` setting: they still work, with a
   warning; use `\vitaelocale` and `locale`.
