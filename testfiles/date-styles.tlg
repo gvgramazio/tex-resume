@@ -34,7 +34,7 @@ inside: [2020][2020][2020][2020--presente]
 outside: [2020][March 2020][March 1, 2020][March 2020--Present]
 ============================================================
 ============================================================
-TEST 5: per-entry dateformat and datelocale
+TEST 5: per-entry dateformat and locale
 ============================================================
 [A] 03/2020--06/2021
 [B] marzo 2020--presente
@@ -48,7 +48,7 @@ TEST 6: user-defined locale, starting from English
 ============================================================
 TEST 7: unknown locale warns and falls back to English
 ============================================================
-Package vitae Warning: No date locale 'klingon'; English is used. Define one with \vitaedatelocale.
+Package vitae Warning: No locale 'klingon'; English is used. Define one with \vitaelocale.
 [2020][March 2020][March 1, 2020][March 2020--Present]
 ============================================================
 ============================================================

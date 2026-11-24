@@ -29,12 +29,12 @@
 
 \TEST{the words and date follow the date locale and style}{
   \lastupdated{2026-11}
-  \vitaesetup{footer={pages, updated}, datelocale=italian}
+  \vitaesetup{footer={pages, updated}, locale=italian}
   \def\PreviousTotalPages{3}
   \footer
-  \vitaesetup{datelocale=german, dateformat=numeric}
+  \vitaesetup{locale=german, dateformat=numeric}
   \footer
-  \vitaesetup{datelocale=french, dateformat=long}
+  \vitaesetup{locale=french, dateformat=long}
   \footer
 }
 

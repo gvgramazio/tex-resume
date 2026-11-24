@@ -1,5 +1,5 @@
 % Date locale follows babel: main language, \selectlanguage, otherlanguage,
-% and an explicit datelocale overriding babel.
+% and an explicit locale overriding babel.
 \documentclass{vitae}
 \usepackage[english,italian]{babel}
 \input{regression-test}
@@ -16,8 +16,8 @@
   \TYPE{\languagename: [\daterange{2020-03-01}{}]}
 }
 
-\TEST{datelocale overrides babel}{
-  \vitaesetup{datelocale=german}
+\TEST{the locale setting overrides babel}{
+  \vitaesetup{locale=german}
   \TYPE{\languagename: [\daterange{2020-03-01}{}]}
 }
 

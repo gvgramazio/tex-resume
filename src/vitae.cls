@@ -49,6 +49,7 @@
     style    .tl_set:N = \l__vitae_entry_style_tl ,
     % Date settings for this entry only (the entry is a group).
     dateformat .meta:nn = { vitae / setup } { dateformat = {#1} } ,
+    locale     .meta:nn = { vitae / setup } { locale = {#1} } ,
     datelocale .meta:nn = { vitae / setup } { datelocale = {#1} } ,
     durations  .meta:nn = { vitae / setup } { durations = {#1} } ,
     durations  .default:n = true ,

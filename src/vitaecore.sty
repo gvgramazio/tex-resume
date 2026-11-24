@@ -218,14 +218,18 @@
     \int_set:Nn \l__vitae_today_year_int {#1}
     \int_set:Nn \l__vitae_today_month_int { \tl_if_blank:nTF {#2} { 12 } {#2} }
   }
-\tl_new:N \l__vitae_date_locale_tl
+\tl_new:N \l__vitae_locale_tl
 \msg_new:nnn { vitae } { invalid-today }
   { 'today'~must~be~an~ISO~date~(YYYY,~YYYY-MM~or~YYYY-MM-DD),~not~'#1'. }
-\msg_new:nnn { vitae } { unknown-date-locale }
+\msg_new:nnn { vitae } { unknown-locale }
   {
-    No~date~locale~'#1';~English~is~used.~
-    Define~one~with~\iow_char:N\\vitaedatelocale.
+    No~locale~'#1';~English~is~used.~
+    Define~one~with~\iow_char:N\\vitaelocale.
   }
+\msg_new:nnn { vitae } { deprecated-datelocale }
+  { The~setting~'datelocale'~is~deprecated;~use~'locale'~instead. }
+\msg_new:nnn { vitae } { deprecated-vitaedatelocale }
+  { \iow_char:N \\vitaedatelocale~is~deprecated;~use~\iow_char:N \\vitaelocale~instead. }
 \keys_define:nn { vitae / setup }
   {
     dateformat .choices:nn =
@@ -242,15 +246,22 @@
         \__vitae_date_if_iso:nTF {#1} { \__vitae_today_set:nnn }
           { \msg_error:nnn { vitae } { invalid-today } {#1} }
       } ,
-    % Empty (default): follow \languagename (babel/polyglossia).
-    datelocale .code:n =
+    % The locale (dates, footer words, contact labels). Empty (default):
+    % follow \languagename (babel/polyglossia). datelocale is its
+    % deprecated name.
+    locale     .code:n =
       {
-        \tl_set:Nn \l__vitae_date_locale_tl {#1}
+        \tl_set:Nn \l__vitae_locale_tl {#1}
         \tl_if_blank:nF {#1}
           {
-            \tl_if_exist:cF { g__vitae_date_alias_#1_tl }
-              { \msg_warning:nnn { vitae } { unknown-date-locale } {#1} }
+            \tl_if_exist:cF { g__vitae_locale_alias_#1_tl }
+              { \msg_warning:nnn { vitae } { unknown-locale } {#1} }
           }
+      } ,
+    datelocale .code:n =
+      {
+        \msg_warning:nn { vitae } { deprecated-datelocale }
+        \keys_set:nn { vitae / setup } { locale = {#1} }
       } ,
   }
 
@@ -317,32 +328,33 @@
 \cs_new:Npn \__vitae_date_named:nnnn #1#2#3#4
   {
     \__vitae_date_pattern:nnnn { \tl_if_blank:nTF {#4} { ym } { ymd } } {#2}
-      { \clist_item:cn { g__vitae_date_ \__vitae_date_locale: _#1_clist } {#3} }
+      { \clist_item:cn { g__vitae_date_ \__vitae_locale: _#1_clist } {#3} }
       { \tl_if_blank:nF {#4} { \int_eval:n {#4} } }
   }
 \cs_new:Npn \__vitae_date_pattern:nnnn #1
-  { \use:c { __vitae_date_ \__vitae_date_locale: _#1:nnn } }
+  { \use:c { __vitae_date_ \__vitae_locale: _#1:nnn } }
 
-% Current locale: datelocale if set, else \languagename; unknown -> english.
-\cs_new:Npn \__vitae_date_locale:
+% Current locale: the locale setting if set, else \languagename; unknown
+% -> english.
+\cs_new:Npn \__vitae_locale:
   {
-    \exp_args:Ne \__vitae_date_resolve:n
+    \exp_args:Ne \__vitae_locale_resolve:n
       {
-        \tl_if_blank:VTF \l__vitae_date_locale_tl
+        \tl_if_blank:VTF \l__vitae_locale_tl
           { \cs_if_exist:NTF \languagename { \languagename } { english } }
-          { \tl_use:N \l__vitae_date_locale_tl }
+          { \tl_use:N \l__vitae_locale_tl }
       }
   }
-\cs_new:Npn \__vitae_date_resolve:n #1
+\cs_new:Npn \__vitae_locale_resolve:n #1
   {
-    \tl_if_exist:cTF { g__vitae_date_alias_#1_tl }
-      { \tl_use:c { g__vitae_date_alias_#1_tl } } { english }
+    \tl_if_exist:cTF { g__vitae_locale_alias_#1_tl }
+      { \tl_use:c { g__vitae_locale_alias_#1_tl } } { english }
   }
 % "Present": the present key if set, else the locale's word.
 \cs_new:Npn \__vitae_date_present:
   {
     \tl_if_blank:VTF \l__vitae_present_tl
-      { \tl_use:c { g__vitae_date_ \__vitae_date_locale: _present_tl } }
+      { \tl_use:c { g__vitae_date_ \__vitae_locale: _present_tl } }
       { \tl_use:N \l__vitae_present_tl }
   }
 
@@ -419,23 +431,37 @@
 \cs_new:Npn \__vitae_duration_part:nn #1#2
   {
     #1 ~
-    \clist_item:cn { g__vitae_date_ \__vitae_date_locale: _units_clist }
+    \clist_item:cn { g__vitae_date_ \__vitae_locale: _units_clist }
       { #2 + \int_compare:nNnTF {#1} = { 1 } { 0 } { 1 } }
   }
 
-% --- Date locales ---------------------------------------------------------
-% \vitaedatelocale{<name>}{<keys>} (not expandable) defines a locale,
-% starting from English for any key not given. Patterns get #1 = year,
-% #2 = month (name, or two digits in numeric-*), #3 = day (number, or two
-% digits in numeric-*). Footer patterns: "pages" gets #1 = page, #2 = total;
-% "updated" gets #1 = the date. "aliases" lists other \languagename values.
-\keys_define:nn { vitae / datelocale }
+% --- Locales --------------------------------------------------------------
+% \vitaelocale{<name>}{<keys>} (not expandable) defines a locale: the words
+% of dates, the footer and contact labels, starting from English for any
+% key not given. Patterns get #1 = year, #2 = month (name, or two digits in
+% numeric-*), #3 = day (number, or two digits in numeric-*). Footer
+% patterns: "pages" gets #1 = page, #2 = total; "updated" gets #1 = the date.
+% "labels" names the built-in contacts, read before their icons ("Phone:").
+% "aliases" lists other \languagename values.
+\clist_const:Nn \c__vitae_label_clist
+  { email , phone , address , homepage , linkedin , github , orcid }
+\clist_map_inline:Nn \c__vitae_label_clist
+  {
+    \tl_new:c { l__vitae_dl_label_#1_tl }
+    \tl_new:c { l__vitae_label_#1_tl }
+    \keys_define:nn { vitae / locale / labels }
+      { #1 .tl_set:c = { l__vitae_dl_label_#1_tl } }
+    \keys_define:nn { vitae / contactlabels }
+      { #1 .tl_set:c = { l__vitae_label_#1_tl } }
+  }
+\keys_define:nn { vitae / locale }
   {
     months      .clist_set:N = \l__vitae_dl_months_clist ,
     short       .clist_set:N = \l__vitae_dl_short_clist ,
     units       .clist_set:N = \l__vitae_dl_units_clist ,
     present     .tl_set:N    = \l__vitae_dl_present_tl ,
     aliases     .clist_set:N = \l__vitae_dl_aliases_clist ,
+    labels      .code:n = \keys_set:nn { vitae / locale / labels } {#1} ,
     ym          .code:n = \cs_set:Npn \__vitae_dl_ym:nnn ##1##2##3 {#1} ,
     ymd         .code:n = \cs_set:Npn \__vitae_dl_ymd:nnn ##1##2##3 {#1} ,
     numeric-ym  .code:n = \cs_set:Npn \__vitae_dl_nym:nnn ##1##2##3 {#1} ,
@@ -443,18 +469,35 @@
     pages       .code:n = \cs_set:Npn \__vitae_dl_pages:nnn ##1##2##3 {#1} ,
     updated     .code:n = \cs_set:Npn \__vitae_dl_updated:nnn ##1##2##3 {#1} ,
   }
-\NewDocumentCommand \vitaedatelocale { m m }
+% contactlabels={<label>=<text>, ...}: labels for this document or group,
+% over the locale's.
+\keys_define:nn { vitae / setup }
+  { contactlabels .code:n = \keys_set:nn { vitae / contactlabels } {#1} }
+% The label of built-in contact #1: the contactlabels setting, else the
+% locale's (expandable; the text itself is not expanded).
+\cs_new:Npn \__vitae_contact_label:n #1
+  {
+    \tl_if_blank:vTF { l__vitae_label_#1_tl }
+      { \exp_not:v { g__vitae_locale_ \__vitae_locale: _label_#1_tl } }
+      { \exp_not:v { l__vitae_label_#1_tl } }
+  }
+\NewDocumentCommand \vitaelocale { m m }
   {
     \group_begin:
-      \tl_if_exist:cT { g__vitae_date_alias_english_tl }
+      \tl_if_exist:cT { g__vitae_locale_alias_english_tl }
         { \__vitae_date_load:n { english } }
       \clist_clear:N \l__vitae_dl_aliases_clist
-      \keys_set:nn { vitae / datelocale } {#2}
+      \keys_set:nn { vitae / locale } {#2}
       \__vitae_date_save:n {#1}
       \clist_map_inline:Nn \l__vitae_dl_aliases_clist
-        { \tl_gset:cn { g__vitae_date_alias_##1_tl } {#1} }
-      \tl_gset:cn { g__vitae_date_alias_#1_tl } {#1}
+        { \tl_gset:cn { g__vitae_locale_alias_##1_tl } {#1} }
+      \tl_gset:cn { g__vitae_locale_alias_#1_tl } {#1}
     \group_end:
+  }
+\NewDocumentCommand \vitaedatelocale { m m }
+  {
+    \msg_warning:nn { vitae } { deprecated-vitaedatelocale }
+    \vitaelocale {#1} {#2}
   }
 % Stored locale <-> scratch record (\l__vitae_dl_... and \__vitae_dl_...).
 \cs_new_protected:Npn \__vitae_date_load:n #1
@@ -464,6 +507,8 @@
     \tl_set_eq:Nc \l__vitae_dl_present_tl { g__vitae_date_#1_present_tl }
     \clist_map_inline:nn { ym , ymd , nym , nymd , pages , updated }
       { \cs_set_eq:cc { __vitae_dl_##1:nnn } { __vitae_date_#1_##1:nnn } }
+    \clist_map_inline:Nn \c__vitae_label_clist
+      { \tl_set_eq:cc { l__vitae_dl_label_##1_tl } { g__vitae_locale_#1_label_##1_tl } }
   }
 \cs_new_protected:Npn \__vitae_date_save:n #1
   {
@@ -472,10 +517,13 @@
     \tl_gset_eq:cN { g__vitae_date_#1_present_tl } \l__vitae_dl_present_tl
     \clist_map_inline:nn { ym , ymd , nym , nymd , pages , updated }
       { \cs_gset_eq:cc { __vitae_date_#1_##1:nnn } { __vitae_dl_##1:nnn } }
+    \clist_map_inline:Nn \c__vitae_label_clist
+      { \tl_gset_eq:cc { g__vitae_locale_#1_label_##1_tl } { l__vitae_dl_label_##1_tl } }
   }
 
 % Built-in locales. English (US order) first: the base for all others.
-\vitaedatelocale { english }
+% Brand names (LinkedIn, GitHub, ORCID) are the same in every language.
+\vitaelocale { english }
   {
     units       = { yr , yrs , mo , mos } ,
     aliases     = { american , USenglish , canadian } ,
@@ -490,14 +538,16 @@
     numeric-ymd = { #2 / #3 / #1 } ,
     pages       = { Page ~ #1 ~ of ~ #2 } ,
     updated     = { Last ~ updated ~ #1 } ,
+    labels      = { email = Email , phone = Phone , address = Address , homepage = Website ,
+                    linkedin = LinkedIn , github = GitHub , orcid = ORCID } ,
   }
-\vitaedatelocale { british }
+\vitaelocale { british }
   {
     aliases     = { UKenglish , australian , newzealand } ,
     ymd         = { #3 ~ #2 ~ #1 } ,
     numeric-ymd = { #3 / #2 / #1 } ,
   }
-\vitaedatelocale { italian }
+\vitaelocale { italian }
   {
     units       = { anno , anni , mese , mesi } ,
     months      = { gennaio , febbraio , marzo , aprile , maggio , giugno ,
@@ -509,8 +559,10 @@
     numeric-ymd = { #3 / #2 / #1 } ,
     pages       = { Pagina ~ #1 ~ di ~ #2 } ,
     updated     = { Ultimo ~ aggiornamento: ~ #1 } ,
+    labels      = { email = E-mail , phone = Telefono , address = Indirizzo ,
+                    homepage = Sito~web } ,
   }
-\vitaedatelocale { german }
+\vitaelocale { german }
   {
     units       = { Jahr , Jahre , Monat , Monate } ,
     aliases     = { ngerman , austrian , naustrian , swissgerman , nswissgerman } ,
@@ -523,8 +575,9 @@
     numeric-ymd = { #3 . #2 . #1 } ,
     pages       = { Seite ~ #1 ~ von ~ #2 } ,
     updated     = { Stand: ~ #1 } ,
+    labels      = { email = E-Mail , phone = Telefon , address = Adresse , homepage = Website } ,
   }
-\vitaedatelocale { french }
+\vitaelocale { french }
   {
     units       = { an , ans , mois , mois } ,
     aliases     = { francais , frenchb , acadian } ,
@@ -540,8 +593,10 @@
     pages       = { Page ~ #1 ~ sur ~ #2 } ,
     % French puts a non-breaking space before a colon.
     updated     = { Dernière ~ mise ~ à ~ jour \nobreakspace : ~ #1 } ,
+    labels      = { email = E-mail , phone = Téléphone , address = Adresse ,
+                    homepage = Site~web } ,
   }
-\vitaedatelocale { spanish }
+\vitaelocale { spanish }
   {
     units       = { año , años , mes , meses } ,
     months      = { enero , febrero , marzo , abril , mayo , junio , julio ,
@@ -554,6 +609,8 @@
     numeric-ymd = { #3 / #2 / #1 } ,
     pages       = { Página ~ #1 ~ de ~ #2 } ,
     updated     = { Última ~ actualización: ~ #1 } ,
+    labels      = { email = Correo , phone = Teléfono , address = Dirección ,
+                    homepage = Sitio~web } ,
   }
 
 % --- Templates ------------------------------------------------------------
@@ -797,7 +854,8 @@
       \__vitae_template_use:n { contact }
     \group_end:
   }
-% Text field: shown as typed, not linked. #1 field, #2 label, #3 icon.
+% Text field: shown as typed, not linked. #1 field, #2 label (from the
+% locale, expanded here), #3 icon.
 \cs_new_protected:Npn \__vitae_contact_text:nnn #1#2#3
   {
     \tl_if_blank:vF { g__vitae_field_#1_tl }
@@ -828,14 +886,14 @@
 \cs_new_protected:Npn \__vitae_contacts_collect:
   {
     \seq_clear:N \l__vitae_contacts_seq
-    \__vitae_contact_link:nnnn { email } { Email } { \faEnvelope } { mailto: }
-    \__vitae_contact_text:nnn { phone } { Phone } { \faPhone }
-    \__vitae_contact_text:nnn { address } { Address } { \faMapMarker* }
-    \__vitae_contact_link:nnnn { homepage } { Website } { \faGlobe } { https:// }
-    \__vitae_contact_link:nnnn { linkedin } { LinkedIn } { \faLinkedin }
+    \__vitae_contact_link:nnnn { email } { \__vitae_contact_label:n { email } } { \faEnvelope } { mailto: }
+    \__vitae_contact_text:nnn { phone } { \__vitae_contact_label:n { phone } } { \faPhone }
+    \__vitae_contact_text:nnn { address } { \__vitae_contact_label:n { address } } { \faMapMarker* }
+    \__vitae_contact_link:nnnn { homepage } { \__vitae_contact_label:n { homepage } } { \faGlobe } { https:// }
+    \__vitae_contact_link:nnnn { linkedin } { \__vitae_contact_label:n { linkedin } } { \faLinkedin }
       { https://www.linkedin.com/in/ }
-    \__vitae_contact_link:nnnn { github } { GitHub } { \faGithub } { https://github.com/ }
-    \__vitae_contact_link:nnnn { orcid } { ORCID } { \faOrcid } { https://orcid.org/ }
+    \__vitae_contact_link:nnnn { github } { \__vitae_contact_label:n { github } } { \faGithub } { https://github.com/ }
+    \__vitae_contact_link:nnnn { orcid } { \__vitae_contact_label:n { orcid } } { \faOrcid } { https://orcid.org/ }
     \seq_concat:NNN \l__vitae_contacts_seq
       \l__vitae_contacts_seq \g__vitae_extra_contacts_seq
   }
@@ -956,7 +1014,7 @@
 % The page style "vitae" (the default) runs the footer template on every
 % page, with the parts listed in the footer setting: name, pages ("Page 2
 % of 3") and updated ("Last updated <date>", from \lastupdated), in the
-% words of the date locale. Without parts it prints nothing, like "empty".
+% words of the locale. Without parts it prints nothing, like "empty".
 \clist_new:N \l__vitae_footer_clist
 \bool_new:N \l__vitae_footer_single_bool
 \msg_new:nnn { vitae } { unknown-footer-part }
@@ -1404,13 +1462,13 @@
     % Tagging (\DocumentMetadata) is validated on LuaTeX only.
     \tag_if_active:T
       { \sys_if_engine_luatex:F { \msg_warning:nn { vitae } { tagging-engine } } }
-    % The main language (babel/polyglossia) should have a date locale.
+    % The main language (babel/polyglossia) should have a locale.
     \bool_lazy_and:nnT
-      { \tl_if_blank_p:V \l__vitae_date_locale_tl }
+      { \tl_if_blank_p:V \l__vitae_locale_tl }
       { \cs_if_exist_p:N \languagename }
       {
-        \tl_if_exist:cF { g__vitae_date_alias_ \languagename _tl }
-          { \msg_warning:nnV { vitae } { unknown-date-locale } \languagename }
+        \tl_if_exist:cF { g__vitae_locale_alias_ \languagename _tl }
+          { \msg_warning:nnV { vitae } { unknown-locale } \languagename }
       }
     % Document title (shown by viewers; required by PDF/UA): the name,
     % followed by the job title if set.

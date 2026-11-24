@@ -19,43 +19,43 @@
 }
 
 \TEST{built-in locales, long and numeric}{
-  \vitaesetup{datelocale=british} \TYPE{british: \sample}
-  \vitaesetup{datelocale=italian} \TYPE{italian: \sample}
-  \vitaesetup{datelocale=german}  \TYPE{german:  \sample}
-  \vitaesetup{datelocale=french}  \typeout{french:  \sample [\formatdate{2020-08-02}]}% robust \textsuperscript
-  \vitaesetup{datelocale=spanish} \TYPE{spanish: \sample}
+  \vitaesetup{locale=british} \TYPE{british: \sample}
+  \vitaesetup{locale=italian} \TYPE{italian: \sample}
+  \vitaesetup{locale=german}  \TYPE{german:  \sample}
+  \vitaesetup{locale=french}  \typeout{french:  \sample [\formatdate{2020-08-02}]}% robust \textsuperscript
+  \vitaesetup{locale=spanish} \TYPE{spanish: \sample}
   \vitaesetup{dateformat=numeric}
-  \vitaesetup{datelocale=british} \TYPE{british: \sample}
-  \vitaesetup{datelocale=german}  \TYPE{german:  \sample}
+  \vitaesetup{locale=british} \TYPE{british: \sample}
+  \vitaesetup{locale=german}  \TYPE{german:  \sample}
   \vitaesetup{dateformat=short}
-  \vitaesetup{datelocale=german}  \TYPE{german:  \sample}
+  \vitaesetup{locale=german}  \TYPE{german:  \sample}
 }
 
 \TEST{aliases resolve to their locale}{
-  \vitaesetup{datelocale=ngerman}   \TYPE{ngerman:   \sample}
-  \vitaesetup{datelocale=UKenglish} \TYPE{UKenglish: \sample}
+  \vitaesetup{locale=ngerman}   \TYPE{ngerman:   \sample}
+  \vitaesetup{locale=UKenglish} \TYPE{UKenglish: \sample}
 }
 
 \TEST{settings are local to groups}{
-  {\vitaesetup{dateformat=year, datelocale=italian}\TYPE{inside:  \sample}}
+  {\vitaesetup{dateformat=year, locale=italian}\TYPE{inside:  \sample}}
   \TYPE{outside: \sample}
 }
 
-\TEST{per-entry dateformat and datelocale}{
+\TEST{per-entry dateformat and locale}{
   \settemplate{entry}{\TYPE{[\field{title}] \field{dates}}}
   \cventry{title=A, start=2020-03, end=2021-06, dateformat=numeric}{}
-  \cventry{title=B, start=2020-03, datelocale=italian}{}
+  \cventry{title=B, start=2020-03, locale=italian}{}
   \cventry{title=C, start=2020-03}{}
 }
 
 \TEST{user-defined locale, starting from English}{
-  \vitaedatelocale{pirate}{aliases={arr}, present=now, ym={#2 o' #1}}
-  \vitaesetup{datelocale=arr}
+  \vitaelocale{pirate}{aliases={arr}, present=now, ym={#2 o' #1}}
+  \vitaesetup{locale=arr}
   \TYPE{\sample [\formatdate{2020-03-01}]}
 }
 
 \TEST{unknown locale warns and falls back to English}{
-  \vitaesetup{datelocale=klingon}
+  \vitaesetup{locale=klingon}
   \TYPE{\sample}
 }
 

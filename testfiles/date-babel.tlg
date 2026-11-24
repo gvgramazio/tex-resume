@@ -11,7 +11,7 @@ TEST 2: \selectlanguage switches the locale
 english: [March 1, 2020--Present]
 ============================================================
 ============================================================
-TEST 3: datelocale overrides babel
+TEST 3: the locale setting overrides babel
 ============================================================
 italian: [1. M^^c3^^a4rz 2020--heute]
 ============================================================

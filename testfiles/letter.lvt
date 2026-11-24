@@ -24,7 +24,7 @@
   \settemplate{masthead}{}
   \settemplate{opening}{\TYPE{[\field{date}]}}
   \letterdate{2026-11}
-  \vitaesetup{datelocale=italian}
+  \vitaesetup{locale=italian}
   \opening{}
   \vitaesetup{dateformat=numeric}
   \opening{}
