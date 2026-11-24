@@ -377,6 +377,15 @@ The total number of pages is the count of the previous run, so it shows
 |singlepagefooter=false|, a document that fits on one page gets no footer.
 The footer also works in \pkg{vitaeletter}.
 
+The footer prints on every page, but readers get it differently. Screen
+readers and applicant-tracking systems skip the name and the page numbers:
+the name is already the masthead heading, and repeated on every page they
+would split entries that cross a page break. They read the update date
+once, at the end of the document, where the last page's footer is real
+content; on every other page the footer is hidden from them. The last page
+is known from the previous run, so on the first run the date is not read
+at all.
+
 \section{Cover letters}\label{sec:letter}
 
 The \pkg{vitaeletter} class shares everything except entries with
