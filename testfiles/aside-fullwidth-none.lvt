@@ -1,0 +1,13 @@
+% \vitaefullwidth without an aside column: the content as it is.
+\documentclass{vitae}
+\input{regression-test}
+\begin{document}
+\START
+
+\TEST{without a column the block is main's width}{
+  \TYPE{main: \the\textwidth}
+  \setbox0\vbox{\vitaefullwidth{\TYPE{inside: \the\linewidth}\noindent\rule{\linewidth}{1pt}}}
+  \TYPE{reach: \the\wd0}
+}
+
+\END

@@ -1,0 +1,9 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: without a column the block is main's width
+============================================================
+main: 483.69687pt
+inside: 483.69687pt
+reach: 483.69687pt
+============================================================

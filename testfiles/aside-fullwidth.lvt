@@ -1,0 +1,16 @@
+% \vitaefullwidth: a block across main and the column, on either side.
+\documentclass{vitae}
+\input{regression-test}
+\vitaeasidecolumn{width=5cm, sep=1cm}
+\begin{document}
+\START
+
+\TEST{the block spans main and the column; it is moved over the column}{
+  \TYPE{main: \the\textwidth}
+  \setbox0\vbox{\vitaefullwidth{\TYPE{inside: \the\linewidth}\noindent\rule{\linewidth}{1pt}}}
+  % The block (main + column) is moved left by the column and its sep, so
+  % the box holding it reaches main's right edge only.
+  \TYPE{reach: \the\wd0}
+}
+
+\END

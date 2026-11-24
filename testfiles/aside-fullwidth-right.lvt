@@ -1,0 +1,15 @@
+% \vitaefullwidth with the column on the right: the block is not moved.
+\documentclass{vitae}
+\input{regression-test}
+\vitaeasidecolumn{width=5cm, sep=1cm, side=right}
+\begin{document}
+\START
+
+\TEST{the block spans main and the column; it is not moved}{
+  \TYPE{main: \the\textwidth}
+  \setbox0\vbox{\vitaefullwidth{\TYPE{inside: \the\linewidth}\noindent\rule{\linewidth}{1pt}}}
+  % The block starts at main's left edge and reaches over the column.
+  \TYPE{reach: \the\wd0}
+}
+
+\END
