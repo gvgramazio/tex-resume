@@ -1,0 +1,32 @@
+% Aside column, empty=drop: no column when the aside region was empty in
+% the last run; content routed in this run asks for a rerun.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\vitaeasidecolumn{width=5cm, sep=1cm, empty=drop}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_protected:Npn \regionsfinish
+  {
+    \group_begin:
+      \cs_set_eq:NN \@auxout \c_log_iow
+      \__vitae_region_finish:
+    \group_end:
+  }
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\START
+
+\TEST{no content last run: no column, \placeaside does nothing}{
+  \TYPE{textwidth \the\textwidth}
+  \placeaside
+  \TYPE{after placeaside}
+}
+
+\TEST{content routed now: written for the next run, with a rerun warning}{
+  \begin{region}{aside}\TYPE{aside content}\end{region}
+  \regionsfinish
+}
+
+\END

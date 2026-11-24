@@ -1,0 +1,18 @@
+% Aside column, empty=drop: the last run had aside content, so the column
+% is kept; empty=keep keeps an empty column.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\vitaeasidecolumn{width=5cm, sep=1cm, empty=drop}
+% As read from the previous run's .aux file.
+\makeatletter
+\vitae@region{aside}{\TYPE{aside from the last run}}
+\makeatother
+\begin{document}
+\START
+
+\TEST{content in the last run: the column is kept}{
+  \TYPE{textwidth \the\textwidth}
+}
+
+\END

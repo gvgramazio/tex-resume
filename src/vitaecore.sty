@@ -1283,7 +1283,14 @@
                   }
               }
             \tl_if_exist:cF { g__vitae_region_##1_used_tl }
-              { \msg_warning:nnnV { vitae } { region-unused } {##1} \g__vitae_theme_tl }
+              {
+                % A column dropped as empty gets this content after a rerun.
+                \bool_lazy_and:nnTF
+                  { \str_if_eq_p:nn {##1} { aside } }
+                  { \g__vitae_aside_dropped_bool }
+                  { \msg_warning:nnn { vitae } { region-changed } {##1} }
+                  { \msg_warning:nnnV { vitae } { region-unused } {##1} \g__vitae_theme_tl }
+              }
           }
         \tl_if_exist:cT { g__vitae_region_##1_used_tl }
           {
@@ -1316,6 +1323,7 @@
 \tl_new:N \l__vitae_aside_sep_tl
 \bool_new:N \l__vitae_aside_left_bool
 \bool_new:N \l__vitae_aside_after_bool
+\bool_new:N \l__vitae_aside_drop_bool
 \keys_define:nn { vitae / aside }
   {
     width .tl_set:N   = \l__vitae_aside_width_tl ,
@@ -1328,8 +1336,13 @@
     order .choices:nn = { after , before }
       { \bool_set:Nn \l__vitae_aside_after_bool { \int_compare_p:nNn { \l_keys_choice_int } = { 1 } } } ,
     order .initial:n  = after ,
+    % drop: no column when the aside region was empty in the last run.
+    empty .choices:nn = { keep , drop }
+      { \bool_set:Nn \l__vitae_aside_drop_bool { \int_compare_p:nNn { \l_keys_choice_int } = { 2 } } } ,
+    empty .initial:n  = keep ,
   }
 \bool_new:N \g__vitae_aside_bool
+\bool_new:N \g__vitae_aside_dropped_bool
 \bool_new:N \g__vitae_aside_placed_bool
 \dim_new:N \g__vitae_aside_width_dim
 \dim_new:N \g__vitae_aside_shift_dim
@@ -1345,9 +1358,20 @@
   }
 \@onlypreamble \vitaeasidecolumn
 % Split the text block (after geometry has set it). The shift is where the
-% column's left edge lies, from main's left edge.
+% column's left edge lies, from main's left edge. With empty=drop, an aside
+% region that was empty in the last run (the .aux file is read by now)
+% gets no column; content routed in this run then asks for a rerun.
 \hook_gput_code:nnn { begindocument / end } { vitae }
   {
+    \bool_lazy_and:nnT { \g__vitae_aside_bool } { \l__vitae_aside_drop_bool }
+      {
+        \ifregionempty { aside }
+          {
+            \bool_gset_false:N \g__vitae_aside_bool
+            \bool_gset_true:N \g__vitae_aside_dropped_bool
+          }
+          { }
+      }
     \bool_if:NT \g__vitae_aside_bool
       {
         \dim_gset:Nn \g__vitae_aside_width_dim { \l__vitae_aside_width_tl }
@@ -1386,7 +1410,8 @@
       }
   }
 \box_new:N \g__vitae_aside_part_box
-% \placeaside: start the column here (in a theme's template, once).
+% \placeaside: start the column here (in a theme's template, once); it
+% does nothing when the column was dropped (empty=drop).
 \NewDocumentCommand \placeaside { }
   {
     \bool_if:NTF \g__vitae_aside_bool
@@ -1428,7 +1453,7 @@
               }
           }
       }
-      { \msg_error:nn { vitae } { no-aside-column } }
+      { \bool_if:NF \g__vitae_aside_dropped_bool { \msg_error:nn { vitae } { no-aside-column } } }
   }
 % \vitaefullwidth{<content>}: a block across main and the column, from the
 % current point (a band above both, say); it does not break across pages.

@@ -39,13 +39,14 @@
     top = 14mm , bottom = 20mm , footskip = 10mm ,
   }
 \setlength \emergencystretch { 2em }
-% Resumes: the aside region in a column on the left, below the band.
+% Resumes: the aside region in a column on the left, below the band, if
+% it has content (empty=drop).
 % Letters have no column, so the letter keeps the page's width.
 \bool_new:N \l__vitae_banner_column_bool
 \IfClassLoadedT { vitae }
   {
     \bool_set_true:N \l__vitae_banner_column_bool
-    \vitaeasidecolumn { width = 52mm , sep = 10mm }
+    \vitaeasidecolumn { width = 52mm , sep = 10mm , empty = drop }
   }
 
 % --- Shared pieces --------------------------------------------------------
