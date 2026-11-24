@@ -1,0 +1,14 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: no content last run: no column, \placeaside does nothing
+============================================================
+textwidth 483.69687pt
+after placeaside
+============================================================
+============================================================
+TEST 2: content routed now: written for the next run, with a rerun warning
+============================================================
+\vitae@region{aside}{\TYPE {aside content}}
+Package vitae Warning: Region 'aside' has changed. Rerun to get it right.
+============================================================

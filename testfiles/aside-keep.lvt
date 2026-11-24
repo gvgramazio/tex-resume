@@ -1,0 +1,14 @@
+% Aside column, empty=keep (the default): an empty aside region keeps its
+% column.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\vitaeasidecolumn{width=5cm, sep=1cm, empty=keep}
+\begin{document}
+\START
+
+\TEST{an empty region keeps the column}{
+  \TYPE{textwidth \the\textwidth}
+}
+
+\END
