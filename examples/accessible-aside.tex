@@ -1,12 +1,20 @@
 % engines: lua
-% reading-order: Jane Doe | Profile | Experience | Education | Certifications | Talks | Skills | Languages
-% Accessible PDF (PDF/UA-2) with an aside column: the aside is an Aside
-% structure element, read after main.
+% reading-order: Jane Doe | [Photo of Jane Doe] | Profile | Experience | Education | Certifications | Talks | Skills | Languages
+% Accessible PDF (PDF/UA-2) with an aside column, read after main, and a
+% round photo drawn by the photo template, which stays a Figure.
 \DocumentMetadata{tagging=on, pdfstandard=ua-2, lang=en-US}
 \documentclass{vitae}
 \usetheme{modern}
 \input{data/janedoe}
 \vitaeasidecolumn{width=4.8cm, sep=8mm}
+% A round photo, drawn by the photo template: the image, scaled to the
+% circle's height, clipped to a circle as wide as the photo width.
+\usepackage{tikz}
+\settemplate{photo}{%
+  \begin{tikzpicture}
+    \clip (0,0) circle ({\field{width}/2});
+    \node[inner sep=0pt] at (0,0) {\includegraphics[height=\field{width}]{\field{file}}};
+  \end{tikzpicture}}
 % Narrow measures: let TeX stretch spaces rather than overflow.
 \setlength\emergencystretch{3em}
 \vitaesetup{footer={name, pages, updated}}

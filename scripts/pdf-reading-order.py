@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Print the headings of a tagged PDF's structure tree, in tree order.
+"""Print the headings and figures of a tagged PDF's structure tree, in order.
 
-Usage: scripts/pdf-headings.py <file.pdf>
-One line per heading element (H, H1-H6): its level and the text of its
-subtree, as `pdfinfo -struct-text` gives it ("H1 Jane Doe"). This is the
-order in which assistive technology reads the headings. Used by
+Usage: scripts/pdf-reading-order.py <file.pdf>
+One line per heading element (H, H1-H6), with its level and the text of its
+subtree as `pdfinfo -struct-text` gives it ("H1 Jane Doe"), and per Figure,
+with its alternative text in brackets ("Figure [Photo of Jane Doe]"). This
+is the order in which assistive technology reads them. Used by
 scripts/check-pdf.sh to compare it with the expected reading order.
 """
 import re
@@ -12,6 +13,7 @@ import subprocess
 import sys
 
 ELEMENT = re.compile(r"^( *)(\w+) <")
+FIGURE = re.compile(r'^ *Figure <[^>]*> \["(.*)"\]')
 TEXT = re.compile(r'^( *)"(.*)"$')
 
 
@@ -25,6 +27,9 @@ def main() -> int:
         if heading and indent <= heading[0] and not (text and indent > heading[0]):
             print(heading[1], " ".join(" ".join(heading[2]).split()))
             heading = None
+        figure = FIGURE.match(line)
+        if figure:
+            print("Figure", f"[{figure.group(1)}]")
         if heading and text:
             heading[2].append(text.group(2))
         elif element and re.fullmatch(r"H[1-6]?", element.group(2)):
