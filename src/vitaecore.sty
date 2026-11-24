@@ -1313,6 +1313,32 @@
       }
       { \msg_error:nn { vitae } { no-aside-column } }
   }
+% \vitaefullwidth{<content>}: a block across main and the column, from the
+% current point (a band above both, say); it does not break across pages.
+% Without a column, the content is printed as it is.
+\box_new:N \l__vitae_aside_full_box
+\NewDocumentCommand \vitaefullwidth { +m }
+  {
+    \par
+    \bool_if:NTF \g__vitae_aside_bool
+      {
+        \vbox_set:Nn \l__vitae_aside_full_box
+          {
+            \dim_set:Nn \hsize
+              { \textwidth + \g__vitae_aside_width_dim + \l__vitae_aside_sep_tl }
+            \dim_set_eq:NN \linewidth \hsize
+            \dim_set_eq:NN \columnwidth \hsize
+            #1 \par
+          }
+        \bool_if:NTF \l__vitae_aside_left_bool
+          {
+            \box_move_left:nn { \g__vitae_aside_width_dim + \l__vitae_aside_sep_tl }
+              { \box_use_drop:N \l__vitae_aside_full_box }
+          }
+          { \box_use_drop:N \l__vitae_aside_full_box }
+      }
+      {#1}
+  }
 % Each later page: the next part at the top of the page body. The page
 % where the column starts (its mark is first on the page) is skipped.
 \hook_gput_code:nnn { build / page / before } { vitae }

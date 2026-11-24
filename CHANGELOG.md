@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- `\vitaefullwidth{<content>}`: a block across main and the aside column,
+  such as a masthead band above both; without a column it prints the
+  content as it is.
 - `masthead` environment: `\makemasthead` with free content, such as a
   summary under any heading, given to the masthead template as
   `\field{body}`. Every theme prints it; a template that leaves it out warns.
