@@ -1,5 +1,6 @@
-% Stress test for the aside column: on the right, starting below the
-% masthead (mid-page), shorter than main, lists and free text routed to it.
+% Stress test for the aside column: on the right, starting below a masthead
+% that spans main and the column (\vitaefullwidth), shorter than main, lists
+% and free text routed to it.
 % scripts/check-pdf.sh checks that every part of the column appears once.
 \documentclass{vitae}
 \usetheme{modern}
@@ -18,7 +19,7 @@
 \addentry{tools}{title=Dolor Sit Amet, start=2020, end=2022}{Consectetur adipiscing elit.}
 
 \begin{document}
-\makemasthead
+\vitaefullwidth{\makemasthead}
 \placeaside
 \printentries[heading=Tools, region=aside, style=compact]{tools}
 \begin{region}{aside}
