@@ -1,0 +1,253 @@
+%% vitaethemebanner.sty -- vitae theme: masthead band over two columns.
+%% Distributed under the MIT license (see LICENSE).
+
+% --- Identification -------------------------------------------------------
+\ProvidesExplPackage{vitaethemebanner}{2026-11-22}{0.5.0}{vitae banner theme}
+
+% --- Fonts ----------------------------------------------------------------
+% Open Sans for text (the package picks Type 1 on pdfTeX, OpenType
+% elsewhere); Raleway SemiBold for the name and headings.
+\RequirePackage [ default ] { opensans }
+\sys_if_engine_pdftex:TF
+  {
+    \cs_new_protected:Npn \__vitae_banner_display:
+      { \fontfamily { Raleway-LF } \fontseries { sb } \selectfont }
+  }
+  {
+    \newfontfamily \__vitae_banner_display: { Raleway }
+      [ Extension = .otf , UprightFont = *-SemiBold ]
+  }
+\RequirePackage { tikz }
+
+% --- Colours --------------------------------------------------------------
+% Pairs checked by scripts/check-contrast.py (WCAG AA, 4.5:1):
+% contrast: vitaebannergreen on white
+% contrast: vitaebannergreen on vitaebannersand
+% contrast: black on vitaebannersand
+\definecolor { vitaebannergreen } { HTML } { 1E5B56 }
+\definecolor { vitaebannersand } { HTML } { F1ECE4 }
+% Defaults via \keys_set:nn, not \vitaesetup, so user settings still win.
+\keys_set:nn { vitae / setup } { accent = vitaebannergreen , photowidth = 3cm }
+
+% --- Page and lists -------------------------------------------------------
+\dim_const:Nn \c__vitae_banner_margin_dim { 16mm }
+\RequirePackage { enumitem }
+\setlist { nosep , leftmargin = 1em , topsep = 2pt }
+\geometry
+  {
+    left = \c__vitae_banner_margin_dim , right = \c__vitae_banner_margin_dim ,
+    top = 14mm , bottom = 20mm , footskip = 10mm ,
+  }
+\setlength \emergencystretch { 2em }
+% Resumes: the aside region in a column on the left, below the band.
+% Letters have no column, so the letter keeps the page's width.
+\bool_new:N \l__vitae_banner_column_bool
+\IfClassLoadedT { vitae }
+  {
+    \bool_set_true:N \l__vitae_banner_column_bool
+    \vitaeasidecolumn { width = 52mm , sep = 10mm }
+  }
+
+% --- Shared pieces --------------------------------------------------------
+% Dates of an entry, then " · <duration>" when durations are on.
+\cs_new_protected:Npn \__vitae_banner_dates:
+  {
+    \field { dates }
+    \iffield { duration } { ~ \textperiodcentered \c_space_tl \field { duration } } { }
+  }
+% Section title: display face, upper case, accent colour, a short bar below.
+\cs_new_protected:Npn \__vitae_banner_section:n #1
+  {
+    \par \addvspace { \bigskipamount }
+    \taggedheading { 2 }
+      { { #1 \__vitae_banner_display: \color { vitaeaccent } \MakeUppercase { \field { title } } \par } }
+    \nopagebreak \vspace { 3pt }
+    \decorative { { \color { vitaeaccent } \rule { 2.5em } { 2pt } \par } }
+    \nopagebreak \medskip
+  }
+
+% --- Templates: masthead --------------------------------------------------
+% The band: its content (photo, then name, job title, contacts and body)
+% over a fill from the page's left edge to its right edge and from the top
+% of the page to below the content. The fill is decoration.
+\box_new:N \l__vitae_banner_band_box
+\dim_const:Nn \c__vitae_banner_pad_dim { 6mm }
+\cs_new_protected:Npn \__vitae_banner_band:n #1
+  {
+    \vbox_set:Nn \l__vitae_banner_band_box { #1 }
+    \noindent
+    \hbox_overlap_right:n
+      {
+        \skip_horizontal:n { - \c__vitae_banner_margin_dim }
+        \decorative
+          {
+            \color { vitaebannersand }
+            \rule
+              [ \dim_eval:n { - \box_dp:N \l__vitae_banner_band_box - \c__vitae_banner_pad_dim } ]
+              { \paperwidth }
+              {
+                \dim_eval:n
+                  {
+                    \box_ht:N \l__vitae_banner_band_box + \box_dp:N \l__vitae_banner_band_box
+                    + \c__vitae_banner_pad_dim + 1in + \topmargin + \headheight + \headsep
+                  }
+              }
+          }
+      }
+    \box_use_drop:N \l__vitae_banner_band_box \par
+  }
+\settemplate { masthead }
+  {
+    \vitaefullwidth
+      {
+        \__vitae_banner_band:n
+          {
+            \ifvitaeset { photo } { \printphoto \hspace { 1.5em } } { }
+            \begin { minipage } [ b ]
+              {
+                \dim_eval:n
+                  { \ifvitaeset { photo } { \linewidth - \vitaephotowidth - 1.5em } { \linewidth } }
+              }
+              \raggedright
+              \taggedheading { 1 }
+                {
+                  {
+                    \__vitae_banner_display: \fontsize { 28 } { 32 } \selectfont
+                    \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par
+                  }
+                }
+              \ifvitaeset { jobtitle }
+                { \smallskip { \__vitae_banner_display: \large \thejobtitle \par } } { }
+              \medskip \small \printcontacts \par
+            \end { minipage }
+            \iffield { body } { \par \medskip \field { body } \par } { }
+          }
+      }
+    \vspace { \dim_eval:n { \c__vitae_banner_pad_dim + \bigskipamount } }
+    \bool_if:NT \l__vitae_banner_column_bool { \placeaside }
+  }
+\settemplate { contact }
+  { \mbox { \textcolor { vitaeaccent } { \field { icon } } ~ \field { text } } }
+\settemplate { contactsep } { \hspace { 1.4em plus .5em } }
+
+% Photo: a square crop of the image, at the photo width.
+\settemplate { photo }
+  {
+    \begin { tikzpicture } [ baseline = ( current~bounding~box.south ) ]
+      \clip ( 0 , 0 ) rectangle ( \field { width } , \field { width } ) ;
+      \node [ inner~sep = 0pt , anchor = center ]
+        at ( \field { width } / 2 , \field { width } / 2 )
+        { \includegraphics [ height = \field { width } ] { \field { file } } } ;
+    \end { tikzpicture }
+  }
+
+% --- Templates: main ------------------------------------------------------
+\settemplate { section } { \__vitae_banner_section:n { \large } }
+
+% Entry: the dates on a small accent line, then the bold title, then
+% organisation and location; each line only if one of its fields is set.
+\settemplate { entry }
+  {
+    \par
+    \iffield { dates }
+      { { \small \color { vitaeaccent } \__vitae_banner_dates: \par } \nopagebreak }
+      { }
+    \iffield { title } { \textbf { \field { title } } \par \nopagebreak } { }
+    \ifanyfield { org , location }
+      { \joinfields { ~ \textperiodcentered \c_space_tl } { org = \textit , location } \par }
+      { }
+    \iffield { body } { \smallskip \field { body } \par } { }
+    \medskip
+  }
+
+% Compact entry: title, organisation and location on one line, dates on
+% the right; any body below.
+\settemplate { entry/compact }
+  {
+    \par
+    \joinfields { , ~ } { title = \textbf , org = \textit , location }
+    \hfill { \small \color { vitaeaccent } \__vitae_banner_dates: } \par
+    \iffield { body } { \field { body } \par } { }
+    \smallskip
+  }
+
+% Inline entry: a run-in paragraph, "Title, Org, Location (dates). Body".
+\settemplate { entry/inline }
+  {
+    \par
+    \ifanyfield { title , org , location }
+      {
+        \joinfields { , ~ } { title = \textbf , org = \textit , location }
+        \iffield { dates } { ~ ( \__vitae_banner_dates: ) } { }
+      }
+      { \__vitae_banner_dates: }
+    \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }
+    \field { body } \par
+    \smallskip
+  }
+
+% Item: bold label in a fixed left column, wrapped text on the right.
+\settemplate { item }
+  {
+    \par \noindent
+    \parbox [ t ] { 3cm } { \raggedright \textbf { \field { label } } }
+    \parbox [ t ] { \dim_eval:n { \linewidth - 3cm } } { \field { body } }
+    \par \smallskip
+  }
+
+% --- Templates: column ----------------------------------------------------
+% The column holds the aside region, with templates set for its narrow
+% measure (local to the column).
+\settemplate { aside }
+  {
+    \raggedright \small
+    \settemplate { section } { \__vitae_banner_section:n { \normalsize } }
+    % Entries stack their lines: dates, title, organisation.
+    \settemplate { entry }
+      {
+        \par
+        \iffield { dates } { { \color { vitaeaccent } \__vitae_banner_dates: \par } } { }
+        \iffield { title } { \textbf { \field { title } } \par } { }
+        \ifanyfield { org , location } { \joinfields { , ~ } { org , location } \par } { }
+        \iffield { body } { \field { body } \par } { }
+        \smallskip
+      }
+    \settemplate { entry/compact } { \__vitae_template_use:n { entry } }
+    \settemplate { entry/inline } { \__vitae_template_use:n { entry } }
+    % Items: the label in bold above its text.
+    \settemplate { item }
+      {
+        \par \textbf { \field { label } } \par
+        \iffield { body } { \field { body } \par } { }
+        \smallskip
+      }
+    \useregion { aside }
+  }
+
+% --- Templates: letters and footer ----------------------------------------
+% Letter opening: date in the accent colour, recipient below, salutation.
+\settemplate { opening }
+  {
+    \par
+    \iffield { date } { { \small \color { vitaeaccent } \field { date } \par } \medskip } { }
+    \iffield { name } { \textbf { \field { name } } \par } { }
+    \iffield { address } { \field { address } \par } { }
+    \bigskip
+    \iffield { text } { \field { text } \par \medskip } { }
+  }
+% Letter closing: closing words, space to sign, the name in the display face.
+\settemplate { closing }
+  {
+    \par \medskip \nopagebreak
+    \iffield { text } { \field { text } \par \nopagebreak } { }
+    \vspace { 2 \baselineskip } \nopagebreak
+    { \__vitae_banner_display: \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+  }
+
+% Footer: parts centred, separated by a middle dot.
+\settemplate { footer }
+  {
+    \hfil \footnotesize \color { vitaeaccent }
+    \joinfields { \c_space_tl \textperiodcentered \c_space_tl } { name , pages , updated }
+    \hfil
+  }

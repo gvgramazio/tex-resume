@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Theme `banner`: a band across the top of the page with a square photo,
+  the name, the contacts and the masthead body, over two columns (the aside
+  region on the left, set with `\vitaefullwidth` and the aside column), in
+  Raleway and Open Sans; letters keep the band and the full width.
 - `\vitaefullwidth{<content>}`: a block across main and the aside column,
   such as a masthead band above both; without a column it prints the
   content as it is.
