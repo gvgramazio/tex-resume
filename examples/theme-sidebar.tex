@@ -1,0 +1,23 @@
+% Full resume with the sidebar theme (dummy data from data/janedoe.tex).
+\documentclass{vitae}
+\usetheme{sidebar}
+\input{data/janedoe}
+
+\begin{document}
+\makemasthead
+
+\section{Profile}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat.
+
+\printentries[Experience]{experience}
+\printentries[Education]{education}
+\printentries[heading=Skills, region=aside]{skills}
+\printentries[heading=Languages, region=aside]{languages}
+\printentries[heading=Awards, style=compact]{awards}
+\printentries[heading=Certifications, style=compact]{certs}
+\printentries[heading=Talks, style=inline]{talks}
+\end{document}

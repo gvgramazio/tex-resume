@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Theme `sidebar`: a full-height column with a round photo, the contacts and
+  the aside region beside main, in Montserrat and Roboto;
+  `\vitaesetup{sidebar=dark}` gives a dark fill with light text.
 - Development: `scripts/check-contrast.py` checks the pairs a theme declares
   with `% contrast: <text> on <background>` lines, such as light text on a
   dark fill.
