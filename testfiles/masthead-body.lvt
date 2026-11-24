@@ -1,0 +1,44 @@
+% Masthead body: the masthead environment gives the template \field{body},
+% with paragraphs spaced as in entry bodies; a template that leaves a
+% non-empty body out warns.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\name{Jane}{Doe}
+% The stored body, as a string.
+\ExplSyntaxOn
+\cs_new:Npn \showbody { \exp_args:NV \tl_to_str:n \l__vitae_f_body_tl }
+\ExplSyntaxOff
+\begin{document}
+\START
+
+\TEST{\makemasthead has no body}{
+  \settemplate{masthead}{\TYPE{masthead; body \iffield{body}{set}{empty}}}
+  \makemasthead
+}
+
+\TEST{the environment gives its content as the body, printed: no warning}{
+  \settemplate{masthead}{\setbox0\vbox{\field{body}}\TYPE{body: \showbody}}
+  \begin{masthead}Lorem ipsum.\end{masthead}
+}
+
+\TEST{blank lines in the body are spaced paragraphs}{
+  \settemplate{masthead}{\setbox0\vbox{\field{body}}\TYPE{body: \showbody}}
+  \begin{masthead}
+    Lorem.
+
+    Ipsum.
+  \end{masthead}
+}
+
+\TEST{a template that leaves the body out warns}{
+  \settemplate{masthead}{\TYPE{masthead without the body}}
+  \begin{masthead}Lorem ipsum.\end{masthead}
+}
+
+\TEST{a blank body is no body: no warning}{
+  \settemplate{masthead}{\TYPE{masthead without the body}}
+  \begin{masthead} \end{masthead}
+}
+
+\END

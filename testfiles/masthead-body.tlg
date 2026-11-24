@@ -1,0 +1,28 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: \makemasthead has no body
+============================================================
+masthead; body empty
+============================================================
+============================================================
+TEST 2: the environment gives its content as the body, printed: no warning
+============================================================
+body: \__vitae_masthead_body: Lorem ipsum.
+============================================================
+============================================================
+TEST 3: blank lines in the body are spaced paragraphs
+============================================================
+body: \__vitae_masthead_body: Lorem. \__vitae_par: Ipsum.
+============================================================
+============================================================
+TEST 4: a template that leaves the body out warns
+============================================================
+masthead without the body
+Package vitae Warning: The masthead template of theme 'classic' does not print the masthead body.
+============================================================
+============================================================
+TEST 5: a blank body is no body: no warning
+============================================================
+masthead without the body
+============================================================

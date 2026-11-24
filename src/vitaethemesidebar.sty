@@ -109,7 +109,7 @@
 
 % --- Templates: main ------------------------------------------------------
 % Masthead: the column starts at the top of the first page; main opens with
-% the name in large display type and the job title.
+% the name in large display type, the job title and the masthead body.
 \settemplate { masthead }
   {
     \placeaside
@@ -122,6 +122,7 @@
         }
       }
     \ifvitaeset { jobtitle } { \smallskip { \Large \thejobtitle \par } } { }
+    \iffield { body } { \medskip \field { body } \par } { }
     \bigskip
   }
 

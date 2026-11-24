@@ -33,15 +33,8 @@
 
 % --- Entries and items ----------------------------------------------------
 % Structural groups (masthead, section, entry, item) run with \parskip = 0,
-% so template lines keep their exact spacing whatever the setting. Blank
-% lines in bodies become \__vitae_par:, which adds the configured space
-% explicitly: it also works inside parboxes and lists, which reset \parskip.
-\cs_new_protected:Npn \__vitae_par: { \par \addvspace { \l__vitae_parskip_skip } }
-\cs_new_protected:Npn \__vitae_body_set:n #1
-  {
-    \tl_set:Nn \l__vitae_f_body_tl {#1}
-    \tl_replace_all:Nnn \l__vitae_f_body_tl { \par } { \__vitae_par: }
-  }
+% so template lines keep their exact spacing whatever the setting; bodies
+% are set with \__vitae_body_set:n (see vitaecore).
 % Entry fields are set by keys; "date" sets start and end at once.
 \tl_new:N \l__vitae_entry_style_tl
 \keys_define:nn { vitae / entry }

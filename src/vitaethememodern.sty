@@ -90,7 +90,8 @@
   }
 
 % --- Templates ------------------------------------------------------------
-% Masthead: large coloured name and contacts on the left, photo on the right.
+% Masthead: large coloured name and contacts on the left, photo on the right;
+% then the masthead body, if any, at full width.
 \settemplate { masthead }
   {
     \noindent
@@ -104,7 +105,9 @@
       \ifvitaeset { jobtitle } { \smallskip { \Large \thejobtitle \par } } { }
       \medskip \small \raggedright \printcontacts
     \end { minipage }
-    \hfill \printphoto \par \bigskip
+    \hfill \printphoto \par
+    \iffield { body } { \medskip \field { body } \par } { }
+    \bigskip
   }
 \settemplate { contact }
   { \mbox { \textcolor { vitaeaccent } { \field { icon } } ~ \field { text } } }
