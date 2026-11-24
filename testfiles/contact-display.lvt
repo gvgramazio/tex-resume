@@ -1,0 +1,53 @@
+% Contact display: handles (LinkedIn, GitHub, ORCID) shown as typed or as
+% addresses, by the contactdisplay setting or per field; links unchanged.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\name{Jane}{Doe}
+\email{jane.doe@example.com}
+\orcid{0000-0000-0000-0000}
+% Contacts as "shown text -> link" lines, from the stored sequence.
+\ExplSyntaxOn
+\cs_new_protected:Npn \showcontacts
+  {
+    \group_begin:
+      \cs_set:Npn \__vitae_contact:nnnn ##1##2##3##4
+        { \iow_term:e { \exp_not:n {##4} ~ -> ~ ##3 } }
+      \__vitae_contacts_collect:
+      \seq_map_inline:Nn \l__vitae_contacts_seq { ##1 }
+    \group_end:
+  }
+\ExplSyntaxOff
+\START
+
+\TEST{handles by default}{
+  \linkedin{jane-doe-example}
+  \github{jdoe-example}
+  \showcontacts
+}
+
+\TEST{contactdisplay=url shows addresses; the links are the same}{
+  \vitaesetup{contactdisplay=url}
+  \showcontacts
+}
+
+\TEST{a field's display wins over the setting, both ways}{
+  \linkedin[display=handle]{jane-doe-example}
+  \github[display=url]{jdoe-example}
+  {\vitaesetup{contactdisplay=url}\showcontacts}
+  \showcontacts
+}
+
+\TEST{the setting is local to a group}{
+  \linkedin{jane-doe-example}
+  \github{jdoe-example}
+  {\vitaesetup{contactdisplay=url}}
+  \showcontacts
+}
+
+\TEST{an unknown display is an error}{
+  \vitaesetup{contactdisplay=full}
+  \github[display=full]{jdoe-example}
+}
+
+\END

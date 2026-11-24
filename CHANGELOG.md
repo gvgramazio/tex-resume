@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Contact display: `\vitaesetup{contactdisplay=url}` shows LinkedIn, GitHub
+  and ORCID as addresses without `https://` ("linkedin.com/in/…"), for
+  printed resumes; `\linkedin[display=url]{…}` (and `\github`, `\orcid`)
+  chooses per field. The default stays `handle`; links are unchanged.
 - Contact labels in the document language: the labels that screen readers
   and applicant-tracking systems read for contact icons ("Telefono:",
   "E-Mail:") come from the locale, like month names, so one

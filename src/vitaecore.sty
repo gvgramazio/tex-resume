@@ -120,8 +120,30 @@
   }
 \clist_map_inline:nn { firstname, lastname, jobtitle, address, phone, lastupdated }
   { \__vitae_new_field:nn {#1} { \__vitae_set_text:nn } }
-\clist_map_inline:nn { email, homepage, linkedin, github, orcid, photo }
+\clist_map_inline:nn { email, homepage, photo }
   { \__vitae_new_field:nn {#1} { \__vitae_set_string:nn } }
+% Handles (linkedin, github, orcid) are strings too, and their setter takes
+% [display=handle|url]: show the handle, or the address without "https://"
+% (linkedin.com/in/<id>). Empty: the contactdisplay setting decides.
+\tl_new:N \l__vitae_handle_field_tl
+\keys_define:nn { vitae / handle }
+  {
+    display .choices:nn = { handle , url }
+      { \tl_gset_eq:cN { g__vitae_field_ \l__vitae_handle_field_tl _display_tl } \l_keys_choice_tl } ,
+  }
+\clist_map_inline:nn { linkedin, github, orcid }
+  {
+    \tl_new:c { g__vitae_field_#1_tl }
+    \tl_new:c { g__vitae_field_#1_display_tl }
+    \exp_args:Nc \NewDocumentCommand {#1} { O { } m }
+      {
+        \tl_set:Nn \l__vitae_handle_field_tl {#1}
+        \tl_gclear:c { g__vitae_field_#1_display_tl }
+        \keys_set:nn { vitae / handle } {##1}
+        \__vitae_set_string:nn {#1} {##2}
+      }
+    \cs_new:cpn { the#1 } { \tl_use:c { g__vitae_field_#1_tl } }
+  }
 \NewDocumentCommand \name { m m } { \firstname {#1} \lastname {#2} }
 
 % \ifvitaeset{<f>}{<true>}{<false>}: is the personal field <f> non-blank?
@@ -470,9 +492,16 @@
     updated     .code:n = \cs_set:Npn \__vitae_dl_updated:nnn ##1##2##3 {#1} ,
   }
 % contactlabels={<label>=<text>, ...}: labels for this document or group,
-% over the locale's.
+% over the locale's. contactdisplay: handles shown as typed, or as
+% addresses (see the handle setters).
+\tl_new:N \l__vitae_contact_display_tl
 \keys_define:nn { vitae / setup }
-  { contactlabels .code:n = \keys_set:nn { vitae / contactlabels } {#1} }
+  {
+    contactlabels  .code:n = \keys_set:nn { vitae / contactlabels } {#1} ,
+    contactdisplay .choices:nn = { handle , url }
+      { \tl_set_eq:NN \l__vitae_contact_display_tl \l_keys_choice_tl } ,
+    contactdisplay .initial:n = handle ,
+  }
 % The label of built-in contact #1: the contactlabels setting, else the
 % locale's (expandable; the text itself is not expanded).
 \cs_new:Npn \__vitae_contact_label:n #1
@@ -883,6 +912,34 @@
           }
       }
   }
+% Handle field: like a string field, shown with <shown> (made a string too)
+% before the value when its display, or else the contactdisplay setting,
+% is url. #1 field, #2 label, #3 icon, #4 URL prefix, #5 shown prefix.
+\cs_new_protected:Npn \__vitae_contact_handle:nnnnn #1#2#3#4#5
+  {
+    \tl_if_blank:vF { g__vitae_field_#1_tl }
+      {
+        \seq_put_right:Nx \l__vitae_contacts_seq
+          {
+            \exp_not:N \__vitae_contact:nnnn {#2} { \exp_not:n {#3} }
+              { \tl_to_str:n {#4} \exp_not:v { g__vitae_field_#1_tl } }
+              {
+                \exp_not:N \nolinkurl
+                  {
+                    \str_if_eq:eeT
+                      {
+                        \tl_if_blank:vTF { g__vitae_field_#1_display_tl }
+                          { \l__vitae_contact_display_tl }
+                          { \tl_use:c { g__vitae_field_#1_display_tl } }
+                      }
+                      { url }
+                      { \tl_to_str:n {#5} }
+                    \exp_not:v { g__vitae_field_#1_tl }
+                  }
+              }
+          }
+      }
+  }
 \cs_new_protected:Npn \__vitae_contacts_collect:
   {
     \seq_clear:N \l__vitae_contacts_seq
@@ -890,10 +947,12 @@
     \__vitae_contact_text:nnn { phone } { \__vitae_contact_label:n { phone } } { \faPhone }
     \__vitae_contact_text:nnn { address } { \__vitae_contact_label:n { address } } { \faMapMarker* }
     \__vitae_contact_link:nnnn { homepage } { \__vitae_contact_label:n { homepage } } { \faGlobe } { https:// }
-    \__vitae_contact_link:nnnn { linkedin } { \__vitae_contact_label:n { linkedin } } { \faLinkedin }
-      { https://www.linkedin.com/in/ }
-    \__vitae_contact_link:nnnn { github } { \__vitae_contact_label:n { github } } { \faGithub } { https://github.com/ }
-    \__vitae_contact_link:nnnn { orcid } { \__vitae_contact_label:n { orcid } } { \faOrcid } { https://orcid.org/ }
+    \__vitae_contact_handle:nnnnn { linkedin } { \__vitae_contact_label:n { linkedin } } { \faLinkedin }
+      { https://www.linkedin.com/in/ } { linkedin.com/in/ }
+    \__vitae_contact_handle:nnnnn { github } { \__vitae_contact_label:n { github } } { \faGithub }
+      { https://github.com/ } { github.com/ }
+    \__vitae_contact_handle:nnnnn { orcid } { \__vitae_contact_label:n { orcid } } { \faOrcid }
+      { https://orcid.org/ } { orcid.org/ }
     \seq_concat:NNN \l__vitae_contacts_seq
       \l__vitae_contacts_seq \g__vitae_extra_contacts_seq
   }
