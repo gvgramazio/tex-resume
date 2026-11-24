@@ -22,6 +22,9 @@
 #      (case aside; a figure is its alternative text in brackets). veraPDF
 #      accepts a tree whose elements hold the wrong text, or that lost a
 #      figure; this does not.
+#   8. Footer: in every example with a footer, pagination ("Page 2 of 3")
+#      never extracts, and the update date ("Last updated") extracts once,
+#      at the end, however many pages there are.
 set -eu
 cd "$(dirname "$0")/.."
 VERAPDF=${VERAPDF:-verapdf}
@@ -141,6 +144,21 @@ for dir in "$@"; do
       fail "$e $f (reading order)"
       echo "      expected: $want"
       echo "      got:      $got"
+    fi
+  done
+
+  # 8. Footer parts as text extraction reads them.
+  for f in "$dir"/*.pdf; do
+    src="examples/$(basename "$f" .pdf).tex"
+    [ -f "$f" ] && [ -f "$src" ] && grep -q 'footer *= *{[^}]*}' "$src" || continue
+    text=$(pdftotext "$f" - | tr '\n\f' '  ' | tr -s ' ')
+    pages=$(printf '%s' "$text" | grep -oE 'Page [0-9]+ of [0-9]+' | wc -l | tr -d ' ')
+    want=0; grep -q '^\\lastupdated' "$src" && grep -q 'footer *= *{[^}]*updated' "$src" && want=1
+    updated=$(printf '%s' "$text" | grep -o 'Last updated' | wc -l | tr -d ' ')
+    if [ "$pages" -eq 0 ] && [ "$updated" -eq "$want" ]; then
+      echo "OK    $e $f (footer)"
+    else
+      fail "$e $f (footer): $pages pagination lines, \"Last updated\" $updated times (want 0 and $want)"
     fi
   done
 done
