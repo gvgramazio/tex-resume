@@ -108,6 +108,19 @@ languages, share it.
   masthead.
 \end{function}
 
+\begin{function}{masthead}
+  \begin{syntax}
+    |\begin{masthead}| \meta{content} |\end{masthead}|
+  \end{syntax}
+  \cs{makemasthead} with free content: a summary under any heading, or
+  none, availability, a line of key skills. Each theme places it where its
+  design wants it, below the contacts or beside the name; blank lines
+  separate paragraphs, as in entry bodies. A theme whose masthead template
+  leaves the content out warns.
+\end{function}
+
+\sample{sample-masthead}
+
 \section{Entries, items and lists}
 
 \begin{function}{\cventry}
@@ -468,6 +481,7 @@ without writing a theme.
   Inside a template, \cs{field} reads the current item's fields: |title|,
   |org|, |location|, |start|, |end|, |dates| (the formatted range),
   |duration|, |body| and |label|; for contacts |icon|, |text| and |url|;
+  in |masthead|, |body| (the content of the \texttt{masthead} environment);
   in |opening|, |name| and |address| (the recipient), |date| (formatted)
   and |text| (the salutation); in |closing|, |text|; in |photo|, |file|
   (the photo found) and |width| (the \key{photowidth} setting); in |footer|, |name|,
