@@ -262,11 +262,13 @@ and as entry keys to one entry.
     \cs{usetheme}\marg{name}
   \end{syntax}
   Loads the theme |vitaetheme|\meta{name}|.sty|, once, in the preamble.
-  Without \cs{usetheme}, \key{classic} is used. Three themes ship with
+  Without \cs{usetheme}, \key{classic} is used. Four themes ship with
   vitae: \key{classic} (serif, centred masthead, dates on the right, as in
   the samples above), \key{modern} (sans serif, accent colour, dates in a
-  margin column, photo) and \key{sidebar} (a full-height column with a
-  round photo, the contacts and the aside region).
+  margin column, photo), \key{sidebar} (a full-height column with a round
+  photo, the contacts and the aside region) and \key{banner} (a band
+  across the page with the photo, the contacts and the masthead body, over
+  a column for the aside region).
 \end{function}
 
 \sample{sample-modern}
@@ -277,6 +279,12 @@ light by default; \cs{vitaesetup}|{sidebar=dark}|, after \cs{usetheme},
 gives a dark fill with light text.
 
 \sample{sample-page-sidebar}
+
+\key{banner} also places the aside region, in a column below the band;
+letters keep the band and the full width. The masthead body
+(\texttt{masthead} environment) goes in the band.
+
+\sample{sample-page-banner}
 
 \begin{function}{\vitaesetup}
   \begin{syntax}
@@ -402,7 +410,8 @@ Content routed to a region that the theme does not place is printed in
 place, with a warning that names the region and the theme. This is a
 fallback, not the intended use: depending on the theme the result may not
 look as planned. \key{classic} and \key{modern} have a single column and
-place no region; \key{sidebar} places the aside region in its column.
+place no region; \key{sidebar} and \key{banner} place the aside region
+in a column.
 
 \begin{function}{\vitaeplaceregions,\useregion,\ifregionempty}
   \begin{syntax}
