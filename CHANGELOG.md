@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Theme `minimal`: typography only, in IBM Plex Sans: the name in large
+  capitals, first name light and last name bold, the contacts, the photo
+  and the aside region in a column on the right; letters keep the full
+  width.
 - Theme `banner`: a band across the top of the page with a square photo,
   the name, the contacts and the masthead body, over two columns (the aside
   region on the left, set with `\vitaefullwidth` and the aside column), in
