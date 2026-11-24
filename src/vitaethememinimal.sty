@@ -1,0 +1,207 @@
+%% vitaethememinimal.sty -- vitae theme: typography only, aside on the right.
+%% Distributed under the MIT license (see LICENSE).
+
+% --- Identification -------------------------------------------------------
+\ProvidesExplPackage{vitaethememinimal}{2026-11-22}{0.5.0}{vitae minimal theme}
+
+% --- Fonts ----------------------------------------------------------------
+% IBM Plex Sans throughout (the package picks Type 1 on pdfTeX, OpenType
+% elsewhere); its light weight sets the first name.
+\RequirePackage [ sfdefault ] { plex-sans }
+\sys_if_engine_pdftex:TF
+  { \cs_new_protected:Npn \__vitae_minimal_light: { \fontseries { l } \selectfont } }
+  {
+    \newfontfamily \__vitae_minimal_light: { IBMPlexSans }
+      [ Extension = .otf , UprightFont = *-Light ]
+  }
+
+% --- Colours --------------------------------------------------------------
+% Monochrome: a dark slate accent for dates and headings. Rules are a grey
+% of the text colour (decoration, not text).
+\definecolor { vitaeminimalslate } { HTML } { 3D4752 }
+% Defaults via \keys_set:nn, not \vitaesetup, so user settings still win.
+\keys_set:nn { vitae / setup } { accent = vitaeminimalslate }
+
+% --- Page and lists -------------------------------------------------------
+\RequirePackage { enumitem }
+\setlist { nosep , leftmargin = 1em , topsep = 2pt }
+\geometry { margin = 18mm , bottom = 22mm , footskip = 10mm }
+\setlength \emergencystretch { 2em }
+% Resumes: the aside region in a column on the right, from the top of the
+% first page. Letters have no column and keep the page's width.
+\bool_new:N \l__vitae_minimal_column_bool
+\IfClassLoadedT { vitae }
+  {
+    \bool_set_true:N \l__vitae_minimal_column_bool
+    \vitaeasidecolumn { width = 52mm , sep = 10mm , side = right }
+  }
+
+% --- Shared pieces --------------------------------------------------------
+% Dates of an entry, then " · <duration>" when durations are on.
+\cs_new_protected:Npn \__vitae_minimal_dates:
+  {
+    \field { dates }
+    \iffield { duration } { ~ \textperiodcentered \c_space_tl \field { duration } } { }
+  }
+% Section title: bold capitals, letter case as a small heading, over a thin
+% grey rule.
+\cs_new_protected:Npn \__vitae_minimal_section:n #1
+  {
+    \par \addvspace { \bigskipamount }
+    \taggedheading { 2 }
+      { { #1 \bfseries \color { vitaeaccent } \MakeUppercase { \field { title } } \par } }
+    \nopagebreak \vspace { 3pt }
+    \decorative { { \color { black!30 } \hrule height .4pt } }
+    \nopagebreak \medskip
+  }
+
+% --- Templates: masthead --------------------------------------------------
+% The first name light and the last name bold, in large capitals, then the
+% job title in small bold capitals and the masthead body.
+\settemplate { masthead }
+  {
+    \bool_if:NT \l__vitae_minimal_column_bool { \placeaside }
+    \raggedright
+    \taggedheading { 1 }
+      {
+        {
+          \fontsize { 30 } { 32 } \selectfont \color { vitaeaccent }
+          % A forced break, not \newline (which removes the space before
+          % it): screen readers must read "Jane Doe", not "JaneDoe".
+          { \__vitae_minimal_light: \MakeUppercase { \thefirstname } } \c_space_tl
+          \tex_penalty:D -10000 \scan_stop:
+          { \bfseries \MakeUppercase { \thelastname } } \par
+        }
+      }
+    \ifvitaeset { jobtitle }
+      { \medskip { \bfseries \MakeUppercase { \thejobtitle } \par } } { }
+    \bool_if:NF \l__vitae_minimal_column_bool
+      { \medskip { \small \printcontacts \par } }
+    \iffield { body } { \medskip \field { body } \par } { }
+    \bigskip
+  }
+\settemplate { contact }
+  { \mbox { \textcolor { vitaeaccent } { \field { icon } } ~ \field { text } } }
+\settemplate { contactsep } { \hspace { 1.2em plus .5em } }
+
+% --- Templates: main ------------------------------------------------------
+\settemplate { section } { \__vitae_minimal_section:n { \normalsize } }
+
+% Entry: the bold title, then organisation and location with the dates on
+% the right; each line only if one of its fields is set.
+\settemplate { entry }
+  {
+    \par
+    \iffield { title } { \textbf { \field { title } } \par \nopagebreak } { }
+    \ifanyfield { org , location , dates }
+      {
+        \joinfields { , ~ } { org , location }
+        \hfill { \color { vitaeaccent } \__vitae_minimal_dates: } \par
+      }
+      { }
+    \iffield { body } { \smallskip \field { body } \par } { }
+    \medskip
+  }
+
+% Compact entry: title, organisation and location on one line, dates on
+% the right; any body below.
+\settemplate { entry/compact }
+  {
+    \par
+    \joinfields { , ~ } { title = \textbf , org , location }
+    \hfill { \color { vitaeaccent } \__vitae_minimal_dates: } \par
+    \iffield { body } { \field { body } \par } { }
+    \smallskip
+  }
+
+% Inline entry: a run-in paragraph, "Title, Org, Location (dates). Body".
+\settemplate { entry/inline }
+  {
+    \par
+    \ifanyfield { title , org , location }
+      {
+        \joinfields { , ~ } { title = \textbf , org , location }
+        \iffield { dates } { ~ ( \__vitae_minimal_dates: ) } { }
+      }
+      { \__vitae_minimal_dates: }
+    \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }
+    \field { body } \par
+    \smallskip
+  }
+
+% Item: bold label in a fixed left column, wrapped text on the right.
+\settemplate { item }
+  {
+    \par \noindent
+    \parbox [ t ] { 3cm } { \raggedright \textbf { \field { label } } }
+    \parbox [ t ] { \dim_eval:n { \linewidth - 3cm } } { \field { body } }
+    \par \smallskip
+  }
+
+% --- Templates: column ----------------------------------------------------
+% The column: contacts, the photo, then the aside region, with templates set
+% for its narrow measure (local to the column).
+\settemplate { aside }
+  {
+    \raggedright \small
+    \settemplate { section } { \__vitae_minimal_section:n { \small } }
+    % Entries stack their lines: title, organisation, dates.
+    \settemplate { entry }
+      {
+        \par
+        \iffield { title } { \textbf { \field { title } } \par } { }
+        \ifanyfield { org , location } { \joinfields { , ~ } { org , location } \par } { }
+        \iffield { dates } { { \color { vitaeaccent } \__vitae_minimal_dates: \par } } { }
+        \iffield { body } { \field { body } \par } { }
+        \smallskip
+      }
+    \settemplate { entry/compact } { \__vitae_template_use:n { entry } }
+    \settemplate { entry/inline } { \__vitae_template_use:n { entry } }
+    % Items: the label in bold above its text.
+    \settemplate { item }
+      {
+        \par \textbf { \field { label } } \par
+        \iffield { body } { \field { body } \par } { }
+        \smallskip
+      }
+    % Contacts: one paragraph, a line each, the icon hanging in a margin so
+    % that long text wraps under itself.
+    \settemplate { contact }
+      {
+        \hbox_overlap_left:n
+          { \hbox_to_wd:nn { 1.5em } { \textcolor { vitaeaccent } { \field { icon } } \hfil } }
+        \field { text }
+      }
+    \settemplate { contactsep } { \newline }
+    { \skip_set:Nn \leftskip { 1.5em } \noindent \printcontacts \par }
+    \ifvitaeset { photo } { \bigskip \printphoto \par } { }
+    \useregion { aside }
+  }
+
+% --- Templates: letters and footer ----------------------------------------
+% Letter opening: date in the accent colour, recipient below, salutation.
+\settemplate { opening }
+  {
+    \par
+    \iffield { date } { { \color { vitaeaccent } \field { date } \par } \medskip } { }
+    \iffield { name } { \textbf { \field { name } } \par } { }
+    \iffield { address } { \field { address } \par } { }
+    \bigskip
+    \iffield { text } { \field { text } \par \medskip } { }
+  }
+% Letter closing: closing words, space to sign, the name in bold capitals.
+\settemplate { closing }
+  {
+    \par \medskip \nopagebreak
+    \iffield { text } { \field { text } \par \nopagebreak } { }
+    \vspace { 2 \baselineskip } \nopagebreak
+    { \bfseries \MakeUppercase { \thefirstname \c_space_tl \thelastname } \par }
+  }
+
+% Footer: the parts on the left, small and in the accent colour.
+\settemplate { footer }
+  {
+    \footnotesize \color { vitaeaccent }
+    \joinfields { \hspace { 1.2em } } { name , pages , updated }
+    \hfil
+  }

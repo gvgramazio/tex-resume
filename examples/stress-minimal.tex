@@ -1,0 +1,16 @@
+% Stress test for the minimal theme (edge cases from data/stress.tex).
+\documentclass{vitae}
+\usetheme{minimal}
+\input{data/stress}
+\vitaesetup{footer={name, pages, updated}}
+\lastupdated{2026-11-15}
+
+\begin{document}
+\makemasthead
+\printentries[Edge Cases]{odd}
+\printentries[heading=Edge Cases (compact), style=compact]{odd}
+\printentries[heading=Edge Cases (inline), style=inline]{odd}
+\printentries[heading=Edge Cases (durations), durations]{odd}
+\printentries[heading=Edge Cases (compact durations), style=compact, durations]{odd}
+\printentries[Page Breaks]{many}
+\end{document}
