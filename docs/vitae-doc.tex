@@ -249,13 +249,21 @@ and as entry keys to one entry.
     \cs{usetheme}\marg{name}
   \end{syntax}
   Loads the theme |vitaetheme|\meta{name}|.sty|, once, in the preamble.
-  Without \cs{usetheme}, \key{classic} is used. Two themes ship with vitae:
-  \key{classic} (serif, centred masthead, dates on the right, as in the
-  samples above) and \key{modern} (sans serif, accent colour, dates in a
-  margin column, photo).
+  Without \cs{usetheme}, \key{classic} is used. Three themes ship with
+  vitae: \key{classic} (serif, centred masthead, dates on the right, as in
+  the samples above), \key{modern} (sans serif, accent colour, dates in a
+  margin column, photo) and \key{sidebar} (a full-height column with a
+  round photo, the contacts and the aside region).
 \end{function}
 
 \sample{sample-modern}
+
+\key{sidebar} places the aside region (section~\ref{sec:regions}): route
+lists such as skills or languages to it with |region=aside|. Its fill is
+light by default; \cs{vitaesetup}|{sidebar=dark}|, after \cs{usetheme},
+gives a dark fill with light text.
+
+\sample{sample-page-sidebar}
 
 \begin{function}{\vitaesetup}
   \begin{syntax}
@@ -380,8 +388,8 @@ tied to that theme.
 Content routed to a region that the theme does not place is printed in
 place, with a warning that names the region and the theme. This is a
 fallback, not the intended use: depending on the theme the result may not
-look as planned. The shipped themes, \key{classic} and \key{modern}, have a
-single column and place no region.
+look as planned. \key{classic} and \key{modern} have a single column and
+place no region; \key{sidebar} places the aside region in its column.
 
 \begin{function}{\vitaeplaceregions,\useregion,\ifregionempty}
   \begin{syntax}
