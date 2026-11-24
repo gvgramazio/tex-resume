@@ -21,6 +21,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 - Development: `scripts/check-pdf.sh` also checks that no two words of any
   example overlap (`scripts/pdf-overlap.py`) and that the aside stress
   examples print every part of their column once.
+- Development: `scripts/check-pdf.sh` checks the reading order of tagged
+  examples: the headings of the structure tree, with their text, must match
+  the `% reading-order:` line of the example (`scripts/pdf-headings.py`).
 - `\makemasthead` and the `masthead` template, the new names of
   `\makeheader` and the `header` template for the identity block (name, job
   title, contacts, photo).
