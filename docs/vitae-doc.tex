@@ -303,8 +303,9 @@ gives a dark fill with light text.
 
 \sample{sample-page-sidebar}
 
-\key{banner} also places the aside region, in a column below the band;
-letters keep the band and the full width. The masthead body
+\key{banner} also places the aside region, in a column below the band,
+when there is aside content; without it, and in letters, main keeps the
+full width. The masthead body
 (\texttt{masthead} environment) goes in the band.
 
 \sample{sample-page-banner}
@@ -498,6 +499,9 @@ templates for the column's content.
   \key{side} & \key{left} or \key{right} (\key{left}) \\
   \key{order} & reading order of tagged PDF: the column \key{after}
     main, or \key{before} it, where \cs{placeaside} is (\key{after}) \\
+  \key{empty} & \key{drop}: no column, main at full width, when the aside
+    region was empty in the last run; \key{keep} keeps it, for a column
+    that also holds the photo or contacts (\key{keep}) \\
   \bottomrule
 \end{tabular}
 \end{center}
