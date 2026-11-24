@@ -1,4 +1,5 @@
-% \printphoto: missing file warns; extension-less names are resolved.
+% \printphoto: missing file warns; extension-less names are resolved; the
+% photo template gets the file found and the width.
 % Graphics drivers log differently, hence engine-specific .tlg files.
 \documentclass{vitae}
 \input{regression-test}
@@ -20,6 +21,13 @@
   \vitaesetup{photowidth=2cm}
   \setbox0\hbox{\printphoto}
   \TYPE{width: \the\wd0}
+}
+
+\TEST{the photo template gets the file found and the width}{
+  \photo{example-image-a}
+  \vitaesetup{photowidth=2cm}
+  \settemplate{photo}{\TYPE{file=\field{file}, width=\field{width}}}
+  \printphoto
 }
 
 \END

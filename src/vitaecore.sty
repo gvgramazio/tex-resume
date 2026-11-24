@@ -137,7 +137,7 @@
 \clist_map_inline:nn
   {
     title, org, location, start, end, dates, duration, body, label, icon, text, url,
-    name, address, date, pages, updated
+    name, address, date, pages, updated, file, width
   }
   { \tl_new:c { l__vitae_f_#1_tl } }
 \NewExpandableDocumentCommand \field { m }
@@ -641,6 +641,9 @@
     \joinfields { \c_space_tl \textperiodcentered \c_space_tl } { name , pages , updated }
     \hfil
   }
+% Photo (\printphoto): the image, at the photo width.
+\cs_new_protected:cpn { __vitae_template_photo: }
+  { \includegraphics [ width = \field { width } ] { \field { file } } }
 % Aside column (\vitaeasidecolumn): what the column holds.
 \cs_new_protected:cpn { __vitae_template_aside: } { \useregion { aside } }
 
@@ -852,31 +855,47 @@
   }
 
 % --- Masthead and photo ---------------------------------------------------
-% \printphoto: the photo at \vitaephotowidth; a missing file only warns.
-% Without an extension, the usual graphics extensions are tried.
-\bool_new:N \l__vitae_found_bool
+% \printphoto: the photo template, with the fields file (the photo found,
+% extension included) and width (photowidth); a missing file only warns.
+% Without an extension, the usual graphics extensions are tried. The
+% template may draw the photo in any shape: every \includegraphics in it
+% gets the alternative text, so under tagging the image is a Figure with
+% that text and its box, and the rest of the drawing stays out of the
+% structure tree.
+\cs_new_protected:Npn \__vitae_photo_found:n #1
+  {
+    \group_begin:
+      \tl_set:Nn \l__vitae_f_file_tl {#1}
+      \tl_set:Ne \l__vitae_f_width_tl { \dim_use:N \vitaephotowidth }
+      \setkeys { Gin } { alt = { Photo~of~\thefirstname \c_space_tl \thelastname } }
+      \__vitae_template_use:n { photo }
+    \group_end:
+  }
+\tl_new:N \l__vitae_photo_tl
 \NewDocumentCommand \printphoto { }
   {
     \tl_if_blank:VF \g__vitae_field_photo_tl
       {
-        \bool_set_false:N \l__vitae_found_bool
+        \tl_clear:N \l__vitae_photo_tl
         \clist_map_inline:nn { .pdf, .png, .jpg, .jpeg }
           {
             \file_if_exist:nT { \g__vitae_field_photo_tl ##1 }
-              { \bool_set_true:N \l__vitae_found_bool \clist_map_break: }
+              {
+                \tl_set:Ne \l__vitae_photo_tl { \g__vitae_field_photo_tl ##1 }
+                \clist_map_break:
+              }
           }
-        \file_if_exist:nT { \g__vitae_field_photo_tl }
-          { \bool_set_true:N \l__vitae_found_bool }
-        \bool_if:NTF \l__vitae_found_bool
+        \tl_if_empty:NT \l__vitae_photo_tl
           {
-            \includegraphics
-              [ width = \vitaephotowidth ,
-                alt = { Photo~of~\thefirstname \c_space_tl \thelastname } ]
-              { \g__vitae_field_photo_tl }
+            \file_if_exist:nT { \g__vitae_field_photo_tl }
+              { \tl_set_eq:NN \l__vitae_photo_tl \g__vitae_field_photo_tl }
           }
+        \tl_if_empty:NTF \l__vitae_photo_tl
           { \msg_warning:nnV { vitae } { photo-missing } \g__vitae_field_photo_tl }
+          { \__vitae_photo_found:V \l__vitae_photo_tl }
       }
   }
+\cs_generate_variant:Nn \__vitae_photo_found:n { V }
 % \makemasthead: typeset the masthead template (name, job title, contacts,
 % photo), like \maketitle. \makeheader is its deprecated name.
 \NewDocumentCommand \makemasthead { }

@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- `photo` template: `\printphoto` finds the photo as before and prints it
+  through the template, with the fields `file` (the file found) and `width`,
+  so themes can draw it in any shape or frame. Every `\includegraphics` in
+  the template gets the photo's alternative text, so in tagged PDF the image
+  stays a figure.
 - Regions: `\printentries[region=aside]` and the `region` environment route
   content to a part of the page, such as a sidebar, in reading order; themes
   declare the regions they place with `\vitaeplaceregions` and print them
@@ -22,8 +27,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   example overlap (`scripts/pdf-overlap.py`) and that the aside stress
   examples print every part of their column once.
 - Development: `scripts/check-pdf.sh` checks the reading order of tagged
-  examples: the headings of the structure tree, with their text, must match
-  the `% reading-order:` line of the example (`scripts/pdf-headings.py`).
+  examples: the headings and figures of the structure tree, with their text,
+  must match the `% reading-order:` line of the example
+  (`scripts/pdf-reading-order.py`).
 - `\makemasthead` and the `masthead` template, the new names of
   `\makeheader` and the `header` template for the identity block (name, job
   title, contacts, photo).
