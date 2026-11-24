@@ -170,12 +170,28 @@ languages, share it.
   different documents or styles. \cs{printentries} prints a list under a
   section heading, but only if the list has content; an empty or undefined
   list warns and prints nothing. Its optional argument is either a plain
-  heading or options: \key{heading}, \key{style}, \key{durations} and
-  \key{region} (section~\ref{sec:regions}). It
+  heading or options: \key{heading}, \key{icon} (see \cs{section}),
+  \key{style}, \key{durations} and \key{region}
+  (section~\ref{sec:regions}). It
   counts as options if it contains |=| or starts with an option name, as in
   |[durations]|; brace a heading that contains a comma, as in
   |heading={Talks, Panels}|.
 \end{function}
+
+\begin{function}{\section}
+  \begin{syntax}
+    \cs{section}\oarg{options}\marg{title}
+  \end{syntax}
+  Prints \meta{title} through the |section| template, without a number.
+  The option \key{icon} puts an icon before the title, such as
+  |\section[icon=\faBriefcase]{Experience}|: any material, usually a
+  \pkg{fontawesome5} symbol (the package is loaded). Every theme shows it.
+  Screen readers and text extraction skip the icon, so the heading reads
+  and extracts as its title alone. An optional argument without |=| (a
+  short title, in standard \LaTeX) is ignored.
+\end{function}
+
+\sample{sample-section-icon}
 
 \section{Entry styles}\label{sec:styles}
 
@@ -541,6 +557,8 @@ without writing a theme.
   Inside a template, \cs{field} reads the current item's fields: |title|,
   |org|, |location|, |start|, |end|, |dates| (the formatted range),
   |duration|, |body| and |label|; for contacts |icon|, |text| and |url|;
+  in |section|, |title| and |icon| (the \key{icon} option, already
+  hidden from readers);
   in |masthead|, |body| (the content of the \texttt{masthead} environment);
   in |opening|, |name| and |address| (the recipient), |date| (formatted)
   and |text| (the salutation); in |closing|, |text|; in |photo|, |file|
