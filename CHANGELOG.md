@@ -3,6 +3,20 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+### Added
+- Contact labels in the document language: the labels that screen readers
+  and applicant-tracking systems read for contact icons ("Telefono:",
+  "E-Mail:") come from the locale, like month names, so one
+  `\selectlanguage` switches dates and labels together. Built-in locales
+  ship translations; `\vitaesetup{contactlabels={phone=Cellulare}}`
+  overrides one; locales take a `labels` key.
+- `\vitaelocale` and the `locale` setting (also an entry key): the locale
+  now holds dates, footer words and labels, so it is no longer named after
+  dates.
+
+### Deprecated
+- `\vitaedatelocale` and the `datelocale` setting: they still work, with a
+  warning; use `\vitaelocale` and `locale`.
 
 ## [0.6.0] - 2026-11-24
 ### Added

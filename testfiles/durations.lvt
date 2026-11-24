@@ -35,12 +35,12 @@
 }
 
 \TEST{units follow the locale, with singular and plural}{
-  \vitaesetup{datelocale=italian} \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
-  \vitaesetup{datelocale=german}  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
-  \vitaesetup{datelocale=french}  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
-  \vitaesetup{datelocale=spanish} \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
-  \vitaedatelocale{pirate}{months={a,b,c,d,e,f,g,h,i,j,k,l}}
-  \vitaesetup{datelocale=pirate}  \TYPE{inherits English: [\duration{2018-09}{2021-03}]}
+  \vitaesetup{locale=italian} \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaesetup{locale=german}  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaesetup{locale=french}  \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaesetup{locale=spanish} \TYPE{[\duration{2018-09}{2021-03}][\duration{2020-01}{2021-01}]}
+  \vitaelocale{pirate}{months={a,b,c,d,e,f,g,h,i,j,k,l}}
+  \vitaesetup{locale=pirate}  \TYPE{inherits English: [\duration{2018-09}{2021-03}]}
 }
 
 \TEST{the duration field is off by default}{

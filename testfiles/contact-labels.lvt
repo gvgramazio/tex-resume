@@ -1,0 +1,54 @@
+% Contact labels: from the locale (the document language, or the locale
+% setting), overridden by contactlabels, defined by \vitaelocale; the
+% deprecated locale names still work and warn.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+\name{Jane}{Doe}
+\email{jane.doe@example.com}
+\phone{+00 000}
+\address{1 Example Street}
+\homepage{example.com}
+\linkedin{jane-doe-example}
+% Contacts as "label|text" lines, from the stored sequence.
+\ExplSyntaxOn
+\cs_new_protected:Npn \showlabels
+  {
+    \group_begin:
+      \cs_set:Npn \__vitae_contact:nnnn ##1##2##3##4 { \iow_term:n { ##1 } }
+      \__vitae_contacts_collect:
+      \seq_map_inline:Nn \l__vitae_contacts_seq { ##1 }
+    \group_end:
+  }
+\ExplSyntaxOff
+\START
+
+\TEST{English labels by default}{
+  \showlabels
+}
+
+\TEST{the locale's labels; brand names stay}{
+  \vitaesetup{locale=italian} \showlabels
+  \vitaesetup{locale=german} \showlabels
+}
+
+\TEST{contactlabels overrides the locale}{
+  \vitaesetup{locale=italian, contactlabels={phone=Cellulare}} \showlabels
+}
+
+\TEST{a new locale: labels default to English}{
+  \vitaelocale{portuguese}{labels={email=E-mail, phone=Telefone}}
+  \vitaesetup{locale=portuguese} \showlabels
+}
+
+\TEST{an unknown label is an error}{
+  \vitaesetup{contactlabels={fax=Fax}}
+}
+
+\TEST{deprecated names: \vitaedatelocale and datelocale}{
+  \vitaedatelocale{pirate}{ym={#2 o' #1}}
+  \vitaesetup{datelocale=pirate}
+  \TYPE{\formatdate{2020-03}}
+}
+
+\END

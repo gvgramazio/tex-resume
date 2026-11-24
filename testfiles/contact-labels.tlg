@@ -1,0 +1,60 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: English labels by default
+============================================================
+Email
+Phone
+Address
+Website
+LinkedIn
+============================================================
+============================================================
+TEST 2: the locale's labels; brand names stay
+============================================================
+E-mail
+Telefono
+Indirizzo
+Sito web
+LinkedIn
+E-Mail
+Telefon
+Adresse
+Website
+LinkedIn
+============================================================
+============================================================
+TEST 3: contactlabels overrides the locale
+============================================================
+E-mail
+Cellulare
+Indirizzo
+Sito web
+LinkedIn
+============================================================
+============================================================
+TEST 4: a new locale: labels default to English
+============================================================
+E-mail
+Telefone
+Address
+Website
+LinkedIn
+============================================================
+============================================================
+TEST 5: an unknown label is an error
+============================================================
+! LaTeX Error: The key 'vitae/contactlabels/fax' is unknown and is being ignored.
+For immediate help type H <return>.
+ ...                                              
+l. ...}
+The module 'vitae/contactlabels' does not have a key called 'vitae/contactlabels/fax'.
+Check that you have spelled the key name correctly.
+============================================================
+============================================================
+TEST 6: deprecated names: \vitaedatelocale and datelocale
+============================================================
+Package vitae Warning: \vitaedatelocale is deprecated; use \vitaelocale instead.
+Package vitae Warning: The setting 'datelocale' is deprecated; use 'locale' instead.
+March o' 2020
+============================================================
