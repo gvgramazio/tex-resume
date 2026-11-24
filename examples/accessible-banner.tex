@@ -1,0 +1,22 @@
+% engines: lua
+% reading-order: [Photo of Jane Doe] | Jane Doe | Experience | Certifications | Talks | Education | Skills | Languages
+% Accessible PDF (PDF/UA-2) with the banner theme: the band spans the page,
+% the column is an Aside element, read after main.
+\DocumentMetadata{tagging=on, pdfstandard=ua-2, lang=en-US}
+\documentclass{vitae}
+\usetheme{banner}
+\input{data/janedoe}
+\vitaesetup{footer={name, pages, updated}}
+\lastupdated{2026-11-15}
+
+\begin{document}
+\begin{masthead}
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+\end{masthead}
+\printentries[Experience]{experience}
+\printentries[heading=Education, region=aside]{education}
+\printentries[heading=Skills, region=aside]{skills}
+\printentries[heading=Languages, region=aside]{languages}
+\printentries[heading=Certifications, style=compact]{certs}
+\printentries[heading=Talks, style=inline]{talks}
+\end{document}
