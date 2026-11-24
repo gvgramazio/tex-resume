@@ -120,7 +120,11 @@
     \taggedheading { 2 }
       {
         \noindent
-        { \large \bfseries \color { vitaeaccent } \MakeUppercase { \field { title } } }
+        {
+          \large \bfseries \color { vitaeaccent }
+          \iffield { icon } { \field { icon } \hspace { .5em } } { }
+          \MakeUppercase { \field { title } }
+        }
         \hspace { .5em } { \color { vitaeaccent } \leaders \hrule height .6pt \hfill }
         \par
       }

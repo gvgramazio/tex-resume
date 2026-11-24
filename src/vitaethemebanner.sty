@@ -61,7 +61,13 @@
   {
     \par \addvspace { \bigskipamount }
     \taggedheading { 2 }
-      { { #1 \__vitae_banner_display: \color { vitaeaccent } \MakeUppercase { \field { title } } \par } }
+      {
+        {
+          #1 \__vitae_banner_display: \color { vitaeaccent }
+          \iffield { icon } { \field { icon } \hspace { .5em } } { }
+          \MakeUppercase { \field { title } } \par
+        }
+      }
     \nopagebreak \vspace { 3pt }
     \decorative { { \color { vitaeaccent } \rule { 2.5em } { 2pt } \par } }
     \nopagebreak \medskip

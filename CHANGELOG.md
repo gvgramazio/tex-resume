@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Section icons: `\section[icon=\faBriefcase]{Experience}` and
+  `\printentries[heading=Experience, icon=\faBriefcase]{work}` put an icon
+  before a section title. Every theme shows it, and screen readers and text
+  extraction skip it. Section templates get it as `\field{icon}`.
 - Aside column: `\vitaeasidecolumn{empty=drop}` leaves out the column, and
   main keeps the full width, when the aside region was empty in the last
   run; content added later asks for a rerun. `banner` uses it, so a resume

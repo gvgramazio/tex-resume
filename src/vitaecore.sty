@@ -681,7 +681,14 @@
 \cs_new_protected:cpn { __vitae_template_section: }
   {
     \par \bigskip
-    \taggedheading { 2 } { { \large \bfseries \field { title } \par } }
+    \taggedheading { 2 }
+      {
+        {
+          \large \bfseries
+          \iffield { icon } { \field { icon } \hspace { .5em } } { }
+          \field { title } \par
+        }
+      }
     \nopagebreak \medskip
   }
 \cs_new_protected:cpn { __vitae_template_entry: }
