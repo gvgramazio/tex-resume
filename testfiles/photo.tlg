@@ -21,3 +21,8 @@ Package pdftex.def Info: example-image-a.pdf  used on input line ....
 (pdftex.def)             Requested size: 56.9055pt x 42.67642pt.
 width: 56.9055pt
 ============================================================
+============================================================
+TEST 4: the photo template gets the file found and the width
+============================================================
+file=example-image-a.pdf, width=56.9055pt
+============================================================
