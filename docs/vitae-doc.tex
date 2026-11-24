@@ -68,7 +68,8 @@ languages, share it.
 \begin{function}{\email,\phone,\address,\homepage,\linkedin,\github,\orcid}
   \begin{syntax}
     \cs{email}\marg{address} \quad \cs{homepage}\marg{example.com/path}
-    \cs{linkedin}\marg{id} \quad \cs{github}\marg{user} \quad \cs{orcid}\marg{id}
+    \cs{linkedin}\oarg{display}\marg{id} \quad \cs{github}\oarg{display}\marg{user}
+    \cs{orcid}\oarg{display}\marg{id}
   \end{syntax}
   Contacts, printed by \cs{makemasthead} in this fixed order (email, phone,
   address, website, LinkedIn, GitHub, ORCID), each with an icon and, except
@@ -77,6 +78,13 @@ languages, share it.
   a comment, as everywhere in \LaTeX. Screen readers and applicant-tracking
   systems read each icon as its label, in the document language
   (\enquote{Phone:}, \enquote{Telefono:}); see section~\ref{sec:dates}.
+
+  LinkedIn, GitHub and ORCID show the handle as typed; on paper, where no
+  one can click, the address is more useful. |display=url| shows it
+  without |https://| (\enquote{linkedin.com/in/jane-doe-example}),
+  |display=handle| the handle; without the option, the
+  \key{contactdisplay} setting decides, for the document or a group. The
+  link is the same either way.
 \end{function}
 
 \begin{function}{\addcontact}
@@ -330,6 +338,8 @@ width, with the contacts under the name.
     labels (the document language) \\
   \key{contactlabels} & labels of built-in contacts, over the locale's,
     as in |{phone=Cellulare}| \\
+  \key{contactdisplay} & LinkedIn, GitHub and ORCID shown as the
+    \key{handle} or as the \key{url} without |https://| (\key{handle}) \\
   \key{datesep} & separator in date ranges (a thin-spaced en dash) \\
   \key{present} & word for an ongoing range (the locale's) \\
   \key{durations} & show the duration of entries (off) \\
