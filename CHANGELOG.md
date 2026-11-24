@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- Development: `scripts/check-contrast.py` checks the pairs a theme declares
+  with `% contrast: <text> on <background>` lines, such as light text on a
+  dark fill.
 - `photo` template: `\printphoto` finds the photo as before and prints it
   through the template, with the fields `file` (the file found) and `width`,
   so themes can draw it in any shape or frame. Every `\includegraphics` in
