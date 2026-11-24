@@ -74,7 +74,9 @@ languages, share it.
   address, website, LinkedIn, GitHub, ORCID), each with an icon and, except
   for phone and address, a link. Values that are addresses or handles may
   contain |_ & ~ #| as typed, and also accept |\_ \& \# \%|; a raw |%| starts
-  a comment, as everywhere in \LaTeX.
+  a comment, as everywhere in \LaTeX. Screen readers and applicant-tracking
+  systems read each icon as its label, in the document language
+  (\enquote{Phone:}, \enquote{Telefono:}); see section~\ref{sec:dates}.
 \end{function}
 
 \begin{function}{\addcontact}
@@ -134,7 +136,7 @@ languages, share it.
       an empty \key{end} means ongoing;
     \item[\key{date}] a single date: sets \key{start} and \key{end} at once;
     \item[\key{style}] the layout of this entry (section~\ref{sec:styles});
-    \item[\key{dateformat}, \key{datelocale}, \key{durations}] date settings
+    \item[\key{dateformat}, \key{locale}, \key{durations}] date settings
       for this entry only.
   \end{description}
   The body is free text; blank lines separate paragraphs, spaced by the
@@ -205,16 +207,18 @@ The \key{dateformat} setting picks the style: \key{long} (the default:
 2020}), \key{numeric} (\enquote{03/2020}), \key{iso} (\enquote{2020-03}) or
 \key{year} (\enquote{2020}). A year on its own always prints as the year.
 
-The locale follows the document language, from \pkg{babel} or
-\pkg{polyglossia}, including \cs{selectlanguage}; the \key{datelocale}
+The \emph{locale} holds the words of a language: dates, the footer
+(section~\ref{sec:footer}) and the labels of contacts. It follows the
+document language, from \pkg{babel} or \pkg{polyglossia}, including
+\cs{selectlanguage}, so one switch changes them all; the \key{locale}
 setting forces one. Built-in locales are \key{english} (US order),
 \key{british}, \key{italian}, \key{german}, \key{french} and \key{spanish},
 with the usual \pkg{babel} aliases (\key{ngerman}, \key{UKenglish},
 \ldots); any other language falls back to English with a warning.
 
-\begin{function}{\vitaedatelocale}
+\begin{function}{\vitaelocale}
   \begin{syntax}
-    \cs{vitaedatelocale}\marg{name}\marg{keys}
+    \cs{vitaelocale}\marg{name}\marg{keys}
   \end{syntax}
   Defines a locale, starting from English for every key not given:
   \key{months} and \key{short} (twelve names each), \key{present}, \key{units}
@@ -223,16 +227,25 @@ with the usual \pkg{babel} aliases (\key{ngerman}, \key{UKenglish},
   \key{numeric-ym} and \key{numeric-ymd}, which receive |#1| = year, |#2| =
   month and |#3| = day. The footer words are patterns too: \key{pages}
   (|{Page #1 of #2}|, page and total) and \key{updated}
-  (|{Last updated #1}|, the formatted date).
+  (|{Last updated #1}|, the formatted date). \key{labels} names the
+  built-in contacts, read before their icons by screen readers and
+  applicant-tracking systems (\enquote{Telefono: \ldots}): \key{email},
+  \key{phone}, \key{address}, \key{homepage}, \key{linkedin}, \key{github}
+  and \key{orcid}.
+
+  \cs{vitaedatelocale} and the \key{datelocale} setting are the deprecated
+  names of \cs{vitaelocale} and \key{locale}; they still work, with a
+  warning.
 \end{function}
 
 \noindent For example:
 \begin{Verbatim}[gobble=0, fontsize=\small]
-\vitaedatelocale{portuguese}{
+\vitaelocale{portuguese}{
   months  = {janeiro, fevereiro, março, abril, maio, junho, julho,
              agosto, setembro, outubro, novembro, dezembro},
   present = atual, units = {ano, anos, mês, meses},
-  ym = {#2 de #1}, ymd = {#3 de #2 de #1}}
+  ym = {#2 de #1}, ymd = {#3 de #2 de #1},
+  labels  = {email=E-mail, phone=Telefone, address=Endereço}}
 \end{Verbatim}
 
 \subsection{Durations}
@@ -313,7 +326,10 @@ width, with the contacts under the name.
   \key{photowidth} & width of the photo (|2.5cm|) \\
   \key{dateformat} & date style: \key{long}, \key{short}, \key{numeric},
     \key{iso}, \key{year} (\key{long}) \\
-  \key{datelocale} & date locale (the document language) \\
+  \key{locale} & locale: the words of dates, the footer and contact
+    labels (the document language) \\
+  \key{contactlabels} & labels of built-in contacts, over the locale's,
+    as in |{phone=Cellulare}| \\
   \key{datesep} & separator in date ranges (a thin-spaced en dash) \\
   \key{present} & word for an ongoing range (the locale's) \\
   \key{durations} & show the duration of entries (off) \\
@@ -330,7 +346,7 @@ width, with the contacts under the name.
 Pages of a long resume can be told apart, and matched up when printed, with
 a footer. The \key{footer} setting lists its parts: \key{name} (the full
 name), \key{pages} (\enquote{Page 2 of 3}) and \key{updated} (\enquote{Last
-updated November 15, 2026}). The words come from the date locale, and the
+updated November 15, 2026}). The words come from the locale, and the
 date goes through \cs{formatdate}, so both follow the document language and
 the \key{dateformat} setting. The theme decides the order and layout (the
 |footer| template); without parts there is no footer.
@@ -365,7 +381,7 @@ resume's masthead and look.
   \end{syntax}
   The addressee, with address lines separated by |\\|, and the date of the
   letter. The date goes through \cs{formatdate}, so an ISO date follows the
-  \key{dateformat} and \key{datelocale} settings; it defaults to the day of
+  \key{dateformat} and \key{locale} settings; it defaults to the day of
   compilation, and \cs{letterdate}|{}| leaves it out.
 \end{function}
 
