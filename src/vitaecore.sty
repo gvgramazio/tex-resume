@@ -52,6 +52,8 @@
     unaffected.
   }
 \msg_new:nnn { vitae } { photo-missing } { Photo~'#1'~not~found;~skipped. }
+\msg_new:nnn { vitae } { masthead-body-unused }
+  { The~masthead~template~of~theme~'#1'~does~not~print~the~masthead~body. }
 \msg_new:nnn { vitae } { no-name }
   { No~name~set;~use~\iow_char:N\\name{First}{Last}. }
 
@@ -131,6 +133,16 @@
   }
 
 % --- Template fields ------------------------------------------------------
+% Bodies (of entries, items and the masthead): blank lines become
+% \__vitae_par:, which adds the configured paragraph space explicitly, as
+% templates run with \parskip = 0; it also works inside parboxes and lists,
+% which reset \parskip.
+\cs_new_protected:Npn \__vitae_par: { \par \addvspace { \l__vitae_parskip_skip } }
+\cs_new_protected:Npn \__vitae_body_set:n #1
+  {
+    \tl_set:Nn \l__vitae_f_body_tl {#1}
+    \tl_replace_all:Nnn \l__vitae_f_body_tl { \par } { \__vitae_par: }
+  }
 % Templates read the current item through \field{<f>} and \iffield. Every
 % writer sets them inside a group, so values never leak between items.
 % (\cs_if_exist_use:c is avoided: it breaks \MakeUppercase on LuaTeX.)
@@ -575,6 +587,7 @@
       \ifvitaeset { jobtitle } { \thejobtitle \par } { }
       \printcontacts
     \end { center }
+    \iffield { body } { \field { body } \par } { }
   }
 \cs_new_protected:cpn { __vitae_template_contact: }
   { \mbox { \field { icon } ~ \field { text } } }
@@ -908,13 +921,30 @@
 \cs_generate_variant:Nn \__vitae_photo_found:n { V }
 % \makemasthead: typeset the masthead template (name, job title, contacts,
 % photo), like \maketitle. \makeheader is its deprecated name.
-\NewDocumentCommand \makemasthead { }
+\NewDocumentCommand \makemasthead { } { \__vitae_masthead:n { } }
+% \begin{masthead} <content> \end{masthead}: \makemasthead with free content
+% (a summary, availability, ...), given to the template as \field{body}. A
+% marker in the body records that it was printed: a template that leaves
+% it out warns.
+\NewDocumentEnvironment { masthead } { +b } { \__vitae_masthead:n {#1} } { }
+\bool_new:N \g__vitae_masthead_body_bool
+\cs_new_protected:Npn \__vitae_masthead_body: { \bool_gset_true:N \g__vitae_masthead_body_bool }
+\cs_new_protected:Npn \__vitae_masthead:n #1
   {
     \bool_lazy_and:nnT
       { \tl_if_blank_p:V \g__vitae_field_firstname_tl }
       { \tl_if_blank_p:V \g__vitae_field_lastname_tl }
       { \msg_warning:nn { vitae } { no-name } }
-    \group_begin: \skip_zero:N \parskip \__vitae_template_use:n { masthead } \group_end:
+    \group_begin:
+      \skip_zero:N \parskip
+      \tl_if_blank:nF {#1} { \__vitae_body_set:n { \__vitae_masthead_body: #1 } }
+      \bool_gset_false:N \g__vitae_masthead_body_bool
+      \__vitae_template_use:n { masthead }
+      \bool_lazy_and:nnT
+        { ! \tl_if_blank_p:n {#1} }
+        { ! \g__vitae_masthead_body_bool }
+        { \msg_warning:nnV { vitae } { masthead-body-unused } \g__vitae_theme_tl }
+    \group_end:
   }
 \NewDocumentCommand \makeheader { }
   {

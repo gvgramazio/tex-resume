@@ -4,6 +4,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
 
 ## [Unreleased]
 ### Added
+- `masthead` environment: `\makemasthead` with free content, such as a
+  summary under any heading, given to the masthead template as
+  `\field{body}`. Every theme prints it; a template that leaves it out warns.
 - Theme `sidebar`: a full-height column with a round photo, the contacts and
   the aside region beside main, in Montserrat and Roboto;
   `\vitaesetup{sidebar=dark}` gives a dark fill with light text.

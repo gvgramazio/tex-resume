@@ -27,7 +27,8 @@
 \keys_set:nn { vitae / setup } { accent = black }
 
 % --- Templates ------------------------------------------------------------
-% Masthead: centred small-caps name, job title, contacts on one wrapped line.
+% Masthead: centred small-caps name, job title, contacts on one wrapped line;
+% then the masthead body, if any, as a justified block.
 \settemplate { masthead }
   {
     { \centering
@@ -35,6 +36,7 @@
         { { \LARGE \scshape \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par } }
       \ifvitaeset { jobtitle } { \smallskip { \large \itshape \thejobtitle \par } } { }
       \medskip \small \printcontacts \par }
+    \iffield { body } { \medskip \field { body } \par } { }
     \bigskip
   }
 \settemplate { contact } { \mbox { \field { icon } ~ \field { text } } }
