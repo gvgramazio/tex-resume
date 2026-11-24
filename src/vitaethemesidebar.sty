@@ -1,0 +1,279 @@
+%% vitaethemesidebar.sty -- vitae theme: full-height sidebar, round photo.
+%% Distributed under the MIT license (see LICENSE).
+
+% --- Identification -------------------------------------------------------
+\ProvidesExplPackage{vitaethemesidebar}{2026-11-22}{0.5.0}{vitae sidebar theme}
+
+% --- Fonts ----------------------------------------------------------------
+% Roboto for text (the package picks Type 1 on pdfTeX, OpenType elsewhere);
+% Montserrat SemiBold for the name and headings. (Source Sans 3 and Lato
+% were rejected: on XeTeX their hyphens extract as U+2011 and U+2010, so
+% "jane-doe-example" no longer matches an ATS search.)
+\RequirePackage [ default ] { roboto }
+\sys_if_engine_pdftex:TF
+  {
+    \cs_new_protected:Npn \__vitae_sidebar_display:
+      { \fontfamily { Montserrat-LF } \fontseries { sb } \selectfont }
+  }
+  {
+    \newfontfamily \__vitae_sidebar_display: { Montserrat }
+      [ Extension = .otf , UprightFont = *-SemiBold ]
+  }
+\RequirePackage { tikz }
+
+% --- Colours --------------------------------------------------------------
+% Pairs checked by scripts/check-contrast.py (WCAG AA, 4.5:1):
+% contrast: vitaesidebarblue on white
+% contrast: vitaesidebarblue on vitaesidebarlight
+% contrast: black on vitaesidebarlight
+% contrast: white on vitaesidebardark
+% contrast: vitaesidebarpale on vitaesidebardark
+\definecolor { vitaesidebarblue } { HTML } { 1D4E6E }
+\definecolor { vitaesidebarlight } { HTML } { E6EDF2 }
+\definecolor { vitaesidebardark } { HTML } { 1F2E3D }
+\definecolor { vitaesidebarpale } { HTML } { A9D2EE }
+% sidebar = light | dark: the names of the colours of the fill, its text
+% and its headings (names, so a later accent setting still applies).
+\tl_new:N \l__vitae_sidebar_fill_tl
+\tl_new:N \l__vitae_sidebar_ink_tl
+\tl_new:N \l__vitae_sidebar_head_tl
+\keys_define:nn { vitae / setup }
+  {
+    sidebar .choice: ,
+    sidebar / light .code:n =
+      {
+        \tl_set:Nn \l__vitae_sidebar_fill_tl { vitaesidebarlight }
+        \tl_set:Nn \l__vitae_sidebar_ink_tl { black }
+        \tl_set:Nn \l__vitae_sidebar_head_tl { vitaeaccent }
+      } ,
+    sidebar / dark .code:n =
+      {
+        \tl_set:Nn \l__vitae_sidebar_fill_tl { vitaesidebardark }
+        \tl_set:Nn \l__vitae_sidebar_ink_tl { white }
+        \tl_set:Nn \l__vitae_sidebar_head_tl { vitaesidebarpale }
+      } ,
+  }
+% Defaults via \keys_set:nn, not \vitaesetup, so user settings still win.
+\keys_set:nn { vitae / setup }
+  { accent = vitaesidebarblue , sidebar = light , photowidth = 3.4cm }
+
+% --- Page and lists -------------------------------------------------------
+% The fill runs from the page edge over the column and <pad> beyond it;
+% main starts <gutter> after the fill.
+\dim_const:Nn \c__vitae_sidebar_margin_dim { 12mm }
+\dim_const:Nn \c__vitae_sidebar_column_dim { 50mm }
+\dim_const:Nn \c__vitae_sidebar_pad_dim { 8mm }
+\dim_const:Nn \c__vitae_sidebar_gutter_dim { 10mm }
+\RequirePackage { enumitem }
+\setlist { nosep , leftmargin = 1em , topsep = 2pt }
+\geometry
+  {
+    left = \c__vitae_sidebar_margin_dim , right = 14mm ,
+    top = 14mm , bottom = 20mm , footskip = 10mm ,
+  }
+\vitaeasidecolumn
+  {
+    width = \c__vitae_sidebar_column_dim ,
+    sep = \c__vitae_sidebar_pad_dim + \c__vitae_sidebar_gutter_dim ,
+  }
+\setlength \emergencystretch { 2em }
+% The fill, on every page: drawn decoration, outside the structure tree.
+\AddToHook { shipout / background }
+  {
+    \put ( 0 , \dim_to_decimal_in_unit:nn { - \paperheight } { \unitlength } )
+      {
+        \color { \l__vitae_sidebar_fill_tl }
+        \rule
+          {
+            \dim_eval:n
+              { \c__vitae_sidebar_margin_dim + \c__vitae_sidebar_column_dim + \c__vitae_sidebar_pad_dim }
+          }
+          { \paperheight }
+      }
+  }
+
+% --- Shared pieces --------------------------------------------------------
+% Dates of an entry, then " · <duration>" when durations are on.
+\cs_new_protected:Npn \__vitae_sidebar_dates:
+  {
+    \field { dates }
+    \iffield { duration } { ~ \textperiodcentered \c_space_tl \field { duration } } { }
+  }
+% Section title in the display face, upper case, in the colour #1.
+\cs_new_protected:Npn \__vitae_sidebar_title:nn #1#2
+  {
+    \taggedheading { 2 }
+      { { #1 \__vitae_sidebar_display: \color { #2 } \MakeUppercase { \field { title } } \par } }
+  }
+\cs_generate_variant:Nn \__vitae_sidebar_title:nn { nV }
+
+% --- Templates: main ------------------------------------------------------
+% Masthead: the column starts at the top of the first page; main opens with
+% the name in large display type and the job title.
+\settemplate { masthead }
+  {
+    \placeaside
+    \raggedright
+    \taggedheading { 1 }
+      {
+        {
+          \__vitae_sidebar_display: \fontsize { 26 } { 30 } \selectfont
+          \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par
+        }
+      }
+    \ifvitaeset { jobtitle } { \smallskip { \Large \thejobtitle \par } } { }
+    \bigskip
+  }
+
+% Section: display-face title in the accent colour over a thin rule.
+\settemplate { section }
+  {
+    \par \addvspace { \bigskipamount }
+    \__vitae_sidebar_title:nn { \large } { vitaeaccent }
+    \nopagebreak \vspace { 3pt }
+    \decorative { { \color { vitaeaccent } \hrule height .6pt } }
+    \nopagebreak \medskip
+  }
+
+% Entry: bold title with the dates on the right, organisation and location
+% below; each line only if one of its fields is set.
+\settemplate { entry }
+  {
+    \par
+    \ifanyfield { title , dates }
+      {
+        \textbf { \field { title } } \hfill
+        { \small \color { vitaeaccent } \__vitae_sidebar_dates: } \par \nopagebreak
+      }
+      { }
+    \ifanyfield { org , location }
+      { \joinfields { ~ \textperiodcentered \c_space_tl } { org = \textit , location } \par }
+      { }
+    \iffield { body } { \smallskip \field { body } \par } { }
+    \medskip
+  }
+
+% Compact entry: title, organisation and location on one line, dates on
+% the right; any body below.
+\settemplate { entry/compact }
+  {
+    \par
+    \joinfields { , ~ } { title = \textbf , org = \textit , location }
+    \hfill { \small \color { vitaeaccent } \__vitae_sidebar_dates: } \par
+    \iffield { body } { \field { body } \par } { }
+    \smallskip
+  }
+
+% Inline entry: a run-in paragraph, "Title, Org, Location (dates). Body".
+\settemplate { entry/inline }
+  {
+    \par
+    \ifanyfield { title , org , location }
+      {
+        \joinfields { , ~ } { title = \textbf , org = \textit , location }
+        \iffield { dates } { ~ ( \__vitae_sidebar_dates: ) } { }
+      }
+      { \__vitae_sidebar_dates: }
+    \addpunct { . } \iffield { body } { \ifanyfield { title , org , location , dates } { ~ } { } } { }
+    \field { body } \par
+    \smallskip
+  }
+
+% Item: bold label in a fixed left column, wrapped text on the right.
+\settemplate { item }
+  {
+    \par \noindent
+    \parbox [ t ] { 3cm } { \raggedright \textbf { \field { label } } }
+    \parbox [ t ] { \dim_eval:n { \linewidth - 3cm } } { \field { body } }
+    \par \smallskip
+  }
+
+% Photo: round, with a ring in the colour of the column's headings.
+\settemplate { photo }
+  {
+    \begin { tikzpicture }
+      \begin { scope }
+        \clip ( 0 , 0 ) circle ( \field { width } / 2 ) ;
+        \node [ inner~sep = 0pt ]
+          { \includegraphics [ height = \field { width } ] { \field { file } } } ;
+      \end { scope }
+      \draw [ \l__vitae_sidebar_head_tl , line~width = 1.5pt ] ( 0 , 0 ) circle ( \field { width } / 2 ) ;
+    \end { tikzpicture }
+  }
+
+% --- Templates: column ----------------------------------------------------
+% The column: photo, contacts, then the aside region, in the column's
+% colours, with templates set for its narrow measure (local to the column).
+\settemplate { aside }
+  {
+    \color { \l__vitae_sidebar_ink_tl }
+    \raggedright \small
+    \settemplate { section }
+      {
+        \par \addvspace { \bigskipamount }
+        \__vitae_sidebar_title:nV { \normalsize } \l__vitae_sidebar_head_tl
+        \nopagebreak \vspace { 2pt }
+        \decorative { { \color { \l__vitae_sidebar_head_tl } \hrule height .6pt } }
+        \nopagebreak \smallskip
+      }
+    % Entries stack their lines: title, organisation, dates.
+    \settemplate { entry }
+      {
+        \par
+        \iffield { title } { \textbf { \field { title } } \par } { }
+        \ifanyfield { org , location } { \joinfields { , ~ } { org , location } \par } { }
+        \iffield { dates } { \__vitae_sidebar_dates: \par } { }
+        \iffield { body } { \field { body } \par } { }
+        \smallskip
+      }
+    \settemplate { entry/compact } { \__vitae_template_use:n { entry } }
+    \settemplate { entry/inline } { \__vitae_template_use:n { entry } }
+    % Items: the label in bold above its text.
+    \settemplate { item }
+      {
+        \par \textbf { \field { label } } \par
+        \iffield { body } { \field { body } \par } { }
+        \smallskip
+      }
+    % Contacts: one paragraph, a line each, the icon hanging in a margin so
+    % that long text wraps under itself.
+    \settemplate { contact }
+      {
+        \hbox_overlap_left:n
+          { \hbox_to_wd:nn { 1.5em } { \textcolor { \l__vitae_sidebar_head_tl } { \field { icon } } \hfil } }
+        \field { text }
+      }
+    \settemplate { contactsep } { \newline }
+    \ifvitaeset { photo } { { \centering \printphoto \par } \bigskip } { }
+    { \skip_set:Nn \leftskip { 1.5em } \noindent \printcontacts \par }
+    \useregion { aside }
+  }
+
+% --- Templates: letters and footer ----------------------------------------
+% Letter opening: date in the accent colour, recipient below, salutation.
+\settemplate { opening }
+  {
+    \par
+    \iffield { date } { { \small \color { vitaeaccent } \field { date } \par } \medskip } { }
+    \iffield { name } { \textbf { \field { name } } \par } { }
+    \iffield { address } { \field { address } \par } { }
+    \bigskip
+    \iffield { text } { \field { text } \par \medskip } { }
+  }
+% Letter closing: closing words, space to sign, the name in the display face.
+\settemplate { closing }
+  {
+    \par \medskip \nopagebreak
+    \iffield { text } { \field { text } \par \nopagebreak } { }
+    \vspace { 2 \baselineskip } \nopagebreak
+    { \__vitae_sidebar_display: \color { vitaeaccent } \thefirstname \c_space_tl \thelastname \par }
+  }
+
+% Footer: the name on the left, pages and date on the right.
+\settemplate { footer }
+  {
+    \footnotesize
+    \iffield { name } { \textcolor { vitaeaccent } { \field { name } } } { }
+    \hfill
+    \joinfields { \hspace { 1.2em } } { pages , updated }
+  }
