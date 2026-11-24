@@ -50,6 +50,8 @@ vitaetheme<n>.sty    look: fonts, colors, template definitions (classic, modern)
 **Themes.**
 - `classic`: serif font, a centered masthead and a right-aligned date column.
 - `modern`: sans-serif font, an accent color, a left-aligned masthead with icons and a date margin.
+- `sidebar`: a full-height column (the aside column helper) holding a round photo, the contacts and the aside region, over a light or dark fill drawn as decoration on every page; the name heads main. Templates for the column's narrow measure are set inside the `aside` template, so they are local to the column.
+- Each theme uses its own fonts, so the themes also show different looks. A font must extract cleanly on every engine: Source Sans 3 and Lato were rejected for `sidebar` because on XeTeX their hyphens extract as U+2011 and U+2010.
 
 ## 3. Repository and tooling
 

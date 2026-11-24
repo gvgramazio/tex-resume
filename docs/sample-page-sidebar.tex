@@ -1,0 +1,16 @@
+\documentclass{vitae}
+\usetheme{sidebar}
+\geometry{paperheight=11.5cm}
+\name{Jane}{Doe}
+\jobtitle{Research Software Engineer}
+\email{jane.doe@example.com}
+\github{jdoe-example}
+\photo{example-image-a}
+\additem{skills}{Programming}{Lorem, Ipsum, Dolor}
+\begin{document}
+\makemasthead
+\section{Profile}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+sed do eiusmod tempor incididunt ut labore.
+\printentries[heading=Skills, region=aside]{skills}
+\end{document}
