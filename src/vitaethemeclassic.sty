@@ -48,7 +48,14 @@
 \settemplate { section }
   {
     \par \addvspace { \bigskipamount }
-    \taggedheading { 2 } { { \large \scshape \color { vitaeaccent } \field { title } \par } }
+    \taggedheading { 2 }
+      {
+        {
+          \large \scshape \color { vitaeaccent }
+          \iffield { icon } { \field { icon } \hspace { .5em } } { }
+          \field { title } \par
+        }
+      }
     \nopagebreak \vspace { 1pt } \decorative { \hrule } \nopagebreak \medskip
   }
 

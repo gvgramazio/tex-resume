@@ -103,7 +103,13 @@
 \cs_new_protected:Npn \__vitae_sidebar_title:nn #1#2
   {
     \taggedheading { 2 }
-      { { #1 \__vitae_sidebar_display: \color { #2 } \MakeUppercase { \field { title } } \par } }
+      {
+        {
+          #1 \__vitae_sidebar_display: \color { #2 }
+          \iffield { icon } { \field { icon } \hspace { .5em } } { }
+          \MakeUppercase { \field { title } } \par
+        }
+      }
   }
 \cs_generate_variant:Nn \__vitae_sidebar_title:nn { nV }
 

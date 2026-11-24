@@ -21,11 +21,23 @@
   { Entry~style~'#1'~has~no~template~'entry/#1';~the~default~is~used. }
 
 % --- Sections -------------------------------------------------------------
-% \section[*]{<title>} goes through the section template (no numbering).
+% \section[*][<options>]{<title>} goes through the section template (no
+% numbering). Option "icon" gives the template \field{icon}, hidden from
+% readers and text extraction; an optional argument without "=" (a short
+% title) is ignored.
+\keys_define:nn { vitae / section }
+  {
+    icon .code:n =
+      \tl_if_blank:nF {#1}
+        { \tl_set:Nn \l__vitae_f_icon_tl { \actualtext { } {#1} } } ,
+  }
 \RenewDocumentCommand \section { s o m }
   {
     \group_begin:
       \skip_zero:N \parskip
+      \tl_clear:N \l__vitae_f_icon_tl
+      \IfValueT {#2}
+        { \tl_if_in:nnT {#2} { = } { \keys_set:nn { vitae / section } {#2} } }
       \tl_set:Nn \l__vitae_f_title_tl {#3}
       \__vitae_template_use:n { section }
     \group_end:
@@ -129,18 +141,20 @@
     \group_end:
   }
 
-% \printentries[<options>]{<list>}: options are key=value (heading, style,
-% durations); the argument is a plain heading unless it contains "=" or
-% its first item is an option name (as in [durations]). The heading
+% \printentries[<options>]{<list>}: options are key=value (heading, icon,
+% style, durations); the argument is a plain heading unless it contains
+% "=" or its first item is an option name (as in [durations]). The heading
 % appears only if the list has content; an empty or undefined list warns
 % and prints nothing. Options are local to this call. With region=<name>
 % the call is routed to that region (see vitaecore), as a call with
 % region=main, which prints when the theme places the region.
 \tl_new:N \l__vitae_print_heading_tl
+\tl_new:N \l__vitae_print_icon_tl
 \tl_new:N \l__vitae_print_region_tl
 \keys_define:nn { vitae / print }
   {
     heading .tl_set:N = \l__vitae_print_heading_tl ,
+    icon    .tl_set:N = \l__vitae_print_icon_tl ,
     style   .tl_set:N = \l__vitae_entry_style_tl ,
     region  .tl_set:N = \l__vitae_print_region_tl ,
     region  .initial:n = main ,
@@ -169,7 +183,14 @@
             { ! \seq_if_empty_p:c { g__vitae_list_#2_seq } }
             {
               \tl_if_blank:VF \l__vitae_print_heading_tl
-                { \exp_args:NV \section \l__vitae_print_heading_tl }
+                {
+                  \use:e
+                    {
+                      \exp_not:N \section
+                        [ icon = { \exp_not:V \l__vitae_print_icon_tl } ]
+                        { \exp_not:V \l__vitae_print_heading_tl }
+                    }
+                }
               \seq_use:cn { g__vitae_list_#2_seq } { }
             }
             { \msg_warning:nnn { vitae } { empty-list } {#2} }

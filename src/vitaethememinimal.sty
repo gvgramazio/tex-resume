@@ -49,7 +49,13 @@
   {
     \par \addvspace { \bigskipamount }
     \taggedheading { 2 }
-      { { #1 \bfseries \color { vitaeaccent } \MakeUppercase { \field { title } } \par } }
+      {
+        {
+          #1 \bfseries \color { vitaeaccent }
+          \iffield { icon } { \field { icon } \hspace { .5em } } { }
+          \MakeUppercase { \field { title } } \par
+        }
+      }
     \nopagebreak \vspace { 3pt }
     \decorative { { \color { black!30 } \hrule height .4pt } }
     \nopagebreak \medskip

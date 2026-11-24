@@ -1,0 +1,39 @@
+% Section icons: \section[icon=...] and \printentries[icon=...] give the
+% template \field{icon}, wrapped so readers and text extraction skip it; a
+% blank icon or a plain optional argument (a short title) gives none.
+\documentclass{vitae}
+\input{regression-test}
+\usetheme{classic}
+% The icon field, as a string.
+\ExplSyntaxOn
+\cs_new:Npn \showicon { \exp_args:NV \tl_to_str:n \l__vitae_f_icon_tl }
+\ExplSyntaxOff
+\addentry{work}{title=Lorem}{}
+\begin{document}
+\START
+\settemplate{section}
+  {\TYPE{section '\field{title}'; icon \iffield{icon}{'\showicon'}{none}}}
+\settemplate{entry}{}
+
+\TEST{no optional argument: no icon}{\section{Experience}}
+
+\TEST{icon option}{\section[icon=\faBriefcase]{Experience}}
+
+\TEST{a blank icon is no icon}{\section[icon=]{Experience}}
+
+\TEST{a plain optional argument is a short title, ignored}{
+  \section[Work]{Experience}
+}
+
+\TEST{the icon does not leak into the next section}{
+  \section[icon=\faBriefcase]{Experience}
+  \section{Education}
+}
+
+\TEST{printentries passes the icon on}{
+  \printentries[heading=Experience, icon=\faBriefcase]{work}
+}
+
+\TEST{printentries without an icon}{\printentries[Experience]{work}}
+
+\END
