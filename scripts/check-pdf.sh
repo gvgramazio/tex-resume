@@ -16,11 +16,12 @@
 #      of the column extract exactly once (no part lost or printed twice).
 #   6. Overprinting: in every example, no two words overlap on the page
 #      (scripts/pdf-overlap.py), as a column printed over main would.
-#   7. Reading order: the headings of each tagged example's structure tree
-#      (scripts/pdf-headings.py), with their text, must be exactly the list
-#      on its "% reading-order: A | B | ..." line (case aside). veraPDF
-#      accepts a structure tree whose elements hold the wrong text; this
-#      does not.
+#   7. Reading order: the headings and figures of each tagged example's
+#      structure tree (scripts/pdf-reading-order.py), with their text, must
+#      be exactly the list on its "% reading-order: A | [alt] | B" line
+#      (case aside; a figure is its alternative text in brackets). veraPDF
+#      accepts a tree whose elements hold the wrong text, or that lost a
+#      figure; this does not.
 set -eu
 cd "$(dirname "$0")/.."
 VERAPDF=${VERAPDF:-verapdf}
@@ -131,7 +132,7 @@ for dir in "$@"; do
     src="examples/$(basename "$f" .pdf).tex"
     [ -f "$f" ] && [ -f "$src" ] && grep -q 'tagging=on' "$src" || continue
     want=$(sed -n '1,10s/^% reading-order: *//p' "$src" | sed 's/ *| */|/g')
-    got=$(scripts/pdf-headings.py "$f" | cut -d' ' -f2- | paste -sd'|' -)
+    got=$(scripts/pdf-reading-order.py "$f" | cut -d' ' -f2- | paste -sd'|' -)
     if [ -z "$want" ]; then
       fail "$e $f (reading order): no \"% reading-order:\" line in $src"
     elif [ "$(echo "$got" | tr '[:upper:]' '[:lower:]')" = "$(echo "$want" | tr '[:upper:]' '[:lower:]')" ]; then
