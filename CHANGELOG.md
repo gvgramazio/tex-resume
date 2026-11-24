@@ -40,6 +40,10 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   that and calls the identity block the masthead.
 
 ### Fixed
+- pdfLaTeX: ligatures (ff, fi, fl, ffi, ffl) extract as their letters, so
+  words such as "Springfield" match a search in every font; fonts whose
+  ligatures are named by code point (`uniFB01`) extracted the ligature
+  character.
 - PDFs no longer have an `/OpenAction` in the catalog (hyperref's default
   start view), which made applicant tracking systems such as SAP
   SuccessFactors reject them as having active content. The viewer now opens

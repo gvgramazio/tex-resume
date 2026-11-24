@@ -732,6 +732,8 @@
 % named "at", "slash" or "plus" must not remap @, / and + in text fonts.
 \cs_new_protected:Npn \__vitae_fa_unicode:nnn #1#2#3
   { \pdfglyphtounicode { tfm: #1 / #2 } { \int_to_Hex:n {#3} } }
+\cs_new_protected:Npn \__vitae_ligature_unicode:w #1 / #2 \q_stop
+  { \pdfglyphtounicode { uni #1 } {#2} }
 \sys_if_engine_pdftex:T
   {
     \group_begin:
@@ -746,6 +748,14 @@
         }
       \file_input:n { fontawesome5-mapping.def }
     \group_end:
+    % Text fonts: ligatures extract as their letters ("fi", not U+FB01), so
+    % that words such as Springfield match a search: pdfTeX's standard
+    % glyph names, plus ligatures named by code point (uniFB01, in Roboto).
+    \file_input:n { glyphtounicode }
+    \clist_map_inline:nn
+      { FB00 / 0066~0066 , FB01 / 0066~0069 , FB02 / 0066~006C ,
+        FB03 / 0066~0066~0069 , FB04 / 0066~0066~006C }
+      { \__vitae_ligature_unicode:w #1 \q_stop }
     \int_gset:Nn \pdfgentounicode { 1 }
   }
 % A resume has no maths: skip LuaTeX's MathML generation under tagging
