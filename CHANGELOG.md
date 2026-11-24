@@ -3,32 +3,9 @@
 Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer](https://semver.org).
 
 ## [Unreleased]
+
+## [0.6.0] - 2026-11-24
 ### Added
-- Theme `minimal`: typography only, in IBM Plex Sans: the name in large
-  capitals, first name light and last name bold, the contacts, the photo
-  and the aside region in a column on the right; letters keep the full
-  width.
-- Theme `banner`: a band across the top of the page with a square photo,
-  the name, the contacts and the masthead body, over two columns (the aside
-  region on the left, set with `\vitaefullwidth` and the aside column), in
-  Raleway and Open Sans; letters keep the band and the full width.
-- `\vitaefullwidth{<content>}`: a block across main and the aside column,
-  such as a masthead band above both; without a column it prints the
-  content as it is.
-- `masthead` environment: `\makemasthead` with free content, such as a
-  summary under any heading, given to the masthead template as
-  `\field{body}`. Every theme prints it; a template that leaves it out warns.
-- Theme `sidebar`: a full-height column with a round photo, the contacts and
-  the aside region beside main, in Montserrat and Roboto;
-  `\vitaesetup{sidebar=dark}` gives a dark fill with light text.
-- Development: `scripts/check-contrast.py` checks the pairs a theme declares
-  with `% contrast: <text> on <background>` lines, such as light text on a
-  dark fill.
-- `photo` template: `\printphoto` finds the photo as before and prints it
-  through the template, with the fields `file` (the file found) and `width`,
-  so themes can draw it in any shape or frame. Every `\includegraphics` in
-  the template gets the photo's alternative text, so in tagged PDF the image
-  stays a figure.
 - Regions: `\printentries[region=aside]` and the `region` environment route
   content to a part of the page, such as a sidebar, in reading order; themes
   declare the regions they place with `\vitaeplaceregions` and print them
@@ -43,6 +20,31 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   if it outlasts main. It holds the new `aside` template (by default the
   aside region). Under tagging it is an `Aside` structure element, read
   after main by default.
+- `\vitaefullwidth{<content>}`: a block across main and the aside column,
+  such as a masthead band above both; without a column it prints the
+  content as it is.
+- `masthead` environment: `\makemasthead` with free content, such as a
+  summary under any heading, given to the masthead template as
+  `\field{body}`. Every theme prints it; a template that leaves it out warns.
+- `photo` template: `\printphoto` finds the photo as before and prints it
+  through the template, with the fields `file` (the file found) and `width`,
+  so themes can draw it in any shape or frame. Every `\includegraphics` in
+  the template gets the photo's alternative text, so in tagged PDF the image
+  stays a figure.
+- Theme `sidebar`: a full-height column with a round photo, the contacts and
+  the aside region beside main, in Montserrat and Roboto;
+  `\vitaesetup{sidebar=dark}` gives a dark fill with light text.
+- Theme `banner`: a band across the top of the page with a square photo,
+  the name, the contacts and the masthead body, over two columns (the aside
+  region on the left, set with `\vitaefullwidth` and the aside column), in
+  Raleway and Open Sans; letters keep the band and the full width.
+- Theme `minimal`: typography only, in IBM Plex Sans: the name in large
+  capitals, first name light and last name bold, the contacts, the photo
+  and the aside region in a column on the right; letters keep the full
+  width.
+- `\makemasthead` and the `masthead` template, the new names of
+  `\makeheader` and the `header` template for the identity block (name, job
+  title, contacts, photo).
 - Development: `scripts/check-pdf.sh` also checks that no two words of any
   example overlap (`scripts/pdf-overlap.py`) and that the aside stress
   examples print every part of their column once.
@@ -50,9 +52,9 @@ Format: [Keep a Changelog](https://keepachangelog.com); versions follow [SemVer]
   examples: the headings and figures of the structure tree, with their text,
   must match the `% reading-order:` line of the example
   (`scripts/pdf-reading-order.py`).
-- `\makemasthead` and the `masthead` template, the new names of
-  `\makeheader` and the `header` template for the identity block (name, job
-  title, contacts, photo).
+- Development: `scripts/check-contrast.py` checks the pairs a theme declares
+  with `% contrast: <text> on <background>` lines, such as light text on a
+  dark fill.
 
 ### Deprecated
 - `\makeheader` and the `header` template: they still work, with a warning.
