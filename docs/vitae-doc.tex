@@ -427,18 +427,22 @@ provides. The column holds the |aside| template, which by default prints the
 aside region; a theme may add the photo or the contacts, or set narrower
 templates for the column's content.
 
-\begin{function}{\vitaeasidecolumn,\placeaside}
+\begin{function}{\vitaeasidecolumn,\placeaside,\vitaefullwidth}
   \begin{syntax}
     \cs{vitaeasidecolumn}\marg{keys}
     \cs{placeaside}
+    \cs{vitaefullwidth}\marg{content}
   \end{syntax}
   \cs{vitaeasidecolumn}, in the preamble, takes the column from the text
   block, on the left or the right; main keeps the rest, at the same width
   on every page. \cs{placeaside}, once, starts the column at the current
   point: at the top of the first page, or below a masthead that spans the
   page. What does not fit continues at the top of the next pages, and pages
-  are added if the column outlasts main. Like any theme code, both also
-  work in a document, for a layout of its own.
+  are added if the column outlasts main. \cs{vitaefullwidth} sets a block
+  across main and the column, such as a masthead band above both, from the
+  current point; the block does not break across pages, and without a
+  column it is printed as it is. Like any theme code, these also work in a
+  document, for a layout of its own.
 \end{function}
 
 \begin{center}
